@@ -30,6 +30,10 @@ export const colors = {
   "green:900": "#095060",
   "green:1000": "#073A45",
 
+  // Green (from Liquity Bold)
+  "green:50": "#F1FCF2",
+  "green:950": "#082B12",
+
   // Yellow
   "yellow:100": "#FFF9DA",
   "yellow:200": "#FFF2B6",
@@ -42,6 +46,10 @@ export const colors = {
   "yellow:900": "#7A540E",
   "yellow:1000": "#5C3C10",
 
+  // Yellow (from Liquity Bold)
+  "yellow:50": "#FDFBE9",
+  "yellow:950": "#402108",
+
   // Red
   "red:100": "#FDDADA",
   "red:200": "#FCB5BB",
@@ -53,6 +61,23 @@ export const colors = {
   "red:800": "#82155F",
   "red:900": "#6C0D57",
   "red:1000": "#5F0B4D",
+
+  // Red (from Liquity Bold)
+  "red:50": "#FEF5F2",
+  "red:950": "#471608",
+
+  // Blue (from Liquity Bold)
+  "blue:50": "#F0F3FE",
+  "blue:100": "#DEE4FB",
+  "blue:200": "#C4D0F9",
+  "blue:300": "#9CB1F4",
+  "blue:400": "#6D8AED",
+  "blue:500": "#405AE5",
+  "blue:600": "#3544DB",
+  "blue:700": "#2D33C8",
+  "blue:800": "#2A2BA3",
+  "blue:900": "#272A81",
+  "blue:950": "#1C1D4F",
 
   // brown
   "brown:50": "#F8F6F4",
@@ -71,15 +96,18 @@ export const colors = {
   "brand:grassG": "#A8EB12",
   "brand:golden": "#f5d93a",
   "brand:coralP": "#fb7c59",
+  "brand:blue": "#405AE5",
+  "brand:lightBlue": "#6D8AED",
+  "brand:green": "#63D77D",
+  "brand:cyan": "#95CBF3",
+  "brand:coral": "#FB7C59",
+  "brand:brown": "#DBB79B",
 
   //
   "text:black": "#3f3f3f",
   "text:grey": "#87A2A4",
   "bg:black": "#052537",
   "bg:grey20": "#F2F8F8",
-
-  // TODO: Remove
-  error: "#ff0000",
 };
 
 // The light theme, which is the only theme for now. These
@@ -119,8 +147,7 @@ export const lightTheme = {
     focused: "green:500",
     focusedSurface: "gray:50",
     focusedSurfaceActive: "green:100",
-    // strongSurface: "green:950",
-    strongSurface: "error",
+    strongSurface: "green:950",
     strongSurfaceContent: "white",
     strongSurfaceContentAlt: "gray:500",
     strongSurfaceContentAlt2: "gray:100",
@@ -137,11 +164,9 @@ export const lightTheme = {
     negativeSurfaceBorder: "red:100",
     negativeSurfaceContent: "red:900",
     negativeSurfaceContentAlt: "red:400",
-    // negativeInfoSurface: "red:50",
-    negativeInfoSurface: "error",
+    negativeInfoSurface: "red:50",
     negativeInfoSurfaceBorder: "red:200",
-    // negativeInfoSurfaceContent: "red:950",
-    negativeInfoSurfaceContent: "error",
+    negativeInfoSurfaceContent: "red:950",
     negativeInfoSurfaceContentAlt: "gray:600",
     positive: "green:500",
     positiveAlt: "green:400",
@@ -161,24 +186,18 @@ export const lightTheme = {
     disabledBorder: "#DDE8E6",
     disabledContent: "text:grey",
     disabledSurface: "#F4F8F8",
-    // brandgreen: "brand:blue",
-    brandgreen: "error",
+    brandBlue: "brand:blue",
     brandBlueContent: "white",
-    // brandBlueContentAlt: "green:50",
-    brandBlueContentAlt: "error",
+    brandBlueContentAlt: "blue:50",
     brandDarkgreen: "brand:darkBlue",
     brandDarkBlueContent: "white",
     brandDarkBlueContentAlt: "gray:50",
-    // brandLightgreen: "brand:lightBlue",
-    brandLightgreen: "error",
+    brandLightBlue: "brand:lightBlue",
     brandGolden: "brand:golden",
-    // brandGoldenContent: "yellow:950",
-    brandGoldenContent: "error",
+    brandGoldenContent: "yellow:950",
     brandGoldenContentAlt: "yellow:800",
-    // brandGreen: "brand:green",
-    brandGreen: "error",
-    // brandGreenContent: "green:950",
-    brandGreenContent: "error",
+    brandGreen: "brand:green",
+    brandGreenContent: "green:950",
     brandGreenContentAlt: "green:800",
 
     riskGradient1: "green:400",
@@ -192,12 +211,9 @@ export const lightTheme = {
     loadingGradientContent: "green:400",
 
     // not used yet
-    // brandCyan: "brand:cyan",
-    brandCyan: "error",
-    // brandCoral: "brand:coral",
-    brandCoral: "error",
-    // brandBrown: "brand:brown",
-    brandBrown: "error",
+    brandCyan: "brand:cyan",
+    brandCoral: "brand:coral",
+    brandBrown: "brand:brown",
   } satisfies Record<string, (keyof typeof colors) | `#${string}`>,
 } as const;
 
