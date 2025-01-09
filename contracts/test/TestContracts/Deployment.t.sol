@@ -26,7 +26,7 @@ import "src/Zappers/WETHZapper.sol";
 import "src/Zappers/GasCompZapper.sol";
 import "src/Zappers/LeverageLSTZapper.sol";
 import "src/Zappers/LeverageWETHZapper.sol";
-import "src/Zappers/Modules/FlashLoans/BalancerFlashLoan.sol";
+import "src/Zappers/Modules/FlashLoans/UniswapV3FlashLoan.sol";
 import "src/Zappers/Interfaces/IFlashLoanProvider.sol";
 import "src/Zappers/Interfaces/IExchange.sol";
 import "src/Zappers/Modules/Exchanges/Curve/ICurveFactory.sol";
@@ -748,7 +748,24 @@ contract TestDeployer is MetadataDeployment {
         bool _mainnet,
         Zappers memory zappers // result
     ) internal {
-        IFlashLoanProvider flashLoanProvider = new BalancerFlashLoan();
+        address[] memory tokens = new address[](3);
+        tokens[0] = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+        tokens[1] = 0xae78736Cd615f374D3085123A210448E74Fc6393;
+        tokens[2] = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+        UniswapV3FlashLoan.FlashLoanPoolCfg[] memory cfgs = new UniswapV3FlashLoan.FlashLoanPoolCfg[](3);
+        cfgs[0] = UniswapV3FlashLoan.FlashLoanPoolCfg({
+            pool: IUniswapV3PoolActions(0xeaDcdfB96599D0C088e27f7AD1FF91634be0Cb1f),
+            isToken0: false
+        });
+        cfgs[1] = UniswapV3FlashLoan.FlashLoanPoolCfg({
+            pool: IUniswapV3PoolActions(0xC6fbF9da10A9BCa451A2f3AD3d25BAbf54E6D58D),
+            isToken0: false
+        });
+        cfgs[2] = UniswapV3FlashLoan.FlashLoanPoolCfg({
+            pool: IUniswapV3PoolActions(0x985cA485F8A68440a5d1662ACa3edb956070D3e5),
+            isToken0: false
+        });
+        IFlashLoanProvider flashLoanProvider = new UniswapV3FlashLoan(tokens, cfgs);
         IExchange curveExchange = _deployCurveExchange(_collToken, _boldToken, _priceFeed, _mainnet);
 
         // TODO: Deploy base zappers versions with Uni V3 exchange
