@@ -28,15 +28,7 @@ import "src/PriceFeeds/ChainlinkPriceFeed.sol";
 import "src/PriceFeeds/CompositeChainlinkPriceFeed.sol";
 import "src/PriceFeeds/PythPriceFeed.sol";
 import "src/Zappers/GasCompZapper.sol";
-import "src/Zappers/Modules/Exchanges/HybridCurveUniV3ExchangeHelpers.sol";
 import "src/Zappers/Modules/Exchanges/Curve/ICurveStableswapNGFactory.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/ISwapRouter.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/IQuoterV2.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/IUniswapV3Pool.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/IUniswapV3Factory.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/INonfungiblePositionManager.sol";
-import "src/Zappers/Modules/Exchanges/UniswapV3/UniPriceConverter.sol";
-import "src/Zappers/Modules/Exchanges/HybridCurveUniV3Exchange.sol";
 import "forge-std/console2.sol";
 
 contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
@@ -60,26 +52,11 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     uint128 constant BOLD_TOKEN_INDEX = 0;
     uint128 constant USDC_INDEX = 1;
 
-    // Uni V3
-    uint24 constant UNIV3_FEE = 0.3e4;
-    uint24 constant UNIV3_FEE_USDC_WETH = 500; // 0.05%
-    uint24 constant UNIV3_FEE_WETH_COLL = 100; // 0.01%
-    ISwapRouter uniV3Router;
-    IQuoterV2 uniV3Quoter;
-    IUniswapV3Factory uniswapV3Factory;
-    INonfungiblePositionManager uniV3PositionManager;
-    // Mainnet
-    ISwapRouter constant uniV3RouterMainnet = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
-    IQuoterV2 constant uniV3QuoterMainnet = IQuoterV2(0x61fFE014bA17989E743c5F6cB21bF9697530B21e);
-    IUniswapV3Factory constant uniswapV3FactoryMainnet = IUniswapV3Factory(0x1F98431c8aD98523631AE4a59f267346ea31F984);
-    INonfungiblePositionManager constant uniV3PositionManagerMainnet =
-        INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
-
     // Price feeds
     address constant PYTH_ORACLE_ADDRESS = 0x4305FB66699C3B2702D4d05CF36551390A4c69C6;
     address constant ETH_USD_PRICE_FEED = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
 
-    address constant GOVERNANCE_ADDRESS = 0x3a50d7eE968C97971C095c50cf298EeF3c25910c; // TODO: change to Multisig
+    address constant GOVERNANCE_ADDRESS = 0x0268d016717884632a7Fd05043687Cef2e51137F;
 
     bytes32 SALT;
     address deployer;
@@ -148,10 +125,9 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         LiquityContracts[] contractsArray;
         ICollateralRegistry collateralRegistry;
         IBoldToken boldToken;
-        ICurveStableswapNGPool usdcCurvePool;
+        // ICurveStableswapNGPool usdcCurvePool;
         HintHelpers hintHelpers;
         MultiTroveGetter multiTroveGetter;
-        IExchangeHelpers exchangeHelpers;
     }
 
     function run() external {
@@ -174,10 +150,6 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         if (block.chainid == 1) {
             USDC = IERC20(USDC_ADDRESS);
             curveStableswapFactory = curveStableswapFactoryMainnet;
-            uniV3Router = uniV3RouterMainnet;
-            uniV3Quoter = uniV3QuoterMainnet;
-            uniswapV3Factory = uniswapV3FactoryMainnet;
-            uniV3PositionManager = uniV3PositionManagerMainnet;
         }
 
         TroveManagerParams[] memory troveManagerParamsArray = new TroveManagerParams[](10);
@@ -246,7 +218,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         assert(address(r.boldToken) == vars.boldTokenAddress);
 
         // USDC and USDC-BOLD pool
-        r.usdcCurvePool = _deployCurveBoldUsdcPool(r.boldToken);
+        // r.usdcCurvePool = _deployCurveBoldUsdcPool(r.boldToken);
 
         r.contractsArray = new LiquityContracts[](vars.numCollaterals);
         vars.collaterals = new IERC20Metadata[](vars.numCollaterals);
@@ -289,7 +261,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 vars.priceFeeds[vars.i],
                 r.boldToken,
                 r.collateralRegistry,
-                r.usdcCurvePool,
+                // r.usdcCurvePool,
                 vars.addressesRegistries[vars.i],
                 address(vars.troveManagers[vars.i]),
                 r.hintHelpers,
@@ -300,7 +272,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
         r.boldToken.setCollateralRegistry(address(r.collateralRegistry));
 
-        // TODO: exchange helpers
+        // TODO: exchange helpers for leverage zapper
         // r.exchangeHelpers = new HybridCurveUniV3ExchangeHelpers(
         //     USDC,
         //     WETH,
@@ -337,7 +309,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         IPriceFeed _priceFeed,
         IBoldToken _boldToken,
         ICollateralRegistry _collateralRegistry,
-        ICurveStableswapNGPool _usdcCurvePool, // For zappers
+        // ICurveStableswapNGPool _usdcCurvePool, // For zappers
         IAddressesRegistry _addressesRegistry,
         address _troveManagerAddress,
         IHintHelpers _hintHelpers,
@@ -437,9 +409,17 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
             address(contracts.activePool)
         );
 
+        contracts.gasCompZapper = _deployGasCompZapper(contracts.addressesRegistry);
         // TODO: deploy zappers
         // (contracts.gasCompZapper, contracts.wethZapper, contracts.leverageZapper) =
         //     _deployZappers(contracts.addressesRegistry, contracts.collToken, _boldToken, _usdcCurvePool);
+    }
+
+    function _deployGasCompZapper(
+        IAddressesRegistry _addressesRegistry
+    ) internal returns (GasCompZapper gasCompZapper) {
+        // _exchange is set to borrowerOperations to avoid approving collToken to unknown contracts or zero address
+        gasCompZapper = new GasCompZapper(_addressesRegistry, IFlashLoanProvider(ZERO_ADDRESS), IExchange(address(_addressesRegistry.borrowerOperations())));
     }
 
     function _deployCurveBoldUsdcPool(IBoldToken _boldToken) internal returns (ICurveStableswapNGPool) {
@@ -506,10 +486,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                     string.concat('"metadataNFT":"', address(c.metadataNFT).toHexString(), '",'),
                     string.concat('"priceFeed":"', address(c.priceFeed).toHexString(), '",'),
                     string.concat('"gasPool":"', address(c.gasPool).toHexString(), '",'),
-                    string.concat('"interestRouter":"', address(c.interestRouter).toHexString(), '",')
-                    // string.concat('"wethZapper":"', address(c.wethZapper).toHexString(), '",'),
-                    // string.concat('"gasCompZapper":"', address(c.gasCompZapper).toHexString(), '",'),
-                    // string.concat('"leverageZapper":"', address(c.leverageZapper).toHexString(), '",')
+                    string.concat('"interestRouter":"', address(c.interestRouter).toHexString(), '",'),
+                    string.concat('"gasCompZapper":"', address(c.gasCompZapper).toHexString(), '",')
                 ),
                 string.concat(
                     string.concat('"collToken":"', address(c.collToken).toHexString(), '"') // no comma
@@ -555,7 +533,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 string.concat('"boldToken":"', address(deployed.boldToken).toHexString(), '",'),
                 string.concat('"hintHelpers":"', address(deployed.hintHelpers).toHexString(), '",'),
                 string.concat('"multiTroveGetter":"', address(deployed.multiTroveGetter).toHexString(), '",'),
-                string.concat('"exchangeHelpers":"', address(deployed.exchangeHelpers).toHexString(), '",'),
+                // string.concat('"exchangeHelpers":"', address(deployed.exchangeHelpers).toHexString(), '",'),
                 string.concat('"branches":[', branches.join(","), "],")
             ),
             "}"
