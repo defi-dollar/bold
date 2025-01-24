@@ -75,7 +75,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         IPriceFeed priceFeed;
         GasPool gasPool;
         IInterestRouter interestRouter;
-        IERC20 collToken;
+        IERC20Metadata collToken;
         GasCompZapper gasCompZapper;
         ILeverageZapper leverageZapper;
     }
@@ -131,7 +131,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     }
 
     function run() external {
-        SALT = keccak256(abi.encodePacked(block.timestamp));
+        string memory saltString = "DeFiDollar";
+        SALT = keccak256(abi.encodePacked(saltString));
 
         if (vm.envBytes("DEPLOYER").length == 20) {
             // address
@@ -149,24 +150,25 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
         if (block.chainid == 1) {
             USDC = IERC20(USDC_ADDRESS);
+            WETH = IWETH(WETH_ADDRESS);
             curveStableswapFactory = curveStableswapFactoryMainnet;
         }
 
         TroveManagerParams[] memory troveManagerParamsArray = new TroveManagerParams[](10);
 
-        troveManagerParamsArray[0] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // BAL
+        troveManagerParamsArray[0] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // FXS
         troveManagerParamsArray[1] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // LINK
         troveManagerParamsArray[2] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // UNI
         troveManagerParamsArray[3] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // SKY
-        troveManagerParamsArray[4] = TroveManagerParams(174e16, 166e16, 137e16, 5e16, 10e16); // CRV
+        troveManagerParamsArray[4] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // CRV
         troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // AAVE
-        troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 137e16, 5e16, 10e16); // ENA
-        troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 137e16, 5e16, 10e16); // LDO
-        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 137e16, 5e16, 10e16); // EIGEN
-        troveManagerParamsArray[9] = TroveManagerParams(174e16, 166e16, 137e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // ENA
+        troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // LDO
+        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // EIGEN
+        troveManagerParamsArray[9] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // LQTY
 
         address[] memory collTokens = new address[](10);
-        collTokens[0] = 0xba100000625a3754423978a60c9317c58a424e3D; // BAL
+        collTokens[0] = 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0; // FXS
         collTokens[1] = 0x514910771AF9Ca656af840dff83E8264EcF986CA; // LINK
         collTokens[2] = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984; // UNI
         collTokens[3] = 0x56072C95FAA701256059aa122697B133aDEd9279; // SKY
@@ -178,7 +180,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         collTokens[9] = 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D; // LQTY
 
         PriceFeedParams[] memory priceFeeds = new PriceFeedParams[](10);
-        priceFeeds[0] = PriceFeedParams({tokenUsdFeed: 0xdF2917806E30300537aEB49A7663062F4d1F2b5F, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // BAL
+        priceFeeds[0] = PriceFeedParams({tokenUsdFeed: 0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // FXS
         priceFeeds[1] = PriceFeedParams({tokenUsdFeed: 0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // LINK
         priceFeeds[2] = PriceFeedParams({tokenUsdFeed: 0x553303d460EE0afB37EdFf9bE42922D8FF63220e, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // UNI
         priceFeeds[3] = PriceFeedParams({tokenUsdFeed: 0xee10fE5E7aa92dd7b136597449c3d5813cFC5F18, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // SKY
@@ -186,7 +188,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         priceFeeds[5] = PriceFeedParams({tokenUsdFeed: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // AAVE
         priceFeeds[6] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0xb7910ba7322db020416fcac28b48c01212fd9cc8fbcbaf7d30477ed8605f6bd4}); // ENA
         priceFeeds[7] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0x4e844125952D32AcdF339BE976c98E22F6F318dB, pythFeedId: bytes32(0)}); // LDO
-        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0xf2917e602C2dCa458937fad715bb1E465305A4A1, pythFeedId: bytes32(0)}); // EIGEN
+        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: 0xf2917e602C2dCa458937fad715bb1E465305A4A1, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // EIGEN
         priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63}); // LQTY
 
 
@@ -207,7 +209,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         address[] memory _collTokens,
         PriceFeedParams[] memory _priceFeeds
     ) internal returns (DeploymentResult memory r) {
-        assert(_collTokens.length == _troveManagerParamsArray.length - 1);
+        assert(_collTokens.length == _troveManagerParamsArray.length);
 
         DeploymentVars memory vars;
         vars.numCollaterals = _troveManagerParamsArray.length;
@@ -239,6 +241,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 } else {
                     revert("Invalid price feed params");
                 }
+                console2.log(IPriceFeed(vars.priceFeeds[vars.i]).lastGoodPrice(), "lastGoodPrice");
             }
         }
 
@@ -422,31 +425,6 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         gasCompZapper = new GasCompZapper(_addressesRegistry, IFlashLoanProvider(ZERO_ADDRESS), IExchange(address(_addressesRegistry.borrowerOperations())));
     }
 
-    function _deployCurveBoldUsdcPool(IBoldToken _boldToken) internal returns (ICurveStableswapNGPool) {
-        // deploy Curve StableswapNG pool
-        address[] memory coins = new address[](2);
-        coins[BOLD_TOKEN_INDEX] = address(_boldToken);
-        coins[USDC_INDEX] = address(USDC);
-        uint8[] memory assetTypes = new uint8[](2); // 0: standard
-        bytes4[] memory methodIds = new bytes4[](2);
-        address[] memory oracles = new address[](2);
-        ICurveStableswapNGPool curvePool = curveStableswapFactory.deploy_plain_pool(
-            "USDC-DUSD",
-            "USDCDUSD",
-            coins,
-            200, // A
-            1000000, // fee
-            20000000000, // _offpeg_fee_multiplier
-            865, // _ma_exp_time
-            0, // implementation id
-            assetTypes,
-            methodIds,
-            oracles
-        );
-
-        return curvePool;
-    }
-
     function formatAmount(uint256 amount, uint256 decimals, uint256 digits) internal pure returns (string memory) {
         if (digits > decimals) {
             digits = decimals;
@@ -466,31 +444,33 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         return string.concat(whole, ".", fractional);
     }
 
-    function _getBranchContractsJson(LiquityContracts memory c) internal pure returns (string memory) {
+    function _getBranchContractsJson(LiquityContracts memory c) internal view returns (string memory) {
         return string.concat(
             "{",
             string.concat(
                 // Avoid stack too deep by chunking concats
                 string.concat(
+                    string.concat('"collSymbol":"', c.collToken.symbol(), '",'), // purely for human-readability
+                    string.concat('"collToken":"', address(c.collToken).toHexString(), '",'),
                     string.concat('"addressesRegistry":"', address(c.addressesRegistry).toHexString(), '",'),
                     string.concat('"activePool":"', address(c.activePool).toHexString(), '",'),
                     string.concat('"borrowerOperations":"', address(c.borrowerOperations).toHexString(), '",'),
                     string.concat('"collSurplusPool":"', address(c.collSurplusPool).toHexString(), '",'),
                     string.concat('"defaultPool":"', address(c.defaultPool).toHexString(), '",'),
-                    string.concat('"sortedTroves":"', address(c.sortedTroves).toHexString(), '",'),
-                    string.concat('"stabilityPool":"', address(c.stabilityPool).toHexString(), '",'),
-                    string.concat('"troveManager":"', address(c.troveManager).toHexString(), '",')
+                    string.concat('"sortedTroves":"', address(c.sortedTroves).toHexString(), '",')
                 ),
                 string.concat(
+                    string.concat('"stabilityPool":"', address(c.stabilityPool).toHexString(), '",'),
+                    string.concat('"troveManager":"', address(c.troveManager).toHexString(), '",'),
                     string.concat('"troveNFT":"', address(c.troveNFT).toHexString(), '",'),
                     string.concat('"metadataNFT":"', address(c.metadataNFT).toHexString(), '",'),
                     string.concat('"priceFeed":"', address(c.priceFeed).toHexString(), '",'),
                     string.concat('"gasPool":"', address(c.gasPool).toHexString(), '",'),
-                    string.concat('"interestRouter":"', address(c.interestRouter).toHexString(), '",'),
-                    string.concat('"gasCompZapper":"', address(c.gasCompZapper).toHexString(), '",')
+                    string.concat('"interestRouter":"', address(c.interestRouter).toHexString(), '",')
                 ),
                 string.concat(
-                    string.concat('"collToken":"', address(c.collToken).toHexString(), '"') // no comma
+                    string.concat('"gasCompZapper":"', address(c.gasCompZapper).toHexString(), '",'),
+                    string.concat('"leverageZapper":"', address(c.gasCompZapper).toHexString(), '"') // no comma
                 )
             ),
             "}"
@@ -515,7 +495,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
     function _getManifestJson(DeploymentResult memory deployed)
         internal
-        pure
+        view
         returns (string memory)
     {
         string[] memory branches = new string[](deployed.contractsArray.length);
