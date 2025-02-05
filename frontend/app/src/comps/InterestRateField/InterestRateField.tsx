@@ -2,6 +2,7 @@ import type { Address, CollIndex, Delegate } from "@/src/types";
 import type { Dnum } from "dnum";
 import type { ReactNode } from "react";
 
+import { Amount } from "@/src/comps/Amount/Amount";
 import { INTEREST_RATE_DEFAULT, INTEREST_RATE_MAX, INTEREST_RATE_MIN } from "@/src/constants";
 import content from "@/src/content";
 import { IC_STRATEGIES } from "@/src/demo-mode";
@@ -17,6 +18,7 @@ import { css } from "@/styled-system/css";
 import {
   AddressField,
   AnchorTextButton,
+  BOLD_TOKEN_SYMBOL,
   Button,
   Dropdown,
   HFlex,
@@ -221,8 +223,8 @@ export const InterestRateField = memo(
               <HFlex gap={4}>
                 <div>
                   {boldInterestPerYear && (mode === "manual" || delegate !== null)
-                    ? fmtnum(boldInterestPerYear, 2)
-                    : "−"} BOLD / year
+                    ? fmtnum(boldInterestPerYear)
+                    : "−"} {BOLD_TOKEN_SYMBOL} / year
                 </div>
                 <InfoTooltip {...infoTooltipProps(content.generalInfotooltips.interestRateBoldPerYear)} />
               </HFlex>
@@ -239,7 +241,7 @@ export const InterestRateField = memo(
                     ? fmtnum(boldRedeemableInFront, "compact")
                     : "−"}
                 </span>
-                <span>{" BOLD"}</span>
+                <span>{` ${BOLD_TOKEN_SYMBOL}`}</span>
               </span>
             ),
           }}
@@ -271,8 +273,7 @@ export const InterestRateField = memo(
                   >
                     {(mode === "manual" || delegate !== null) && fmtnum(
                       interestRate,
-                      "1z",
-                      100,
+                      "pct1z",
                     )}
                   </span>
                   <span
@@ -447,8 +448,8 @@ function CustomDelegateModalContent({
                       <div>
                         The address is not a valid{" "}
                         <AnchorTextButton
-                          label="batch interest manager"
-                          href="https://github.com/liquity/bold#batch-interest-managers"
+                          label="delegate"
+                          href="https://docs.liquity.org/v2-faq/redemptions-and-delegation#what-is-delegation-of-interest-rates"
                           external
                         />.
                       </div>
@@ -457,15 +458,26 @@ function CustomDelegateModalContent({
             </div>
           )
           : (
-            <div>
-              Please enter a valid{" "}
-              <AnchorTextButton
-                label="batch interest manager"
-                href="https://github.com/liquity/bold#batch-interest-managers"
-                external
-              />{" "}
-              address.
-            </div>
+            <>
+              <div>
+                Set a valid{" "}
+                <AnchorTextButton
+                  label="delegate"
+                  href="https://docs.liquity.org/v2-faq/redemptions-and-delegation#what-is-delegation-of-interest-rates"
+                  external
+                />{" "}
+                address.
+              </div>
+
+              <div>
+                Delegate addresses can be found{"  "}
+                <AnchorTextButton
+                  label="here"
+                  href="https://docs.liquity.org/v2-faq/redemptions-and-delegation#docs-internal-guid-441d8c3f-7fff-4efa-6319-4ba00d908597"
+                  external
+                />.
+              </div>
+            </>
           )}
       </div>
     </>
@@ -640,7 +652,7 @@ function DelegateBox({
               })}
             >
               <MiniChart />
-              {fmtnum(delegate.interestRate, "1z", 100)}%
+              {fmtnum(delegate.interestRate, "pct1z")}%
             </div>
           </div>
           <div
@@ -659,18 +671,11 @@ function DelegateBox({
                 alignItems: "center",
               })}
             >
-              <div>{delegate.followers} followers</div>
-              <div
-                className={css({
-                  width: 4,
-                  height: 4,
-                  background: "currentcolor",
-                  borderRadius: "50%",
-                })}
+              <Amount
+                value={delegate.boldAmount}
+                format="compact"
+                suffix={` ${BOLD_TOKEN_SYMBOL}`}
               />
-              <div>
-                {fmtnum(delegate.boldAmount, "compact")} BOLD
-              </div>
             </div>
             <div
               className={css({
@@ -697,28 +702,6 @@ function DelegateBox({
         >
           <div
             className={css({
-              paddingBottom: 8,
-              color: "contentAlt",
-            })}
-          >
-            Last {delegate.lastDays} days
-          </div>
-          <div
-            className={css({
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-              fontSize: 14,
-              color: "content",
-            })}
-          >
-            <div>Redemptions</div>
-            <div title={`${fmtnum(delegate.redemptions, "full")} BOLD`}>
-              {fmtnum(delegate.redemptions, "compact")} BOLD
-            </div>
-          </div>
-          <div
-            className={css({
               display: "flex",
               justifyContent: "space-between",
               width: "100%",
@@ -728,9 +711,9 @@ function DelegateBox({
           >
             <div>Interest rate range</div>
             <div>
-              {fmtnum(delegate.interestRateChange[0], 2, 100)}
+              {fmtnum(delegate.interestRateChange[0], "pct2")}
               <span>-</span>
-              {fmtnum(delegate.interestRateChange[1], 2, 100)}%
+              {fmtnum(delegate.interestRateChange[1], "pct2")}%
             </div>
           </div>
           {delegate.fee && (
@@ -746,8 +729,8 @@ function DelegateBox({
               <div>
                 Fees <abbr title="per annum">p.a.</abbr>
               </div>
-              <div title={`${fmtnum(delegate.fee, 18, 100)}%`}>
-                {fmtnum(delegate.fee, 4, 100)}%
+              <div title={`${fmtnum(delegate.fee, "pctfull")}%`}>
+                {fmtnum(delegate.fee, { digits: 4, scale: 100 })}%
               </div>
             </div>
           )}

@@ -14,7 +14,7 @@ import { useAccount, useBalance } from "@/src/services/Ethereum";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { css } from "@/styled-system/css";
-import { Button, Checkbox, HFlex, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, Checkbox, HFlex, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useState } from "react";
 
@@ -37,7 +37,7 @@ export function PanelUpdateDeposit({
   const [focused, setFocused] = useState(false);
   const [claimRewards, setClaimRewards] = useState(false);
 
-  const hasDeposit = position?.deposit && dn.gt(position.deposit, 0);
+  const hasDeposit = dn.gt(position?.deposit ?? DNUM_0, 0);
 
   const parsedValue = parseInputFloat(value);
 
@@ -50,7 +50,7 @@ export function PanelUpdateDeposit({
     DNUM_0,
   );
 
-  const boldBalance = useBalance(account.address, "BOLD");
+  const boldBalance = useBalance(account.address, BOLD_TOKEN_SYMBOL);
 
   const updatedBoldQty = dn.add(deposited, depositDifference);
 
@@ -60,9 +60,20 @@ export function PanelUpdateDeposit({
 
   const collateral = getCollToken(collIndex);
 
+  const insufficientBalance = mode === "add"
+    && parsedValue
+    && boldBalance.data
+    && dn.lt(boldBalance.data, parsedValue);
+
+  const withdrawAboveDeposit = mode === "remove"
+    && parsedValue
+    && dn.gt(parsedValue, position?.deposit ?? DNUM_0);
+
   const allowSubmit = account.isConnected
     && parsedValue
-    && dn.gt(parsedValue, 0);
+    && dn.gt(parsedValue, 0)
+    && !insufficientBalance
+    && !withdrawAboveDeposit;
 
   return (
     <div
@@ -77,11 +88,24 @@ export function PanelUpdateDeposit({
       <Field
         field={
           <InputField
+            drawer={insufficientBalance
+              ? {
+                mode: "error",
+                message: `Insufficient balance. You have ${fmtnum(boldBalance.data ?? 0)} ${BOLD_TOKEN_SYMBOL}.`,
+              }
+              : withdrawAboveDeposit
+              ? {
+                mode: "error",
+                message: hasDeposit
+                  ? `You can’t withdraw more than you have deposited.`
+                  : `No ${BOLD_TOKEN_SYMBOL} deposited.`,
+              }
+              : null}
             contextual={
               <InputTokenBadge
                 background={false}
-                icon={<TokenIcon symbol="BOLD" />}
-                label="BOLD"
+                icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
+                label={BOLD_TOKEN_SYMBOL}
               />
             }
             id="input-deposit-change"
@@ -131,13 +155,13 @@ export function PanelUpdateDeposit({
               end: mode === "add"
                 ? boldBalance.data && (
                   <TextButton
-                    label={`Max ${fmtnum(boldBalance.data, 2)} BOLD`}
+                    label={`Max ${fmtnum(boldBalance.data, 2)} ${BOLD_TOKEN_SYMBOL}`}
                     onClick={() => setValue(dn.toString(boldBalance.data))}
                   />
                 )
                 : position?.deposit && dn.gt(position.deposit, 0) && (
                   <TextButton
-                    label={`Max ${fmtnum(position.deposit, 2)} BOLD`}
+                    label={`Max ${fmtnum(position.deposit, 2)} ${BOLD_TOKEN_SYMBOL}`}
                     onClick={() => {
                       setValue(dn.toString(position.deposit));
                       setClaimRewards(true);

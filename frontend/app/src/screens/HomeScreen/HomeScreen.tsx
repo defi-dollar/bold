@@ -9,7 +9,7 @@ import { DNUM_1 } from "@/src/dnum-utils";
 import { getCollIndexFromSymbol, getCollToken, useAverageInterestRate, useEarnPool } from "@/src/liquity-utils";
 import { useAccount } from "@/src/services/Ethereum";
 import { css } from "@/styled-system/css";
-import { AnchorTextButton, IconBorrow, IconEarn, TokenIcon } from "@liquity2/uikit";
+import { AnchorTextButton, BOLD_TOKEN_SYMBOL, IconBorrow, IconEarn, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
 import { HomeTable } from "./HomeTable";
@@ -39,10 +39,19 @@ export function HomeScreen() {
         })}
       >
         <HomeTable
-          title="Borrow BOLD against ETH and staked ETH"
+          title={`Borrow ${BOLD_TOKEN_SYMBOL} against ETH and staked ETH`}
           subtitle="You can adjust your loans, including your interest rate, at any time"
           icon={<IconBorrow />}
-          columns={["Collateral", "Avg rate, p.a.", "Max LTV", null] as const}
+          columns={[
+            "Collateral",
+            <span title="Average interest rate, per annum">
+              Avg rate, p.a.
+            </span>,
+            <span title="Maximum Loan-to-Value ratio">
+              Max LTV
+            </span>,
+            null,
+          ] as const}
           rows={collSymbols.map((symbol) => (
             <BorrowingRow
               key={symbol}
@@ -51,16 +60,19 @@ export function HomeScreen() {
           ))}
         />
         <HomeTable
-          title="Earn rewards with BOLD"
-          subtitle="Earn BOLD & (staked) ETH rewards by putting your BOLD in a stability pool"
+          title={`Earn rewards with ${BOLD_TOKEN_SYMBOL}`}
+          subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & (staked) ETH rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
           icon={<IconEarn />}
-          columns={["Pool", "Current APR", "Pool size", null] as const}
-          rows={collSymbols.map((symbol) => (
-            <EarnRewardsRow
-              key={symbol}
-              symbol={symbol}
-            />
-          ))}
+          columns={[
+            "Pool",
+            <abbr title="Annual Percentage Rate over the last 24 hours">APR</abbr>,
+            <abbr title="Annual Percentage Rate over the last 7 days">
+              7d APR
+            </abbr>,
+            "Pool size",
+            null,
+          ] as const}
+          rows={collSymbols.map((symbol) => <EarnRewardsRow key={symbol} symbol={symbol} />)}
         />
       </div>
     </div>
@@ -131,14 +143,14 @@ function BorrowingRow({
                   })}
                 >
                   Borrow
-                  <TokenIcon symbol="BOLD" size="mini" />
+                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" />
                 </div>
               }
               title={`Borrow ${collateral?.name} from ${symbol}`}
             />
           </Link>
-          <Link
-            href={`/leverage/${symbol.toLowerCase()}`}
+          {/* <Link
+            href={`/multiply/${symbol.toLowerCase()}`}
             legacyBehavior
             passHref
           >
@@ -152,13 +164,13 @@ function BorrowingRow({
                     fontSize: 14,
                   })}
                 >
-                  Leverage
+                  Multiply
                   <TokenIcon symbol={symbol} size="mini" />
                 </div>
               }
               title={`Borrow ${collateral?.name} from ${symbol}`}
             />
-          </Link>
+          </Link> */}
         </div>
       </td>
     </tr>
@@ -192,7 +204,14 @@ function EarnRewardsRow({
         <Amount
           fallback="…"
           percentage
-          value={earnPool.data?.apr}
+          value={earnPool.data.apr}
+        />
+      </td>
+      <td>
+        <Amount
+          fallback="…"
+          percentage
+          value={earnPool.data.apr7d}
         />
       </td>
       <td>
@@ -221,12 +240,12 @@ function EarnRewardsRow({
               >
                 Earn
                 <TokenIcon.Group size="mini">
-                  <TokenIcon symbol="BOLD" />
+                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
                   <TokenIcon symbol={symbol} />
                 </TokenIcon.Group>
               </div>
             }
-            title={`Earn BOLD with ${collateral?.name}`}
+            title={`Earn ${BOLD_TOKEN_SYMBOL} with ${collateral?.name}`}
           />
         </Link>
       </td>

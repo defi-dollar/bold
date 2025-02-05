@@ -38,7 +38,7 @@ export function EarnPoolScreen() {
 
   const tab = TABS.find((tab) => tab.action === params.action) ?? TABS[0];
 
-  const loadingState = earnPool.isLoading || earnPosition.isLoading ? "loading" : "success";
+  const loadingState = earnPool.isLoading || earnPosition.status === "pending" ? "loading" : "success";
 
   const tabsTransition = useTransition(loadingState, {
     from: { opacity: 0 },
@@ -134,7 +134,11 @@ export function EarnPoolScreen() {
                 <Tabs
                   selected={TABS.indexOf(tab)}
                   onSelect={(index) => {
-                    router.push(`/earn/${collateralSymbol.toLowerCase()}/${TABS[index].action}`, {
+                    const tab = TABS[index];
+                    if (!tab) {
+                      throw new Error("Invalid tab index");
+                    }
+                    router.push(`/earn/${collateralSymbol.toLowerCase()}/${tab.action}`, {
                       scroll: false,
                     });
                   }}

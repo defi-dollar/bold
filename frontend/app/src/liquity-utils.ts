@@ -1,22 +1,20 @@
-import type { StabilityPoolDepositQuery } from "@/src/graphql/graphql";
-import type { CollIndex, Dnum, PositionEarn, PositionStake, PrefixedTroveId, TroveId } from "@/src/types";
+import type { Contracts } from "@/src/contracts";
+import type { CollIndex, Dnum, PositionLoanCommitted, PositionStake, PrefixedTroveId, TroveId } from "@/src/types";
 import type { Address, CollateralSymbol, CollateralToken } from "@liquity2/uikit";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { Config as WagmiConfig } from "wagmi";
 
 import { DATA_REFRESH_INTERVAL, INTEREST_RATE_INCREMENT, INTEREST_RATE_MAX, INTEREST_RATE_MIN } from "@/src/constants";
 import { getCollateralContract, getContracts, getProtocolContract } from "@/src/contracts";
-import { dnum18 } from "@/src/dnum-utils";
+import { dnum18, jsonStringifyWithDnum } from "@/src/dnum-utils";
 import { CHAIN_BLOCK_EXPLORER } from "@/src/env";
+import { calculateStabilityPoolApr, useContinuousBoldGains, useSpYieldGainParameters } from "@/src/liquity-stability-pool";
 import {
-  calculateStabilityPoolApr,
-  getCollGainFromSnapshots,
-  useContinuousBoldGains,
-  useSpYieldGainParameters,
-} from "@/src/liquity-stability-pool";
-import {
+  useGovernanceStats,
+  useGovernanceUser,
   useInterestRateBrackets,
+  useLoanById,
   useStabilityPool,
-  useStabilityPoolDeposit,
-  useStabilityPoolEpochScale,
 } from "@/src/subgraph-hooks";
 import { isCollIndex, isTroveId } from "@/src/types";
 import { COLLATERALS, isAddress } from "@liquity2/uikit";
@@ -24,7 +22,8 @@ import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
 import { useMemo } from "react";
 import { encodeAbiParameters, keccak256, parseAbiParameters } from "viem";
-import { useReadContract, useReadContracts } from "wagmi";
+import { useBalance, useReadContract, useReadContracts } from "wagmi";
+import { readContract } from "wagmi/actions";
 
 export function shortenTroveId(troveId: TroveId, chars = 8) {
   return troveId.length < chars * 2 + 2
@@ -45,6 +44,9 @@ export function parsePrefixedTroveId(value: PrefixedTroveId): {
   troveId: TroveId;
 } {
   const [collIndex_, troveId] = value.split(":");
+  if (!collIndex_ || !troveId) {
+    throw new Error(`Invalid prefixed trove ID: ${value}`);
+  }
   const collIndex = parseInt(collIndex_, 10);
   if (!isCollIndex(collIndex) || !isTroveId(troveId)) {
     throw new Error(`Invalid prefixed trove ID: ${value}`);
@@ -61,15 +63,13 @@ export function getCollToken(collIndex: CollIndex | null): CollateralToken | nul
   if (collIndex === null) {
     return null;
   }
-  const collToken = collaterals.map(({ symbol }) => {
+  return collaterals.map(({ symbol }) => {
     const collateral = COLLATERALS.find((c) => c.symbol === symbol);
     if (!collateral) {
       throw new Error(`Unknown collateral symbol: ${symbol}`);
     }
     return collateral;
-  })[collIndex];
-
-  return collToken;
+  })[collIndex] ?? null;
 }
 
 export function getCollIndexFromSymbol(symbol: CollateralSymbol | null): CollIndex | null {
@@ -87,7 +87,8 @@ export function useEarnPool(collIndex: null | CollIndex) {
   return {
     ...pool,
     data: {
-      apr: apr ?? null,
+      apr: apr,
+      apr7d: null,
       collateral,
       totalDeposited: pool.data?.totalDeposited ?? null,
     },
@@ -104,115 +105,175 @@ export function useEarnPosition(
     return getBoldGains.data?.(Date.now()) ?? null;
   };
 
-  const boldGains = useQuery({
+  const yieldGainsInBold = useQuery({
     queryFn: () => getBoldGains_(),
     queryKey: ["useEarnPosition:getBoldGains", collIndex, account],
-    refetchInterval: DATA_REFRESH_INTERVAL,
+    refetchInterval: 10_000,
     enabled: getBoldGains.status === "success",
   });
 
-  const spDeposit = useStabilityPoolDeposit(collIndex, account);
-  const spDepositSnapshot = spDeposit.data?.snapshot;
+  const StabilityPool = getCollateralContract(collIndex, "StabilityPool");
+  if (!StabilityPool) {
+    throw new Error(`Invalid collateral index: ${collIndex}`);
+  }
 
-  const epochScale1 = useStabilityPoolEpochScale(
-    collIndex,
-    spDepositSnapshot?.epoch ?? null,
-    spDepositSnapshot?.scale ?? null,
-  );
+  const spContractReads = useReadContracts({
+    contracts: [{
+      ...StabilityPool,
+      functionName: "getCompoundedBoldDeposit",
+      args: [account ?? "0x"],
+    }, {
+      ...StabilityPool,
+      functionName: "getDepositorCollGain",
+      args: [account ?? "0x"],
+    }],
+    query: {
+      enabled: account !== null,
+    },
+  });
 
-  const epochScale2 = useStabilityPoolEpochScale(
-    collIndex,
-    spDepositSnapshot?.epoch ?? null,
-    spDepositSnapshot?.scale ? spDepositSnapshot?.scale + 1n : null,
-  );
+  const spDepositCompounded = spContractReads.data?.[0];
+  const spCollGain = spContractReads.data?.[1];
 
-  const base = [
+  const useQueryResultBase = [
+    yieldGainsInBold,
     getBoldGains,
-    boldGains,
-    spDeposit,
-    epochScale1,
-    epochScale2,
-  ].find((r) => r.status !== "success") ?? epochScale2;
+    spDepositCompounded,
+    spCollGain,
+  ].find((r) => r && r.status !== "success") ?? yieldGainsInBold;
+
+  if (
+    !account || collIndex === null
+    || spDepositCompounded?.status !== "success"
+    || spCollGain?.status !== "success"
+    || yieldGainsInBold.status !== "success"
+  ) {
+    return {
+      ...useQueryResultBase,
+      data: null,
+    };
+  }
 
   return {
-    ...base,
-    data: (
-        !spDeposit.data
-        || !boldGains.data
-        || !epochScale1.data
-        || !epochScale2.data
-      )
-      ? null
-      : earnPositionFromGraph(spDeposit.data, {
-        bold: boldGains.data,
-        coll: dnum18(
-          getCollGainFromSnapshots(
-            spDeposit.data.deposit,
-            spDeposit.data.snapshot.P,
-            spDeposit.data.snapshot.S,
-            epochScale1.data.S,
-            epochScale2.data.S,
-          ),
-        ),
-      }),
+    ...useQueryResultBase,
+    data: {
+      type: "earn" as const,
+      owner: account,
+      deposit: dnum18(spDepositCompounded.result),
+      collIndex,
+      rewards: {
+        bold: yieldGainsInBold.data ?? dnum18(0),
+        coll: dnum18(spCollGain.result),
+      },
+    },
   };
 }
 
-function earnPositionFromGraph(
-  spDeposit: NonNullable<StabilityPoolDepositQuery["stabilityPoolDeposit"]>,
-  rewards: { bold: Dnum; coll: Dnum },
-): PositionEarn {
-  const collIndex = spDeposit.collateral.collIndex;
-  if (!isCollIndex(collIndex)) {
-    throw new Error(`Invalid collateral index: ${collIndex}`);
-  }
-  if (!isAddress(spDeposit.depositor)) {
-    throw new Error(`Invalid depositor address: ${spDeposit.depositor}`);
-  }
-  return {
-    type: "earn",
-    owner: spDeposit.depositor,
-    deposit: dnum18(spDeposit.deposit),
-    collIndex,
-    rewards,
-  };
+export function useAccountVotingPower(account: Address | null, lqtyDiff: bigint = 0n) {
+  const govUser = useGovernanceUser(account);
+  const govStats = useGovernanceStats();
+
+  return useMemo(() => {
+    if (!govStats.data || !govUser.data) {
+      return null;
+    }
+
+    const t = BigInt(Math.floor(Date.now() / 1000));
+
+    const { totalLQTYStaked, totalOffset } = govStats.data;
+    const totalVp = (BigInt(totalLQTYStaked) + lqtyDiff) * t - BigInt(totalOffset);
+
+    const { stakedLQTY, stakedOffset } = govUser.data;
+    const userVp = (BigInt(stakedLQTY) + lqtyDiff) * t - BigInt(stakedOffset);
+
+    // pctShare(t) = userVotingPower(t) / totalVotingPower(t)
+    return dn.div([userVp, 18], [totalVp, 18]);
+  }, [govUser.data, govStats.data, lqtyDiff]);
 }
 
 export function useStakePosition(address: null | Address) {
+  const votingPower = useAccountVotingPower(address);
+
   const LqtyStaking = getProtocolContract("LqtyStaking");
-  return useReadContracts({
+  const LusdToken = getProtocolContract("LusdToken");
+  const Governance = getProtocolContract("Governance");
+
+  const userProxyAddress = useReadContract({
+    ...Governance,
+    functionName: "deriveUserProxyAddress",
+    args: [address ?? "0x"],
+    query: { enabled: Boolean(address) },
+  });
+
+  const userProxyBalance = useBalance({
+    address: userProxyAddress.data ?? "0x",
+    query: { enabled: Boolean(address) && userProxyAddress.isSuccess },
+  });
+
+  const stakePosition = useReadContracts({
     contracts: [
       {
         ...LqtyStaking,
         functionName: "stakes",
-        args: [address ?? "0x"],
+        args: [userProxyAddress.data ?? "0x"],
       },
       {
         ...LqtyStaking,
         functionName: "totalLQTYStaked",
       },
+      {
+        ...LqtyStaking,
+        functionName: "getPendingETHGain",
+        args: [userProxyAddress.data ?? "0x"],
+      },
+      {
+        ...LqtyStaking,
+        functionName: "getPendingLUSDGain",
+        args: [userProxyAddress.data ?? "0x"],
+      },
+      {
+        ...LusdToken,
+        functionName: "balanceOf",
+        args: [userProxyAddress.data ?? "0x"],
+      },
     ],
     query: {
-      enabled: Boolean(address),
+      enabled: Boolean(address) && userProxyAddress.isSuccess && userProxyBalance.isSuccess,
       refetchInterval: DATA_REFRESH_INTERVAL,
-      select: ([deposit_, totalStaked_]): PositionStake => {
-        const totalStaked = dnum18(totalStaked_);
-        const deposit = dnum18(deposit_);
+      select: ([
+        depositResult,
+        totalStakedResult,
+        pendingEthGainResult,
+        pendingLusdGainResult,
+        lusdBalanceResult,
+      ]): PositionStake | null => {
+        if (
+          depositResult.status === "failure" || totalStakedResult.status === "failure"
+          || pendingEthGainResult.status === "failure" || pendingLusdGainResult.status === "failure"
+          || lusdBalanceResult.status === "failure"
+        ) {
+          return null;
+        }
+        const deposit = dnum18(depositResult.result);
+        const totalStaked = dnum18(totalStakedResult.result);
         return {
           type: "stake",
           deposit,
           owner: address ?? "0x",
           totalStaked,
           rewards: {
-            eth: dnum18(0),
-            lusd: dnum18(0),
+            eth: dnum18(pendingEthGainResult.result + (userProxyBalance.data?.value ?? 0n)),
+            lusd: dnum18(pendingLusdGainResult.result + lusdBalanceResult.result),
           },
-          share: dn.gt(totalStaked, 0) ? dn.div(deposit, totalStaked) : dnum18(0),
+          share: dnum18(0),
         };
       },
     },
-    allowFailure: false,
   });
+
+  return stakePosition.data && votingPower
+    ? { ...stakePosition, data: { ...stakePosition.data, share: votingPower } }
+    : stakePosition;
 }
 
 export function useTroveNftUrl(collIndex: null | CollIndex, troveId: null | TroveId) {
@@ -252,38 +313,6 @@ export function useAverageInterestRate(collIndex: null | CollIndex) {
   };
 }
 
-const EMPTY_TROVE_CHANGE = {
-  appliedRedistBoldDebtGain: 0n,
-  appliedRedistCollGain: 0n,
-  collIncrease: 0n,
-  collDecrease: 0n,
-  debtIncrease: 0n,
-  debtDecrease: 0n,
-  newWeightedRecordedDebt: 0n,
-  oldWeightedRecordedDebt: 0n,
-  upfrontFee: 0n,
-  batchAccruedManagementFee: 0n,
-  newWeightedRecordedBatchManagementFee: 0n,
-  oldWeightedRecordedBatchManagementFee: 0n,
-} as const;
-
-export function useAverageInterestRateFromActivePool(collIndex: null | CollIndex) {
-  const ActivePool = getCollateralContract(collIndex, "ActivePool");
-  const result = useReadContract(
-    !ActivePool ? {} : {
-      address: ActivePool.address,
-      abi: ActivePool.abi,
-      functionName: "getNewApproxAvgInterestRateFromTroveChange",
-      args: [EMPTY_TROVE_CHANGE],
-      query: {
-        enabled: ActivePool !== null,
-        refetchInterval: DATA_REFRESH_INTERVAL,
-      },
-    },
-  );
-  return result;
-}
-
 export function useInterestRateChartData(collIndex: null | CollIndex) {
   const brackets = useInterestRateBrackets(collIndex);
 
@@ -291,8 +320,7 @@ export function useInterestRateChartData(collIndex: null | CollIndex) {
     queryKey: [
       "useInterestRateChartData",
       collIndex,
-      brackets.status,
-      brackets.dataUpdatedAt,
+      jsonStringifyWithDnum(brackets.data),
     ],
     queryFn: () => {
       if (!brackets.isSuccess) {
@@ -412,4 +440,110 @@ export function usePredictAdjustInterestRateUpfrontFee(
       select: dnum18,
     },
   });
+}
+
+// from https://github.com/liquity/bold/blob/204a3dec54a0e8689120ca48faf4ece5cf8ccd22/README.md#example-opentrove-transaction-with-hints
+export async function getTroveOperationHints({
+  wagmiConfig,
+  contracts,
+  collIndex,
+  interestRate,
+}: {
+  wagmiConfig: WagmiConfig;
+  contracts: Contracts;
+  collIndex: number;
+  interestRate: bigint;
+}): Promise<{
+  upperHint: bigint;
+  lowerHint: bigint;
+}> {
+  const collateral = contracts.collaterals[collIndex];
+  if (!collateral) {
+    throw new Error(`Invalid collateral index: ${collIndex}`);
+  }
+
+  const numTroves = await readContract(wagmiConfig, {
+    ...collateral.contracts.SortedTroves,
+    functionName: "getSize",
+  });
+
+  const [approxHint] = await readContract(wagmiConfig, {
+    ...contracts.HintHelpers,
+    functionName: "getApproxHint",
+    args: [
+      BigInt(collIndex),
+      interestRate,
+      // (10 * sqrt(troves)) gives a hint close to the right position
+      10n * BigInt(Math.ceil(Math.sqrt(Number(numTroves)))),
+      42n, // random seed
+    ],
+  });
+
+  const [upperHint, lowerHint] = await readContract(wagmiConfig, {
+    ...collateral.contracts.SortedTroves,
+    functionName: "findInsertPosition",
+    args: [
+      interestRate,
+      approxHint,
+      approxHint,
+    ],
+  });
+
+  return { upperHint, lowerHint };
+}
+
+export function useLatestTroveData(collIndex: CollIndex, troveId: TroveId) {
+  const TroveManager = getCollateralContract(collIndex, "TroveManager");
+  if (!TroveManager) {
+    throw new Error(`Invalid collateral index: ${collIndex}`);
+  }
+  return useReadContract({
+    ...TroveManager,
+    functionName: "getLatestTroveData",
+    args: [BigInt(troveId)],
+    query: {
+      refetchInterval: DATA_REFRESH_INTERVAL,
+    },
+  });
+}
+
+export function useLoanLiveDebt(collIndex: CollIndex, troveId: TroveId) {
+  const latestTroveData = useLatestTroveData(collIndex, troveId);
+  return {
+    ...latestTroveData,
+    data: latestTroveData.data?.entireDebt ?? null,
+  };
+}
+
+export function useLoan(collIndex: CollIndex, troveId: TroveId): UseQueryResult<PositionLoanCommitted | null> {
+  const liveDebt = useLoanLiveDebt(collIndex, troveId);
+  const loan = useLoanById(getPrefixedTroveId(collIndex, troveId));
+
+  if (liveDebt.status === "pending" || loan.status === "pending") {
+    return {
+      ...loan,
+      data: undefined,
+      error: null,
+      isError: false,
+      isFetching: true,
+      isLoading: true,
+      isLoadingError: false,
+      isPending: true,
+      isRefetchError: false,
+      isSuccess: false,
+      status: "pending",
+    };
+  }
+
+  if (!loan.data) {
+    return loan;
+  }
+
+  return {
+    ...loan,
+    data: {
+      ...loan.data,
+      borrowed: liveDebt.data ? dnum18(liveDebt.data) : loan.data.borrowed,
+    },
+  };
 }

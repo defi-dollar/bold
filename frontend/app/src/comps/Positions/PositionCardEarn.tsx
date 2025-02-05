@@ -3,7 +3,7 @@ import type { PositionEarn } from "@/src/types";
 import { Amount } from "@/src/comps/Amount/Amount";
 import { getCollToken, useEarnPool, useEarnPosition } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { HFlex, IconEarn, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, IconEarn, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
 import { PositionCard } from "./PositionCard";
 import { CardRow, CardRows } from "./shared";
@@ -11,12 +11,10 @@ import { CardRow, CardRows } from "./shared";
 export function PositionCardEarn({
   owner,
   collIndex,
-  deposit,
 }: Pick<
   PositionEarn,
   | "owner"
   | "collIndex"
-  | "deposit"
 >) {
   const token = getCollToken(collIndex);
   const earnPool = useEarnPool(collIndex);
@@ -54,8 +52,12 @@ export function PositionCardEarn({
         main={{
           value: (
             <HFlex gap={8} alignItems="center" justifyContent="flex-start">
-              <Amount value={deposit} format={2} />
-              <TokenIcon size="medium" symbol="BOLD" />
+              <Amount
+                value={earnPosition.data?.deposit}
+                fallback="−"
+                format={2}
+              />
+              <TokenIcon size="medium" symbol={BOLD_TOKEN_SYMBOL} />
             </HFlex>
           ),
           label: token && (
@@ -71,27 +73,59 @@ export function PositionCardEarn({
                 <div
                   className={css({
                     display: "flex",
-                    gap: 8,
+                    gap: 12,
                     fontSize: 14,
                   })}
                 >
                   <div
                     className={css({
-                      color: "positionContentAlt",
+                      display: "flex",
+                      gap: 8,
                     })}
                   >
-                    Current APR
+                    <div
+                      className={css({
+                        color: "positionContentAlt",
+                      })}
+                    >
+                      APR
+                    </div>
+                    <div
+                      className={css({
+                        color: "positionContent",
+                      })}
+                    >
+                      <Amount
+                        fallback="−"
+                        percentage
+                        value={earnPool.data.apr}
+                      />
+                    </div>
                   </div>
                   <div
                     className={css({
-                      color: "positionContent",
+                      display: "flex",
+                      gap: 8,
                     })}
                   >
-                    <Amount
-                      fallback="−"
-                      percentage
-                      value={earnPool.data.apr}
-                    />
+                    <div
+                      className={css({
+                        color: "positionContentAlt",
+                      })}
+                    >
+                      7d APR
+                    </div>
+                    <div
+                      className={css({
+                        color: "positionContent",
+                      })}
+                    >
+                      <Amount
+                        fallback="−"
+                        percentage
+                        value={earnPool.data.apr7d}
+                      />
+                    </div>
                   </div>
                 </div>
               }
@@ -126,7 +160,7 @@ export function PositionCardEarn({
                       value={earnPosition.data?.rewards.bold}
                       format={2}
                     />
-                    <TokenIcon size="mini" symbol="BOLD" />
+                    <TokenIcon size="mini" symbol={BOLD_TOKEN_SYMBOL} />
                   </div>
                   <div
                     className={css({

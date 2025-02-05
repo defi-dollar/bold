@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable import/no-anonymous-default-export */
 
+import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 import type { ReactNode as N } from "react";
 
 export default {
@@ -11,7 +12,7 @@ export default {
   menu: {
     dashboard: "Dashboard",
     borrow: "Borrow",
-    leverage: "Leverage",
+    multiply: "Multiply",
     earn: "Earn",
     stake: "Stake",
   },
@@ -33,20 +34,20 @@ export default {
     loanRedemptionRisk: [
       "Redemption risk",
       <>
-        Users paying the lowest interest rate can get redeemed, if the price of BOLD falls below $1. By raising your
+        Users paying the lowest interest rate can get redeemed, if the price of {BOLD_TOKEN_SYMBOL} falls below $1. By raising your
         interest rate, you reduce this risk.
       </>,
     ],
     loanLtv: [
       "Loan-to-value ratio",
       <>
-        The ratio between the amount of BOLD borrowed and the deposited collateral (in USD).
+        The ratio between the amount of {BOLD_TOKEN_SYMBOL} borrowed and the deposited collateral (in USD).
       </>,
     ],
     loanMaxLtv: [
       "Maximum Loan-To-Value (LTV) Ratio",
       <>
-        The maximum ratio between the USD value of a loan (in BOLD) and the collateral backing it. The LTV will
+        The maximum ratio between the USD value of a loan (in {BOLD_TOKEN_SYMBOL}) and the collateral backing it. The LTV will
         fluctuate as the price of the collateral changes. To decrease the LTV add more colateral or reduce debt.
       </>,
     ],
@@ -54,17 +55,17 @@ export default {
       "Liquidation price",
       <>The collateral price at which a loan can be liquidated.</>,
     ],
-    ethPrice: [
-      "ETH Price",
+    ethPrice: (symbol: string) => [
+      `${symbol} Price`,
       <>
-        The current price of ETH, as reported by the oracle. The ETH price is used to calculate the Loan-To-Value (LTV)
+        The current price of ETH, as reported by the oracle. The {symbol} price is used to calculate the Loan-To-Value (LTV)
         ratio of a loan.
       </>,
     ],
     interestRateBoldPerYear: [
       "Interest rate",
       <>
-        The annualized interest amount in BOLD for the selected interest rate. The accumulated interest is added to the
+        The annualized interest amount in {BOLD_TOKEN_SYMBOL} for the selected interest rate. The accumulated interest is added to the
         loan.
       </>,
     ],
@@ -79,12 +80,12 @@ export default {
       heading: "Your collateral and debt are reduced by the same value.",
       body: (
         <>
-          When BOLD trades for under $1, anyone can redeem positions to get BOLD back at $1. Positions with the lowest
+          When {BOLD_TOKEN_SYMBOL} trades for under $1, anyone can redeem positions to get {BOLD_TOKEN_SYMBOL} back at $1. Positions with the lowest
           interest rate get redeemed first.
         </>
       ),
       footerLink: {
-        href: "https://github.com/liquity/bold#bold-redemptions",
+        href: "https://docs.liquity.org/v2-faq/redemptions-and-delegation",
         label: "Learn more",
       },
     },
@@ -95,14 +96,14 @@ export default {
     title: "Redemptions in a nutshell",
     subtitle: (
       <>
-        Redemptions help maintain BOLD’s peg in a decentralized way. If a user is redeemed, their collateral and debt
+        Redemptions help maintain {BOLD_TOKEN_SYMBOL}’s peg in a decentralized way. If a user is redeemed, their collateral and debt
         are reduced equally, resulting in no net loss.
       </>
     ),
     infoItems: [
       {
-        icon: "bold",
-        text: "Redemptions occur when BOLD drops below $1.",
+        icon: BOLD_TOKEN_SYMBOL,
+        text: `Redemptions occur when ${BOLD_TOKEN_SYMBOL} drops below $1.`,
       },
       {
         icon: "redemption",
@@ -115,7 +116,7 @@ export default {
     ],
     learnMore: {
       text: "Learn more about redemptions",
-      href: "https://github.com/liquity/bold#bold-redemptions",
+      href: "https://docs.liquity.org/v2-faq/redemptions-and-delegation",
     },
   },
 
@@ -165,6 +166,11 @@ export default {
   },
 
   closeLoan: {
+    claimOnly: (
+      <>
+        You are reclaiming your collateral and closing the position. The deposit will be returned to your wallet.
+      </>
+    ),
     repayWithBoldMessage: (
       <>
         You are repaying your debt and closing the position. The deposit will be returned to your wallet.
@@ -176,6 +182,8 @@ export default {
         will be returned to your wallet.
       </>
     ),
+    buttonRepayAndClose: "Repay & close",
+    buttonReclaimAndClose: "Reclaim & close",
   },
 
   // Home screen
@@ -184,20 +192,20 @@ export default {
     myPositionsTitle: "My positions",
     actions: {
       borrow: {
-        title: "Borrow BOLD",
-        description: "Set your own interest rate and borrow BOLD against ETH and staked ETH.",
+        title: "Borrow",
+        description: `Mint ${BOLD_TOKEN_SYMBOL} against your collateral at whatever interest rate you want`,
       },
-      leverage: {
-        title: "Leverage ETH",
-        description: "Set your own interest rate and increase your exposure to ETH and staked ETH.",
+      multiply: {
+        title: "Multiply",
+        description: "Increase your exposure to ETH and its staking yield with a single click",
       },
       earn: {
-        title: "Earn with BOLD",
-        description: "Cover liquidations to earn BOLD and collateral assets.",
+        title: `Earn with ${BOLD_TOKEN_SYMBOL}`,
+        description: `Deposit ${BOLD_TOKEN_SYMBOL} to earn protocol revenues and liquidation proceeds`,
       },
       stake: {
         title: "Stake LQTY",
-        description: "Accrue voting power by staking your LQTY without a minimum lockup period.",
+        description: "Direct protocol incentives with LQTY while earning from Liquity V1",
       },
     },
     statsBar: {
@@ -213,7 +221,7 @@ export default {
       ],
       spTvl: [
         "Total Value Locked",
-        "The total amount of BOLD deposited in each stability pool.",
+        `The total amount of ${BOLD_TOKEN_SYMBOL} deposited in each stability pool.`,
       ],
       borrowTvl: [
         "Total Value Locked",
@@ -226,7 +234,7 @@ export default {
   borrowScreen: {
     headline: (tokensIcons: N, boldIcon: N) => (
       <>
-        Borrow {boldIcon} BOLD with {tokensIcons} ETH
+        Borrow {boldIcon} {BOLD_TOKEN_SYMBOL} with {tokensIcons} ETH
       </>
     ),
     depositField: {
@@ -244,16 +252,16 @@ export default {
     action: "Next: Summary",
     infoTooltips: {
       interestRateSuggestions: [
-        "Positions with lower interest rates are the first to be redeemed by BOLD holders.",
+        `Positions with lower interest rates are the first to be redeemed by ${BOLD_TOKEN_SYMBOL} holders.`,
       ],
     },
   },
 
-  // Leverage screen
+  // Multiply screen
   leverageScreen: {
     headline: (tokensIcons: N) => (
       <>
-        Leverage your exposure to {tokensIcons}
+        Multiply your exposure to {tokensIcons}
       </>
     ),
     depositField: {
@@ -268,7 +276,7 @@ export default {
     action: "Next: Summary",
     infoTooltips: {
       leverageLevel: [
-        "Leverage level",
+        "Multiply level",
         <>
           Choose the amplification of your exposure. Note that a higher level means higher liquidation risk. You are
           responsible for your own assessment of what a suitable level is.
@@ -276,7 +284,7 @@ export default {
       ],
       interestRateSuggestions: [
         <>
-          Positions with lower interest rates are the first to be redeemed by BOLD holders.
+          Positions with lower interest rates are the first to be redeemed by {BOLD_TOKEN_SYMBOL} holders.
         </>,
       ],
       exposure: [
@@ -292,13 +300,13 @@ export default {
   earnHome: {
     headline: (tokensIcons: N, boldIcon: N) => (
       <>
-        Deposit {boldIcon} BOLD to earn rewards {tokensIcons}
+        Deposit {boldIcon} {BOLD_TOKEN_SYMBOL} to earn rewards {tokensIcons}
       </>
     ),
     subheading: (
       <>
-        A BOLD deposit in a stability pool earns rewards from the fees that users pay on their loans. Also, in case the
-        system needs to liquidate positions, the BOLD may be swapped to collateral.
+        A {BOLD_TOKEN_SYMBOL} deposit in a stability pool earns rewards from the fees that users pay on their loans. Also, in case the
+        system needs to liquidate positions, the {BOLD_TOKEN_SYMBOL} may be swapped to collateral.
       </>
     ),
     poolsColumns: {
@@ -308,7 +316,7 @@ export default {
     },
     infoTooltips: {
       tvl: (collateral: N) => [
-        <>Total BOLD covering {collateral}-backed position liquidations</>,
+        <>Total {BOLD_TOKEN_SYMBOL} covering {collateral}-backed position liquidations</>,
       ],
     },
   },
@@ -337,13 +345,13 @@ export default {
       claim: "Claim rewards",
     },
     depositPanel: {
-      label: "Deposit",
+      label: "Increase deposit",
       shareLabel: "Pool share",
       claimCheckbox: "Claim rewards",
       action: "Next: Summary",
     },
     withdrawPanel: {
-      label: "Withdraw",
+      label: "Decrease deposit",
       claimCheckbox: "Claim rewards",
       action: "Next: Summary",
     },
@@ -356,10 +364,10 @@ export default {
     },
     infoTooltips: {
       tvl: (collateral: N) => [
-        <>Total BOLD covering {collateral}-backed position liquidations.</>,
+        <>Total {BOLD_TOKEN_SYMBOL} covering {collateral}-backed position liquidations.</>,
       ],
       depositPoolShare: [
-        "Percentage of your BOLD deposit compared to the total deposited in this stability pool.",
+        `Percentage of your ${BOLD_TOKEN_SYMBOL} deposit compared to the total deposited in this stability pool.`,
       ],
       alsoClaimRewardsDeposit: [
         <>
@@ -373,14 +381,14 @@ export default {
         </>,
       ],
       currentApr: [
-        "Average annualized return for BOLD deposits over the past 7 days.",
+        `Average annualized return for ${BOLD_TOKEN_SYMBOL} deposits over the past 7 days.`,
       ],
       rewardsEth: [
         "ETH rewards",
         "Your proceeds from liquidations conducted by this stability pool.",
       ],
       rewardsBold: [
-        "BOLD rewards",
+        `${BOLD_TOKEN_SYMBOL} rewards`,
         "Your earnings from protocol revenue distributions to this stability pool.",
       ],
     },
@@ -435,8 +443,8 @@ export default {
       title: "Allocate your voting power",
       intro: (
         <>
-          Direct incentives from Liquity V2 protocol revenues towards liquidity providers for BOLD. Upvote from Thursday
-          to Tuesday. Downvote all week. <Link href="https://github.com/liquity/V2-gov">Learn more</Link>
+          Direct incentives from Liquity V2 protocol revenues towards liquidity providers for {BOLD_TOKEN_SYMBOL}. Upvote from Thursday
+          to Tuesday. Downvote all week. <Link href="https://docs.liquity.org/v2-faq/lqty-staking">Learn more</Link>
         </>
       ),
     },

@@ -5,6 +5,7 @@ import { defineConfig, defineGlobalStyles, definePreset } from "@pandacss/dev";
 
 export default defineConfig({
   preflight: true, // CSS reset
+  jsxFramework: "react", // needed for panda to extract props named `css`
   presets: [
     liquityUiKitPreset as Preset, // `as Preset` prevents a type error: "Expression produces a union type that is too complex to represent."
     definePreset({
@@ -25,6 +26,7 @@ export default defineConfig({
   include: [
     "../uikit/src/**/*.tsx",
     "./src/**/*.{ts,tsx}",
+    "./*.tsx",
   ],
   globalCss: defineGlobalStyles({
     "html, body": {

@@ -8,12 +8,11 @@ import content from "@/src/content";
 import { getCollateralContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
 import { fmtnum } from "@/src/formatting";
-import { getCollToken, getPrefixedTroveId, parsePrefixedTroveId } from "@/src/liquity-utils";
+import { getCollToken, getPrefixedTroveId, parsePrefixedTroveId, useLoan } from "@/src/liquity-utils";
 import { useAccount } from "@/src/services/Ethereum";
 import { usePrice } from "@/src/services/Prices";
 import { useStoredState } from "@/src/services/StoredState";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
-import { useLoanById } from "@/src/subgraph-hooks";
 import { isPrefixedtroveId } from "@/src/types";
 import { css } from "@/styled-system/css";
 import { Button, InfoTooltip, Tabs, TokenIcon } from "@liquity2/uikit";
@@ -50,18 +49,19 @@ export function LoanScreen() {
   if (!isPrefixedtroveId(paramPrefixedId)) {
     notFound();
   }
+  const { troveId, collIndex } = parsePrefixedTroveId(paramPrefixedId);
 
-  const loan = useLoanById(paramPrefixedId);
+  const loan = useLoan(collIndex, troveId);
   const loanMode = storedState.loanModes[paramPrefixedId] ?? loan.data?.type ?? "borrow";
 
-  const collateral = getCollToken(loan.data?.collIndex ?? null);
-  const collPriceUsd = usePrice(collateral?.symbol ?? null);
+  const collToken = getCollToken(loan.data?.collIndex ?? null);
+  const collPriceUsd = usePrice(collToken?.symbol ?? null);
 
-  const { troveId } = parsePrefixedTroveId(paramPrefixedId);
+  const fullyRedeemed = loan.data
+    && loan.data.status === "redeemed"
+    && dn.eq(loan.data.borrowed, 0);
 
-  const tab = TABS.findIndex(({ id }) => id === action);
-
-  const loadingState = match([loan, collPriceUsd])
+  const loadingState = match([loan, collPriceUsd.data ?? null])
     .returnType<LoanLoadingState>()
     .with(
       P.union(
@@ -108,8 +108,8 @@ export function LoanScreen() {
       }}
       heading={
         <LoanScreenCard
-          collateral={collateral}
-          collPriceUsd={collPriceUsd}
+          collateral={collToken}
+          collPriceUsd={collPriceUsd.data ?? null}
           loadingState={loadingState}
           loan={loan.data ?? null}
           mode={loanMode}
@@ -118,7 +118,7 @@ export function LoanScreen() {
               return {
                 loanModes: {
                   ...loanModes,
-                  [paramPrefixedId]: loanMode === "borrow" ? "leverage" : "borrow",
+                  [paramPrefixedId]: loanMode === "borrow" ? "multiply" : "borrow",
                 },
               };
             });
@@ -152,29 +152,25 @@ export function LoanScreen() {
                       {loan.data.status === "redeemed" && (
                         <div
                           className={css({
-                            paddingBottom: 32,
+                            display: "flex",
+                            alignItems: "center",
+                            height: 64,
+                            padding: 16,
+                            background: "infoSurface",
+                            border: "1px solid token(colors.infoSurfaceBorder)",
+                            borderRadius: 8,
                           })}
                         >
                           <div
                             className={css({
                               display: "flex",
-                              alignItems: "center",
-                              height: 64,
-                              padding: 16,
-                              background: "infoSurface",
-                              border: "1px solid token(colors.infoSurfaceBorder)",
-                              borderRadius: 8,
+                              gap: 8,
                             })}
                           >
-                            <div
-                              className={css({
-                                display: "flex",
-                                gap: 8,
-                              })}
-                            >
-                              This loan has been partially redeemed.
-                              <InfoTooltip content={content.generalInfotooltips.redeemedLoan} />
-                            </div>
+                            {fullyRedeemed
+                              ? "This loan has been fully redeemed."
+                              : "This loan has been partially redeemed."}
+                            <InfoTooltip content={content.generalInfotooltips.redeemedLoan} />
                           </div>
                         </div>
                       )}
@@ -184,20 +180,27 @@ export function LoanScreen() {
                           panelId: `p-${id}`,
                           tabId: `t-${id}`,
                         }))}
-                        selected={tab}
+                        selected={TABS.findIndex(({ id }) => id === action)}
                         onSelect={(index) => {
                           if (!loan.data) {
                             return;
                           }
-                          const id = getPrefixedTroveId(loan.data.collIndex, loan.data.troveId);
+                          const tab = TABS[index];
+                          if (!tab) {
+                            throw new Error("Invalid tab index");
+                          }
+                          const id = getPrefixedTroveId(
+                            loan.data.collIndex,
+                            loan.data.troveId,
+                          );
                           router.push(
-                            `/loan/${TABS[index].id}?id=${id}`,
+                            `/loan/${tab.id}?id=${id}`,
                             { scroll: false },
                           );
                         }}
                       />
                       {action === "colldebt" && (
-                        loanMode === "leverage"
+                        loanMode === "multiply"
                           ? <PanelUpdateLeveragePosition loan={loan.data} />
                           : <PanelUpdateBorrowPosition loan={loan.data} />
                       )}
@@ -243,11 +246,8 @@ function ClaimCollateralSurplus({
     },
   });
 
-  const collSurplusUsd = collPriceUsd && collSurplus.data
-    ? dn.mul(
-      collSurplus.data,
-      collPriceUsd,
-    )
+  const collSurplusUsd = collPriceUsd.data && collSurplus.data
+    ? dn.mul(collSurplus.data, collPriceUsd.data)
     : null;
 
   // const isOwner = account.address && addressesEqual(account.address, loan.borrower);
@@ -336,7 +336,7 @@ function ClaimCollateralSurplus({
         footer={{
           start: (
             <Field.FooterInfo
-              label={`$${fmtnum(collSurplusUsd)}`}
+              label={fmtnum(collSurplusUsd, { preset: "2z", prefix: "$" })}
               value={null}
             />
           ),

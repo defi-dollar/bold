@@ -11,7 +11,7 @@ import { useAccount } from "@/src/services/Ethereum";
 import { usePrice } from "@/src/services/Prices";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { css } from "@/styled-system/css";
-import { Button, HFlex, TokenIcon, VFlex } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, HFlex, TokenIcon, VFlex } from "@liquity2/uikit";
 import * as dn from "dnum";
 
 export function PanelClaimRewards({
@@ -29,15 +29,15 @@ export function PanelClaimRewards({
     throw new Error(`Invalid collateral index: ${collIndex}`);
   }
 
-  const boldPriceUsd = usePrice("BOLD");
-  const collPriceUsd = usePrice(collateral.symbol ?? null);
+  const boldPriceUsd = usePrice(BOLD_TOKEN_SYMBOL);
+  const collPriceUsd = usePrice(collateral.symbol);
 
-  const totalRewards = collPriceUsd && boldPriceUsd && dn.add(
-    dn.mul(position?.rewards?.bold ?? DNUM_0, boldPriceUsd),
-    dn.mul(position?.rewards?.coll ?? DNUM_0, collPriceUsd),
+  const totalRewards = collPriceUsd.data && boldPriceUsd.data && dn.add(
+    dn.mul(position?.rewards?.bold ?? DNUM_0, boldPriceUsd.data),
+    dn.mul(position?.rewards?.coll ?? DNUM_0, collPriceUsd.data),
   );
 
-  const gasFeeUsd = collPriceUsd && dn.multiply(dn.from(0.0015, 18), collPriceUsd);
+  const gasFeeUsd = collPriceUsd.data && dn.multiply(dn.from(0.0015, 18), collPriceUsd.data);
 
   const allowSubmit = account.isConnected && totalRewards && dn.gt(totalRewards, 0);
 
@@ -47,7 +47,7 @@ export function PanelClaimRewards({
         <Rewards
           amount={position?.rewards?.bold ?? DNUM_0}
           label={content.earnScreen.rewardsPanel.boldRewardsLabel}
-          symbol="BOLD"
+          symbol={BOLD_TOKEN_SYMBOL}
         />
         <Rewards
           amount={position?.rewards?.coll ?? DNUM_0}

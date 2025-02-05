@@ -16,7 +16,7 @@ import {
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { roundToDecimal } from "@/src/utils";
 import { css } from "@/styled-system/css";
-import { HFlex, InfoTooltip, InputField, lerp, norm, Slider } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, InfoTooltip, InputField, lerp, norm, Slider } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
@@ -90,9 +90,9 @@ export function LeverageField({
                     fontVariantNumeric: "tabular-nums",
                   })}
                 >
-                  {dn.format(debt, { digits: 2, trailingZeros: true })}
+                  {fmtnum(debt)}
                 </span>
-                {" BOLD"}
+                {` ${BOLD_TOKEN_SYMBOL}`}
               </>
             )}
           </div>
@@ -109,13 +109,13 @@ export function LeverageField({
                 color: "content",
               })}
             >
-              ${fmtnum(collPrice, "2z")}
+              {fmtnum(collPrice, { preset: "2z", prefix: "$" })}
             </span>
           </span>
         ),
         end: (
           <HFlex gap={8}>
-            Leverage {
+            Multiply {
               <span
                 style={{
                   color: liquidationRisk === "high"
@@ -170,6 +170,10 @@ export function useLeverageField({
   const maxLtvAllowed = dn.mul(maxLtv, maxLtvAllowedRatio);
   const maxLeverageFactorAllowed = getLeverageFactorFromLtv(maxLtvAllowed);
 
+  if (!LEVERAGE_FACTOR_SUGGESTIONS[0]) {
+    throw new Error("LEVERAGE_FACTOR_SUGGESTIONS must have at least one suggestion set");
+  }
+
   const [leverageFactor, setLeverageFactor] = useState(
     getLeverageFactorFromRatio(
       LEVERAGE_FACTOR_MIN,
@@ -188,7 +192,7 @@ export function useLeverageField({
   const liquidationPriceBoundaries = [
     getLiquidationPriceFromLeverage(LEVERAGE_FACTOR_MIN, collPrice, collateralRatio),
     getLiquidationPriceFromLeverage(maxLeverageFactor, collPrice, collateralRatio),
-  ];
+  ] as const;
 
   const deposit = depositPreLeverage && leverageFactor > 1
     ? dn.mul(depositPreLeverage, leverageFactor)
@@ -225,7 +229,7 @@ export function useLeverageField({
   }, [maxLeverageFactor]);
 
   const liquidationPriceField = useInputFieldValue(
-    (value) => `$ ${dn.format(value, { digits: 2, trailingZeros: true })}`,
+    (value) => fmtnum(value, { dust: false, prefix: "$ ", preset: "2z" }),
     {
       onChange: ({ parsed: liquidationPrice, focused }) => {
         if (liquidationPrice && dn.gt(liquidationPrice, 0) && liquidationPriceField.isFocused && focused) {

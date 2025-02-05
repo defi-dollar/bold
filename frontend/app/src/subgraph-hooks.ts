@@ -14,18 +14,22 @@ import { sleep } from "@/src/utils";
 import { isAddress, shortenAddress } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
+import { useCallback } from "react";
 import {
+  AllInterestRateBracketsQuery,
+  BorrowerInfoQuery,
+  GovernanceInitiatives,
+  GovernanceStats,
+  GovernanceUser,
   graphQuery,
   InterestBatchQuery,
-  InterestRateBracketsQuery,
   StabilityPoolDepositQuery,
   StabilityPoolDepositsByAccountQuery,
   StabilityPoolEpochScaleQuery,
-  StabilityPoolQuery,
+  StabilityPoolsQuery,
   TotalDepositedQuery,
   TroveByIdQuery,
   TrovesByAccountQuery,
-  TrovesCountQuery,
 } from "./subgraph-queries";
 
 type Options = {
@@ -39,22 +43,23 @@ function prepareOptions(options?: Options) {
   };
 }
 
-export function useTrovesCount(
+export function useNextOwnerIndex(
   borrower: null | Address,
-  collIndex?: CollIndex,
+  collIndex: null | CollIndex,
   options?: Options,
 ) {
   let queryFn = async () => {
-    if (!borrower) {
+    if (!borrower || collIndex === null) {
       return null;
     }
+
     const { borrowerInfo } = await graphQuery(
-      TrovesCountQuery,
+      BorrowerInfoQuery,
       { id: borrower.toLowerCase() },
     );
-    return collIndex === undefined
-      ? borrowerInfo?.troves ?? 0
-      : borrowerInfo?.trovesByCollateral[collIndex] ?? null;
+
+    // if borrowerInfo doesn’t exist, start at 0
+    return borrowerInfo?.nextOwnerIndexes[collIndex] ?? 0;
   };
 
   if (DEMO_MODE) {
@@ -68,7 +73,7 @@ export function useTrovesCount(
   }
 
   return useQuery({
-    queryKey: ["TrovesCount", borrower, collIndex],
+    queryKey: ["NextTroveId", borrower, collIndex],
     queryFn,
     ...prepareOptions(options),
   });
@@ -124,6 +129,30 @@ export function useLoansByAccount(
     queryFn,
     ...prepareOptions(options),
   });
+}
+
+function subgraphBatchToDelegate(
+  batch: NonNullable<
+    InterestBatchQueryType["interestBatch"]
+  >,
+): Delegate {
+  if (!isAddress(batch.batchManager)) {
+    throw new Error(`Invalid batch manager: ${batch.batchManager}`);
+  }
+  return {
+    id: batch.batchManager,
+    address: batch.batchManager,
+    name: shortenAddress(batch.batchManager, 4),
+    interestRate: dnum18(batch.annualInterestRate),
+    boldAmount: dnum18(batch.debt),
+    interestRateChange: [dn.from(0.015), dn.from(0.05)],
+    fee: dnum18(batch.annualManagementFee),
+
+    // not available in the subgraph yet
+    followers: 0,
+    lastDays: 0,
+    redemptions: dnum18(0),
+  };
 }
 
 export function useInterestBatchDelegate(
@@ -290,30 +319,42 @@ export function useStabilityPoolDeposit(
 }
 
 export function useStabilityPool(
-  collIndex?: number,
+  collIndex?: null | number,
   options?: Options,
 ) {
   let queryFn = async () => {
-    const { stabilityPool } = await graphQuery(
-      StabilityPoolQuery,
-      { id: `${collIndex}` },
+    const { stabilityPools } = await graphQuery(
+      StabilityPoolsQuery,
     );
-    return {
+    return stabilityPools.map((stabilityPool) => ({
+      collIndex: parseInt(stabilityPool.id, 10),
       apr: dnum18(0),
-      totalDeposited: dnum18(stabilityPool?.totalDeposited ?? 0),
-    };
+      totalDeposited: dnum18(stabilityPool.totalDeposited),
+    }));
   };
 
   if (DEMO_MODE) {
-    queryFn = async () => ({
-      apr: dnum18(0),
-      totalDeposited: dnum18(0),
-    });
+    queryFn = async () =>
+      Array.from({ length: 10 }, (_, collIndex) => ({
+        collIndex,
+        apr: dnum18(0),
+        totalDeposited: dnum18(0),
+      }));
   }
 
   return useQuery({
-    queryKey: ["StabilityPool", collIndex],
+    queryKey: ["StabilityPool"],
     queryFn,
+    select: (pools) => {
+      if (typeof collIndex !== "number") {
+        return null;
+      }
+      const pool = pools.find((pool) => pool.collIndex === collIndex);
+      if (pool === undefined) {
+        throw new Error(`Stability pool not found: ${collIndex}`);
+      }
+      return pool;
+    },
     ...prepareOptions(options),
   });
 }
@@ -377,18 +418,36 @@ export function useInterestRateBrackets(
   collIndex: null | CollIndex,
   options?: Options,
 ) {
+  let queryFn = async () => (
+    (await graphQuery(AllInterestRateBracketsQuery)).interestRateBrackets
+  );
+
+  if (DEMO_MODE) {
+    queryFn = async () => [];
+  }
+
+  return useQuery({
+    queryKey: ["AllInterestRateBrackets"],
+    queryFn,
+    select: useCallback((brackets: Awaited<ReturnType<typeof queryFn>>) => {
+      // only filter by collIndex in the select()
+      // so that we can query all the brackets at once
+      return brackets
+        .filter((bracket) => bracket.collateral.collIndex === collIndex)
+        .sort((a, b) => (a.rate > b.rate ? 1 : -1))
+        .map((bracket) => ({
+          rate: dnum18(bracket.rate),
+          totalDebt: dnum18(bracket.totalDebt),
+        }));
+    }, []),
+    ...prepareOptions(options),
+  });
+}
+
+export function useGovernanceInitiatives(options?: Options) {
   let queryFn = async () => {
-    if (collIndex === null) return [];
-    const { interestRateBrackets } = await graphQuery(
-      InterestRateBracketsQuery,
-      { collId: String(collIndex) },
-    );
-    return [...interestRateBrackets]
-      .sort((a, b) => (a.rate > b.rate ? 1 : -1))
-      .map((bracket) => ({
-        rate: dnum18(bracket.rate),
-        totalDebt: dnum18(bracket.totalDebt),
-      }));
+    const { governanceInitiatives } = await graphQuery(GovernanceInitiatives);
+    return governanceInitiatives.map((initiative) => initiative.id as Address);
   };
 
   if (DEMO_MODE) {
@@ -396,7 +455,61 @@ export function useInterestRateBrackets(
   }
 
   return useQuery({
-    queryKey: ["InterestRateBrackets", collIndex],
+    queryKey: ["GovernanceInitiatives"],
+    queryFn,
+    ...prepareOptions(options),
+  });
+}
+
+export function useGovernanceUser(account: Address | null, options?: Options) {
+  let queryFn = async () => {
+    if (!account) return null;
+    const { governanceUser } = await graphQuery(GovernanceUser, {
+      id: account.toLowerCase(),
+    });
+    if (!governanceUser) {
+      return null;
+    }
+    return {
+      ...governanceUser,
+      id: governanceUser.id as Address,
+      allocatedLQTY: BigInt(governanceUser.allocatedLQTY),
+      stakedLQTY: BigInt(governanceUser.stakedLQTY),
+      stakedOffset: BigInt(governanceUser.stakedOffset),
+      allocations: governanceUser.allocations.map((allocation) => ({
+        ...allocation,
+        voteLQTY: BigInt(allocation.voteLQTY),
+        vetoLQTY: BigInt(allocation.vetoLQTY),
+        initiative: allocation.initiative.id as Address,
+      })),
+    };
+  };
+
+  // TODO: demo mode
+  if (DEMO_MODE) {
+    queryFn = async () => null;
+  }
+
+  return useQuery({
+    queryKey: ["GovernanceUser", account],
+    queryFn,
+    ...prepareOptions(options),
+  });
+}
+
+export function useGovernanceStats(options?: Options) {
+  let queryFn = async () => {
+    const { governanceStats } = await graphQuery(GovernanceStats);
+    return governanceStats;
+  };
+
+  // TODO: demo mode
+  if (DEMO_MODE) {
+    queryFn = async () => null;
+  }
+
+  return useQuery({
+    queryKey: ["GovernanceStats"],
     queryFn,
     ...prepareOptions(options),
   });
@@ -419,7 +532,7 @@ function subgraphTroveToLoan(
   }
 
   return {
-    type: trove.mightBeLeveraged ? "leverage" : "borrow",
+    type: trove.mightBeLeveraged ? "multiply" : "borrow",
     batchManager: isAddress(trove.interestBatch?.batchManager)
       ? trove.interestBatch.batchManager
       : null,
@@ -451,32 +564,10 @@ function subgraphStabilityPoolDepositToEarnPosition(
     type: "earn",
     owner: spDeposit.depositor,
     collIndex,
-    deposit: dnum18(spDeposit.deposit),
+    deposit: dnum18(0),
     rewards: {
       bold: dnum18(0),
       coll: dnum18(0),
     },
-  };
-}
-
-function subgraphBatchToDelegate(
-  batch: NonNullable<
-    InterestBatchQueryType["interestBatch"]
-  >,
-): Delegate {
-  if (!isAddress(batch.batchManager)) {
-    throw new Error(`Invalid batch manager: ${batch.batchManager}`);
-  }
-  return {
-    id: batch.batchManager,
-    address: batch.batchManager,
-    name: shortenAddress(batch.batchManager, 4),
-    interestRate: dnum18(batch.annualInterestRate),
-    followers: 0,
-    boldAmount: dnum18(batch.debt),
-    lastDays: 0,
-    redemptions: dnum18(0),
-    interestRateChange: [dn.from(0.015), dn.from(0.05)],
-    fee: dnum18(batch.annualManagementFee),
   };
 }

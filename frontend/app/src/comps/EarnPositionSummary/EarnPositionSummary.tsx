@@ -6,7 +6,7 @@ import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { fmtnum } from "@/src/formatting";
 import { getCollToken, useEarnPool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
 
@@ -137,7 +137,7 @@ export function EarnPositionSummary({
                 />
               </div>
               <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of BOLD deposited in this stability pool.
+                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability pool.
               </InfoTooltip>
             </div>
           </div>
@@ -150,12 +150,37 @@ export function EarnPositionSummary({
           >
             {txPreviewMode ? <TagPreview /> : (
               <>
-                <div>
-                  <Amount
-                    fallback="-%"
-                    format="1z"
-                    percentage
-                    value={earnPool.data?.apr}
+                <div
+                  className={css({
+                    display: "flex",
+                    gap: 6,
+                  })}
+                >
+                  <div
+                    className={css({
+                      color: "contentAlt2",
+                    })}
+                  >
+                    APR
+                  </div>
+                  <div>
+                    <Amount
+                      fallback="-%"
+                      format="1z"
+                      percentage
+                      value={earnPool.data?.apr}
+                    />
+                  </div>
+                  <InfoTooltip
+                    content={{
+                      heading: "Current APR",
+                      body: "The annualized rate this stability pool’s "
+                        + "deposits earned over the last 24 hours.",
+                      footerLink: {
+                        label: "Check Dune for more details",
+                        href: "https://dune.com/liquity/liquity-v2",
+                      },
+                    }}
                   />
                 </div>
                 <div
@@ -164,14 +189,31 @@ export function EarnPositionSummary({
                     gap: 4,
                     fontSize: 14,
                   })}
-                  style={{
-                    color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
-                  }}
                 >
-                  <div>Current APR</div>
-                  <InfoTooltip heading="Annual Percentage Rate (APR)">
-                    The annualized rate this stability pool’s deposits earned over the past 7 days.
-                  </InfoTooltip>
+                  <div
+                    className={css({
+                      color: "contentAlt2",
+                    })}
+                  >
+                    7d APR
+                  </div>
+                  <Amount
+                    fallback="-%"
+                    format="1z"
+                    percentage
+                    value={earnPool.data?.apr7d}
+                  />
+                  <InfoTooltip
+                    content={{
+                      heading: "APR (last 7 days)",
+                      body: "The annualized percentage rate this stability pool’s "
+                        + "deposits earned over the past 7 days.",
+                      footerLink: {
+                        label: "Check Dune for more details",
+                        href: "https://dune.com/liquity/liquity-v2",
+                      },
+                    }}
+                  />
                 </div>
               </>
             )}
@@ -213,7 +255,7 @@ export function EarnPositionSummary({
             >
               <div
                 title={active
-                  ? `${fmtnum(earnPosition?.deposit, "full")} BOLD`
+                  ? `${fmtnum(earnPosition?.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`
                   : undefined}
                 className={css({
                   display: "flex",
@@ -224,11 +266,11 @@ export function EarnPositionSummary({
                 })}
               >
                 {active && fmtnum(earnPosition?.deposit)}
-                <TokenIcon symbol="BOLD" size="mini" title={null} />
+                <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
               </div>
               {prevEarnPosition && (
                 <div
-                  title={`${fmtnum(prevEarnPosition.deposit, "full")} BOLD`}
+                  title={`${fmtnum(prevEarnPosition.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`}
                   className={css({
                     display: "flex",
                     justifyContent: "flex-start",
@@ -240,7 +282,7 @@ export function EarnPositionSummary({
                   })}
                 >
                   {fmtnum(prevEarnPosition.deposit)}
-                  <TokenIcon symbol="BOLD" size="mini" title={null} />
+                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
                 </div>
               )}
             </div>
@@ -274,13 +316,13 @@ export function EarnPositionSummary({
                     <>
                       <HFlex
                         gap={4}
-                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} BOLD`}
+                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
                         className={css({
                           fontVariantNumeric: "tabular-nums",
                         })}
                       >
                         {fmtnum(earnPosition?.rewards.bold)}
-                        <TokenIcon symbol="BOLD" size="mini" title={null} />
+                        <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
                       </HFlex>
                       <HFlex gap={4}>
                         <Amount value={earnPosition?.rewards.coll} />
@@ -290,7 +332,7 @@ export function EarnPositionSummary({
                   )
                   : (
                     <TokenIcon.Group size="mini">
-                      <TokenIcon symbol="BOLD" />
+                      <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
                       <TokenIcon symbol={collToken.symbol} />
                     </TokenIcon.Group>
                   )}

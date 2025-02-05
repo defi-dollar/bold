@@ -22,6 +22,7 @@ import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { css } from "@/styled-system/css";
 import {
+  BOLD_TOKEN_SYMBOL,
   Button,
   Checkbox,
   HFlex,
@@ -49,20 +50,20 @@ export function PanelUpdateLeveragePosition({
     throw new Error("collToken not found");
   }
 
-  const collPrice = usePrice(collToken.symbol ?? null);
+  const collPrice = usePrice(collToken.symbol);
 
   // loan details before the update
   const initialLoanDetails = getLoanDetails(
     loan.deposit,
     loan.borrowed,
     loan.interestRate,
-    collToken?.collateralRatio,
-    collPrice,
+    collToken.collateralRatio,
+    collPrice.data ?? null,
   );
 
   // deposit change
   const [depositMode, setDepositMode] = useState<"add" | "remove">("add");
-  const depositChange = useInputFieldValue((value) => dn.format(value));
+  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"));
   const [userLeverageFactor, setUserLeverageFactor] = useState(
     initialLoanDetails.leverageFactor ?? 1,
   );
@@ -90,11 +91,11 @@ export function PanelUpdateLeveragePosition({
     userLeverageFactor,
   );
 
-  const totalPositionValue = dn.mul(newDeposit, collPrice ?? dnum18(0));
+  const totalPositionValue = dn.mul(newDeposit, collPrice.data ?? dnum18(0));
 
   const newDebt = dn.sub(
     totalPositionValue,
-    dn.mul(newDepositPreLeverage ?? dnum18(0), collPrice ?? dnum18(0)),
+    dn.mul(newDepositPreLeverage ?? dnum18(0), collPrice.data ?? dnum18(0)),
   );
 
   const newLoanDetails = getLoanDetails(
@@ -102,18 +103,18 @@ export function PanelUpdateLeveragePosition({
     newDebt,
     initialLoanDetails.interestRate,
     collToken.collateralRatio,
-    collPrice,
+    collPrice.data ?? null,
   );
 
   const liquidationPrice = getLiquidationPriceFromLeverage(
     userLeverageFactor,
-    collPrice ?? dnum18(0),
+    collPrice.data ?? dnum18(0),
     collToken.collateralRatio,
   );
 
   // leverage factor
   const leverageField = useLeverageField({
-    collPrice: collPrice ?? dnum18(0),
+    collPrice: collPrice.data ?? dnum18(0),
     collToken,
     depositPreLeverage: newDepositPreLeverage,
     maxLtvAllowedRatio: 1 - MAX_LTV_RESERVE_RATIO,
@@ -205,10 +206,13 @@ export function PanelUpdateLeveragePosition({
               labelHeight={32}
               placeholder="0.00"
               secondary={{
-                start: collPrice && (
-                  depositChange.parsed
-                    ? "$" + fmtnum(dn.mul(depositChange.parsed, collPrice))
-                    : "$0.00"
+                start: collPrice.data && (
+                  fmtnum(
+                    depositChange.parsed
+                      ? dn.mul(depositChange.parsed, collPrice.data)
+                      : 0,
+                    { preset: "2z", prefix: "$" },
+                  )
                 ),
                 end: collMax && dn.gt(collMax, 0) && (
                   <TextButton
@@ -271,7 +275,7 @@ export function PanelUpdateLeveragePosition({
               drawer={newLoanDetails.debt && dn.lt(newLoanDetails.debt, MIN_DEBT)
                 ? {
                   mode: "error",
-                  message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} BOLD.`,
+                  message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} ${BOLD_TOKEN_SYMBOL}.`,
                 }
                 : null}
               {...leverageField}
@@ -283,11 +287,9 @@ export function PanelUpdateLeveragePosition({
               end: (
                 <ValueUpdate
                   fontSize={14}
-                  before={initialLoanDetails.liquidationPrice && (
-                    `$${fmtnum(initialLoanDetails.liquidationPrice)}`
-                  )}
+                  before={fmtnum(initialLoanDetails.liquidationPrice, { preset: "2z", prefix: "$" })}
                   after={liquidationPrice && newLoanDetails.deposit && dn.gt(newLoanDetails.deposit, 0)
-                    ? `$${fmtnum(liquidationPrice)}`
+                    ? fmtnum(liquidationPrice, { preset: "2z", prefix: "$" })
                     : "N/A"}
                 />
               ),
@@ -316,7 +318,7 @@ export function PanelUpdateLeveragePosition({
               ),
             },
             {
-              start: <Field.FooterInfo label="Leverage" />,
+              start: <Field.FooterInfo label="Multiply" />,
               end: (
                 <ValueUpdate
                   fontSize={14}
@@ -341,11 +343,11 @@ export function PanelUpdateLeveragePosition({
                 <ValueUpdate
                   fontSize={14}
                   before={initialLoanDetails.debt && (
-                    `${fmtnum(initialLoanDetails.debt)} BOLD`
+                    `${fmtnum(initialLoanDetails.debt)} ${BOLD_TOKEN_SYMBOL}`
                   )}
                   after={newLoanDetails.debt && dn.gt(newLoanDetails.debt, 0)
                     ? (
-                      `${fmtnum(newLoanDetails.debt)} BOLD`
+                      `${fmtnum(newLoanDetails.debt)} ${BOLD_TOKEN_SYMBOL}`
                     )
                     : (
                       `N/A`
@@ -439,7 +441,7 @@ export function PanelUpdateLeveragePosition({
               <WarningBox>
                 <div>
                   The maximum <abbr title="Loan-to-value ratio">LTV</abbr> for the position is{" "}
-                  {fmtnum(dn.mul(newLoanDetails.maxLtv, 100))}%. Your updated position is close and is at risk of being
+                  {fmtnum(newLoanDetails.maxLtv, "pct2z")}%. Your updated position is close and is at risk of being
                   liquidated.
                 </div>
                 <label

@@ -10,6 +10,7 @@ import type { Chain } from "wagmi/chains";
 import { getContracts } from "@/src/contracts";
 import { ACCOUNT_BALANCES } from "@/src/demo-mode";
 import { useDemoMode } from "@/src/demo-mode";
+import * as dn from "dnum";
 import { dnum18 } from "@/src/dnum-utils";
 import {
   CHAIN_BLOCK_EXPLORER,
@@ -25,8 +26,9 @@ import {
   CONTRACT_LUSD_TOKEN,
   WALLET_CONNECT_PROJECT_ID,
 } from "@/src/env";
+import { getSafeStatus } from "@/src/safe-utils";
 import { noop } from "@/src/utils";
-import { isCollateralSymbol, useTheme } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, isCollateralSymbol, useTheme } from "@liquity2/uikit";
 import {
   getDefaultConfig,
   lightTheme,
@@ -42,8 +44,7 @@ import {
   safeWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { match } from "ts-pattern";
 import { erc20Abi } from "viem";
@@ -56,18 +57,14 @@ import {
   WagmiProvider,
 } from "wagmi";
 
-const queryClient = new QueryClient();
-
 export function Ethereum({ children }: { children: ReactNode }) {
   const wagmiConfig = useWagmiConfig();
   const rainbowKitProps = useRainbowKitProps();
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider {...rainbowKitProps}>
-          {children}
-        </RainbowKitProvider>
-      </QueryClientProvider>
+      <RainbowKitProvider {...rainbowKitProps}>
+        {children}
+      </RainbowKitProvider>
     </WagmiProvider>
   );
 }
@@ -78,6 +75,7 @@ export function useAccount():
     connect: () => void;
     disconnect: () => void;
     ensName: string | undefined;
+    safeStatus: Awaited<ReturnType<typeof getSafeStatus>> | null;
   }
 {
   const demoMode = useDemoMode();
@@ -85,11 +83,30 @@ export function useAccount():
   const { openConnectModal } = useConnectModal();
   const { openAccountModal } = useAccountModal();
   const ensName = useEnsName({ address: account?.address });
-  return demoMode.enabled ? demoMode.account : {
+
+  const safeStatus = useQuery({
+    queryKey: ["safeStatus", account.address],
+    enabled: Boolean(account.address),
+    queryFn: () => {
+      if (!account.address) {
+        throw new Error("No account address");
+      }
+      return getSafeStatus(account.address);
+    },
+    staleTime: Infinity,
+    refetchInterval: false,
+  });
+
+  if (demoMode.enabled) {
+    return demoMode.account;
+  }
+
+  return {
     ...account,
     connect: openConnectModal || noop,
     disconnect: account.isConnected && openAccountModal || noop,
     ensName: ensName.data ?? undefined,
+    safeStatus: safeStatus.data ?? null,
   };
 }
 
@@ -111,9 +128,9 @@ export function useBalance(
         return collateral?.contracts.CollToken.address ?? null;
       },
     )
-    .with("BOLD", () => CONTRACT_BOLD_TOKEN)
-    .with("LQTY", () => CONTRACT_LQTY_TOKEN)
     .with("LUSD", () => CONTRACT_LUSD_TOKEN)
+    .with(BOLD_TOKEN_SYMBOL, () => CONTRACT_BOLD_TOKEN)
+    .with("LQTY", () => CONTRACT_LQTY_TOKEN)
     .otherwise(() => null);
 
   const tokenBalance = useReadContract({
@@ -136,7 +153,7 @@ export function useBalance(
   });
 
   return demoMode.enabled && token
-    ? { data: ACCOUNT_BALANCES[token], isLoading: false }
+    ? { data: ACCOUNT_BALANCES[token as keyof typeof ACCOUNT_BALANCES] ?? dn.from(0), isLoading: false }
     : (token === "ETH" ? ethBalance : tokenBalance);
 }
 
@@ -158,8 +175,8 @@ export function useWagmiConfig() {
       currency: CHAIN_CURRENCY,
       rpcUrl: CHAIN_RPC_URL,
       blockExplorer: CHAIN_BLOCK_EXPLORER,
-      contractEnsRegistry: CHAIN_CONTRACT_ENS_REGISTRY,
-      contractEnsResolver: CHAIN_CONTRACT_ENS_RESOLVER,
+      contractEnsRegistry: CHAIN_CONTRACT_ENS_REGISTRY ?? undefined,
+      contractEnsResolver: CHAIN_CONTRACT_ENS_RESOLVER ?? undefined,
       contractMulticall: { address: CHAIN_CONTRACT_MULTICALL },
     });
     return getDefaultConfig({

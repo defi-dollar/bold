@@ -15,7 +15,7 @@ import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { roundToDecimal } from "@/src/utils";
 import { css } from "@/styled-system/css";
 import { token } from "@/styled-system/tokens";
-import { Button, HFlex, IconBorrow, IconLeverage, StatusDot, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, HFlex, IconBorrow, IconLeverage, StatusDot, TokenIcon } from "@liquity2/uikit";
 import { a, useSpring } from "@react-spring/web";
 import * as dn from "dnum";
 import { match, P } from "ts-pattern";
@@ -38,22 +38,24 @@ export function LoanCard({
   prevLoan?: PositionLoan | null;
   txPreviewMode?: boolean;
 }) {
-  const collToken = getCollToken(loan?.collIndex ?? prevLoan?.collIndex ?? null);
+  const collIndex = loan?.collIndex ?? prevLoan?.collIndex ?? null;
+  const collToken = getCollToken(collIndex);
 
   if (!collToken) {
-    return null;
+    throw new Error(`Collateral token not found: ${collIndex}`);
   }
 
   const collPriceUsd = usePrice(collToken.symbol);
 
   const isLoanClosing = prevLoan && !loan;
+  const maxLtv = dn.div(dn.from(1, 18), collToken.collateralRatio);
 
   const loanDetails = loan && getLoanDetails(
     loan.deposit,
     loan.borrowed,
     loan.interestRate,
     collToken.collateralRatio,
-    collPriceUsd,
+    collPriceUsd.data ?? null,
   );
 
   const prevLoanDetails = prevLoan && getLoanDetails(
@@ -61,7 +63,7 @@ export function LoanCard({
     prevLoan.borrowed,
     prevLoan.interestRate,
     collToken.collateralRatio,
-    collPriceUsd,
+    collPriceUsd.data ?? null,
   );
 
   const {
@@ -70,15 +72,25 @@ export function LoanCard({
     leverageFactor,
     redemptionRisk,
     liquidationRisk,
+    liquidationPrice,
   } = loanDetails || {};
 
-  const maxLtv = dn.div(dn.from(1, 18), collToken.collateralRatio);
+  const loanDetailsFilled = Boolean(
+    typeof leverageFactor === "number"
+      && depositPreLeverage
+      && liquidationRisk
+      && liquidationPrice,
+  );
 
   return (
     <LoadingCard
       height={isLoanClosing ? LOAN_CARD_HEIGHT_REDUCED : LOAN_CARD_HEIGHT}
       leverage={leverageMode}
-      loadingState={loadingState}
+      loadingState={loadingState === "success"
+        ? collPriceUsd.status === "pending" || (!isLoanClosing && !loanDetailsFilled)
+          ? "loading"
+          : collPriceUsd.status
+        : loadingState}
       onRetry={onRetry}
       txPreviewMode={txPreviewMode}
     >
@@ -137,8 +149,8 @@ export function LoanCard({
           && loanDetails
           && typeof leverageFactor === "number"
           && depositPreLeverage
-          && maxLtv
           && liquidationRisk
+          && liquidationPrice
           && (
             <>
               {leverageMode
@@ -230,14 +242,11 @@ export function LoanCard({
                     })}
                   >
                     <Value negative={ltv && dn.gt(ltv, maxLtv)}>
-                      ${fmtnum(loanDetails.liquidationPrice)}
+                      {fmtnum(liquidationPrice, { preset: "2z", prefix: "$" })}
                     </Value>
-                    {loanDetails?.liquidationPrice
+                    {liquidationPrice
                       && prevLoanDetails?.liquidationPrice
-                      && !dn.eq(
-                        prevLoanDetails.liquidationPrice,
-                        loanDetails.liquidationPrice,
-                      )
+                      && !dn.eq(prevLoanDetails.liquidationPrice, liquidationPrice)
                       && (
                         <div
                           className={css({
@@ -245,7 +254,7 @@ export function LoanCard({
                             textDecoration: "line-through",
                           })}
                         >
-                          ${fmtnum(prevLoanDetails.liquidationPrice)}
+                          {fmtnum(prevLoanDetails.liquidationPrice, { preset: "2z", prefix: "$" })}
                         </div>
                       )}
                   </div>
@@ -259,7 +268,7 @@ export function LoanCard({
                     })}
                   >
                     <div>
-                      {fmtnum(dn.mul(loan.interestRate, 100))}%
+                      {fmtnum(loan.interestRate, "pct2z")}%
                     </div>
                     {loan.batchManager && (
                       <div
@@ -287,7 +296,7 @@ export function LoanCard({
                           textDecoration: "line-through",
                         })}
                       >
-                        {fmtnum(dn.mul(prevLoan.interestRate, 100))}%
+                        {fmtnum(prevLoan.interestRate, "pct2z")}%
                       </div>
                     )}
                   </div>
@@ -314,7 +323,7 @@ export function LoanCard({
                           : "var(--status-negative)",
                       }}
                     >
-                      {ltv && fmtnum(dn.mul(ltv, 100))}%
+                      {fmtnum(ltv, "pct2z")}%
                     </div>
                     {ltv
                       && prevLoanDetails?.ltv
@@ -326,7 +335,7 @@ export function LoanCard({
                             textDecoration: "line-through",
                           })}
                         >
-                          {prevLoanDetails.ltv && fmtnum(dn.mul(prevLoanDetails.ltv, 100))}%
+                          {fmtnum(prevLoanDetails.ltv, "pct2z")}%
                         </div>
                       )}
                   </div>
@@ -417,7 +426,7 @@ function TotalDebt({
         })}
       >
         <div
-          title={`${fmtnum(loan.borrowed, "full")} BOLD`}
+          title={`${fmtnum(loan.borrowed, "full")} ${BOLD_TOKEN_SYMBOL}`}
           className={css({
             display: "flex",
             alignItems: "center",
@@ -431,10 +440,10 @@ function TotalDebt({
           >
             {fmtnum(loan.borrowed)}
           </div>
-          <TokenIcon symbol="BOLD" size={32} />
+          <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size={32} />
           {prevLoan && !dn.eq(prevLoan.borrowed, loan.borrowed) && (
             <div
-              title={`${fmtnum(prevLoan.borrowed, "full")} BOLD`}
+              title={`${fmtnum(prevLoan.borrowed, "full")} ${BOLD_TOKEN_SYMBOL}`}
               className={css({
                 color: "contentAlt",
                 textDecoration: "line-through",
@@ -499,7 +508,7 @@ function LeveragedExposure({
           >
             <Value
               negative={loanDetails.status === "underwater" || loanDetails.status === "liquidatable"}
-              title={`Leverage factor: ${
+              title={`Multiply factor: ${
                 loanDetails.status === "underwater" || loanDetails.leverageFactor === null
                   ? INFINITY
                   : `${roundToDecimal(loanDetails.leverageFactor, 3)}x`
@@ -546,7 +555,7 @@ function LoadingCard({
   onRetry: () => void;
   txPreviewMode?: boolean;
 }) {
-  const title = leverage ? "Leverage loan" : "BOLD loan";
+  const title = leverage ? "Multiply" : `${BOLD_TOKEN_SYMBOL} loan`;
 
   const spring = useSpring({
     to: match(loadingState)
@@ -644,16 +653,7 @@ function LoadingCard({
               })}
             >
               {leverage
-                ? (
-                  <div
-                    className={css({
-                      display: "flex",
-                      color: "brandGreen",
-                    })}
-                  >
-                    <IconLeverage size={16} />
-                  </div>
-                )
+                ? <IconLeverage size={16} />
                 : <IconBorrow size={16} />}
             </div>
             {title}
