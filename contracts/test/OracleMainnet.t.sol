@@ -11,6 +11,7 @@ import "src/PriceFeeds/RETHPriceFeed.sol";
 import "src/PriceFeeds/WETHPriceFeed.sol";
 import "src/PriceFeeds/ChainlinkPriceFeed.sol";
 import "src/PriceFeeds/CompositeChainlinkPriceFeed.sol";
+import "src/PriceFeeds/WBTCPriceFeed.sol";
 import "src/PriceFeeds/PythPriceFeed.sol";
 
 import "./TestContracts/Accounts.sol";
@@ -24,6 +25,7 @@ import "src/Interfaces/IRETHPriceFeed.sol";
 import "src/Interfaces/IWSTETHPriceFeed.sol";
 import "src/Interfaces/IChainlinkPriceFeed.sol";
 import "src/Interfaces/ICompositeChainlinkPriceFeed.sol";
+import "src/Interfaces/IWBTCPriceFeed.sol";
 import "src/Interfaces/IPythPriceFeed.sol";
 
 import "src/Interfaces/IRETHToken.sol";
@@ -34,10 +36,12 @@ import "lib/forge-std/src/console2.sol";
 
 contract OraclesMainnet is TestAccounts {
     AggregatorV3Interface ethOracle;
+    AggregatorV3Interface btcOracle;
     AggregatorV3Interface stethOracle;
     AggregatorV3Interface rethOracle;
     AggregatorV3Interface aaveOracle;
     AggregatorV3Interface ldoOracle;
+    AggregatorV3Interface wbtcOracle;
 
     IPyth pythContract;
     ChainlinkOracleMock mockOracle;
@@ -47,6 +51,7 @@ contract OraclesMainnet is TestAccounts {
     IWSTETHPriceFeed wstethPriceFeed;
     IChainlinkPriceFeed aavePriceFeed;
     ICompositeChainlinkPriceFeed ldoPriceFeed;
+    IWBTCPriceFeed wbtcPriceFeed;
     IPythPriceFeed lqtyPriceFeed;
 
     IRETHToken rethToken;
@@ -99,10 +104,12 @@ contract OraclesMainnet is TestAccounts {
         boldToken = result.boldToken;
 
         ethOracle = AggregatorV3Interface(result.externalAddresses.ETHOracle);
+        btcOracle = AggregatorV3Interface(0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         rethOracle = AggregatorV3Interface(result.externalAddresses.RETHOracle);
         stethOracle = AggregatorV3Interface(result.externalAddresses.STETHOracle);
         aaveOracle = AggregatorV3Interface(0x547a514d5e3769680Ce22B2361c10Ea13619e8a9);
         ldoOracle = AggregatorV3Interface(0x4e844125952D32AcdF339BE976c98E22F6F318dB);
+        wbtcOracle = AggregatorV3Interface(0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23);
 
         pythContract = IPyth(0x4305FB66699C3B2702D4d05CF36551390A4c69C6);
         mockOracle = new ChainlinkOracleMock();
@@ -140,6 +147,7 @@ contract OraclesMainnet is TestAccounts {
         wstethPriceFeed = IWSTETHPriceFeed(address(contractsArray[2].priceFeed));
         aavePriceFeed = new ChainlinkPriceFeed(address(deployer), address(aaveOracle), _24_HOURS);
         ldoPriceFeed = new CompositeChainlinkPriceFeed(address(deployer), address(ethOracle), address(ldoOracle), _24_HOURS, _24_HOURS);
+        wbtcPriceFeed = new WBTCPriceFeed(address(deployer), address(btcOracle), address(wbtcOracle), _24_HOURS, _24_HOURS);
         lqtyPriceFeed = new PythPriceFeed(address(deployer), address(pythContract), 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63, 7 days);
 
         // log some current blockchain state
@@ -308,6 +316,18 @@ contract OraclesMainnet is TestAccounts {
         uint256 expectedPrice = latestAnswerLdoEth * latestAnswerEthUsd / 1e18;
 
         assertEq(fetchedLdoUsdPrice, expectedPrice);
+    }
+
+    function testFetchPriceReturnsCorrectPriceWbtc() public {
+        (uint256 fetchedWbtcUsdPrice,) = wbtcPriceFeed.fetchPrice();
+        assertGt(fetchedWbtcUsdPrice, 0);
+
+        uint256 latestAnswerWbtcBtc = _getLatestAnswerFromOracle(wbtcOracle);
+        uint256 latestAnswerBtcUsd = _getLatestAnswerFromOracle(btcOracle);
+
+        uint256 expectedPrice = latestAnswerWbtcBtc * latestAnswerBtcUsd / 1e8;
+
+        assertEq(fetchedWbtcUsdPrice, expectedPrice);
     }
 
     function testFetchPriceReturnsCorrectPriceLqty() public {
