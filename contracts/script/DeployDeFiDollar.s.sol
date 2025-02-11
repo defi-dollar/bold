@@ -27,6 +27,7 @@ import "test/TestContracts/MetadataDeployment.sol";
 import "src/PriceFeeds/ChainlinkPriceFeed.sol";
 import "src/PriceFeeds/CompositeChainlinkPriceFeed.sol";
 import "src/PriceFeeds/PythPriceFeed.sol";
+import "src/PriceFeeds/WBTCPriceFeed.sol";
 import "src/Zappers/GasCompZapper.sol";
 import "src/Zappers/Modules/Exchanges/Curve/ICurveStableswapNGFactory.sol";
 import "forge-std/console2.sol";
@@ -36,6 +37,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     using StringFormatting for *;
 
     address WETH_ADDRESS = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address WBTC_ADDRESS = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
     address USDC_ADDRESS = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
     IWETH WETH;
@@ -55,6 +57,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     // Price feeds
     address constant PYTH_ORACLE_ADDRESS = 0x4305FB66699C3B2702D4d05CF36551390A4c69C6;
     address constant ETH_USD_PRICE_FEED = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
+    address constant BTC_USD_PRICE_FEED = 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c;
 
     address constant GOVERNANCE_ADDRESS = 0x0268d016717884632a7Fd05043687Cef2e51137F;
 
@@ -164,8 +167,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 5e16, 10e16); // AAVE
         troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // ENA
         troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // LDO
-        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // EIGEN
-        troveManagerParamsArray[9] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[9] = TroveManagerParams(131e16, 125e16, 110e16, 5e16, 10e16); // WBTC
 
         address[] memory collTokens = new address[](10);
         collTokens[0] = 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0; // FXS
@@ -176,8 +179,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         collTokens[5] = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9; // AAVE
         collTokens[6] = 0x57e114B691Db790C35207b2e685D4A43181e6061; // ENA
         collTokens[7] = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32; // LDO
-        collTokens[8] = 0xec53bF9167f50cDEB3Ae105f56099aaaB9061F83; // EIGEN
-        collTokens[9] = 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D; // LQTY
+        collTokens[8] = 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D; // LQTY
+        collTokens[9] = WBTC_ADDRESS; // WBTC
 
         PriceFeedParams[] memory priceFeeds = new PriceFeedParams[](10);
         priceFeeds[0] = PriceFeedParams({tokenUsdFeed: 0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // FXS
@@ -188,8 +191,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         priceFeeds[5] = PriceFeedParams({tokenUsdFeed: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // AAVE
         priceFeeds[6] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0xb7910ba7322db020416fcac28b48c01212fd9cc8fbcbaf7d30477ed8605f6bd4}); // ENA
         priceFeeds[7] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0x4e844125952D32AcdF339BE976c98E22F6F318dB, pythFeedId: bytes32(0)}); // LDO
-        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: 0xf2917e602C2dCa458937fad715bb1E465305A4A1, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // EIGEN
-        priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63}); // LQTY
+        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63}); // LQTY
+        priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23, pythFeedId: bytes32(0)}); // WBTC
 
 
         DeploymentResult memory deployed = _deployAndConnectContracts(troveManagerParamsArray, collTokens, priceFeeds);
@@ -234,6 +237,9 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 vars.collaterals[vars.i] = IERC20Metadata(_collTokens[vars.i]);
                 if (_priceFeeds[vars.i].tokenUsdFeed != ZERO_ADDRESS) {
                     vars.priceFeeds[vars.i] = new ChainlinkPriceFeed(deployer, _priceFeeds[vars.i].tokenUsdFeed, STALENESS_THRESHOLD);
+                } else if (_collTokens[vars.i] == WBTC_ADDRESS) {
+                    // WBTC/BTC -> BTC/USD = WBTC/USD
+                    vars.priceFeeds[vars.i] = new WBTCPriceFeed(deployer, BTC_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
                 } else if (_priceFeeds[vars.i].tokenEthFeed != ZERO_ADDRESS) {
                     vars.priceFeeds[vars.i] = new CompositeChainlinkPriceFeed(deployer, ETH_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
                 } else if (_priceFeeds[vars.i].pythFeedId != bytes32(0)) {
