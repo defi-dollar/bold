@@ -39,7 +39,7 @@ export function HomeScreen() {
         })}
       >
         <HomeTable
-          title={`Borrow ${BOLD_TOKEN_SYMBOL} against ETH and staked ETH`}
+          title={`Borrow ${BOLD_TOKEN_SYMBOL} against DeFi governance tokens`}
           subtitle="You can adjust your loans, including your interest rate, at any time"
           icon={<IconBorrow />}
           columns={[
@@ -61,7 +61,7 @@ export function HomeScreen() {
         />
         <HomeTable
           title={`Earn rewards with ${BOLD_TOKEN_SYMBOL}`}
-          subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & (staked) ETH rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
+          subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & other token rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
           icon={<IconEarn />}
           columns={[
             "Pool",
