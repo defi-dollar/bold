@@ -10,6 +10,7 @@ export type TokenSymbol =
   | BOLDTokenSymbol
   | "LQTY"
   | "LUSD"
+  | "ETH"
   | CollateralSymbol;
 
 export type Token = {

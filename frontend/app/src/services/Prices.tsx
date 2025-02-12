@@ -15,12 +15,12 @@ import * as v from "valibot";
 import { useReadContract } from "wagmi";
 import { BOLD_TOKEN_SYMBOL, BOLDTokenSymbol } from "@liquity2/uikit";
 
-type PriceToken = "LQTY" | BOLDTokenSymbol | "LUSD" | CollateralSymbol;
+type PriceToken = "LQTY" | BOLDTokenSymbol | "LUSD" | CollateralSymbol | "ETH";
 
 function useCollateralPrice(symbol: null | CollateralSymbol): UseQueryResult<Dnum> {
   // "ETH" is a fallback when null is passed, so we can return a standard
   // query object from the PriceFeed ABI, while the query stays disabled
-  const PriceFeed = getCollateralContract(symbol ?? "ETH", "PriceFeed");
+  const PriceFeed = getCollateralContract(symbol ?? "WBTC", "PriceFeed");
 
   if (!PriceFeed) {
     throw new Error(`Price feed contract not found for ${symbol}`);

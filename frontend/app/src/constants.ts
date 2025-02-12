@@ -38,9 +38,16 @@ export const MAX_UPFRONT_FEE = 1000n * 10n ** 18n;
 export const MIN_DEBT = dn.from(2000, 18);
 
 export const MAX_COLLATERAL_DEPOSITS: Record<CollateralSymbol, dn.Dnum> = {
-  ETH: dn.from(100_000_000n, 18),
-  WSTETH: dn.from(100_000_000n, 18),
-  RETH: dn.from(100_000_000n, 18),
+  WBTC: dn.from(100_000_000n, 18),
+  LINK: dn.from(100_000_000n, 18),
+  UNI: dn.from(100_000_000n, 18),
+  AAVE: dn.from(100_000_000n, 18),
+  ENA: dn.from(100_000_000n, 18),
+  LDO: dn.from(100_000_000n, 18),
+  CRV: dn.from(100_000_000n, 18),
+  FXS: dn.from(100_000_000n, 18),
+  SKY: dn.from(100_000_000n, 18),
+  LQTY: dn.from(100_000_000n, 18),
 };
 
 // LTV factor suggestions, as ratios of the multiply factor range
