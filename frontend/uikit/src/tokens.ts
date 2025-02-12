@@ -10,7 +10,7 @@ import tokenAAVE from './token-icons/AAVE.png';
 import tokenENA from './token-icons/ENA.png';
 import tokenLDO from './token-icons/LDO.png';
 import tokenCRV from './token-icons/CRV.png';
-// import tokenFXS from './token-icons/FXS.png';
+import tokenFXS from './token-icons/FXS.png';
 import tokenSKY from './token-icons/SKY.png';
 import tokenLQTY from './token-icons/lqty.svg';
 
@@ -70,56 +70,56 @@ export const UNI: CollateralToken  = {
   icon: tokenUNI,
   name: "UNI",
   symbol: "UNI" as const,
-  collateralRatio: 1.39,
+  collateralRatio: 1.33,
 };
 
 export const AAVE: CollateralToken  = {
   icon: tokenAAVE,
   name: "AAVE",
   symbol: "AAVE" as const,
-  collateralRatio: 1.39,
+  collateralRatio: 1.33,
 };
 
 export const ENA: CollateralToken  = {
   icon: tokenENA,
   name: "ENA",
   symbol: "ENA" as const,
-  collateralRatio: 1.74,
+  collateralRatio: 1.66,
 };
 
 export const LDO: CollateralToken  = {
   icon: tokenLDO,
   name: "LDO",
   symbol: "LDO" as const,
-  collateralRatio: 1.74,
+  collateralRatio: 1.66,
 };
 
 export const CRV: CollateralToken  = {
   icon: tokenCRV,
   name: "CRV",
   symbol: "CRV" as const,
-  collateralRatio: 1.74,
+  collateralRatio: 1.66,
 };
 
 export const FXS: CollateralToken  = {
-  icon: tokenBold,
+  icon: tokenFXS,
   name: "FXS",
   symbol: "FXS" as const,
-  collateralRatio: 1.74,
+  collateralRatio: 1.66,
 };
 
 export const SKY: CollateralToken  = {
   icon: tokenSKY,
   name: "SKY",
   symbol: "SKY" as const,
-  collateralRatio: 1.39,
+  collateralRatio: 1.33,
 };
 
 export const LQTY: CollateralToken  = {
   icon: tokenLQTY,
   name: "LQTY",
   symbol: "LQTY" as const,
-  collateralRatio: 1.74,
+  collateralRatio: 1.66,
 };
 
 export const ETH: Token = {
