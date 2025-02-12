@@ -32,7 +32,7 @@ function useCollateralPrice(symbol: null | CollateralSymbol): UseQueryResult<Dnu
     query: {
       enabled: symbol !== null,
       refetchInterval: PRICE_REFRESH_INTERVAL,
-      select: ([price]) => dnum18(price),
+      select: ([price]) => symbol === 'WBTC' ? [price, 28] : dnum18(price),
     },
   });
 }
