@@ -17,6 +17,7 @@ import tokenLQTY from './token-icons/lqty.svg';
 export const BOLD_TOKEN_SYMBOL = 'DUSD';
 
 export type CollateralSymbols = [
+  "ETH", // To bypass type-checking
   "WBTC",
   "LINK",
   "UNI",

@@ -15,7 +15,7 @@ import * as v from "valibot";
 import { useReadContract } from "wagmi";
 import { BOLD_TOKEN_SYMBOL, BOLDTokenSymbol } from "@liquity2/uikit";
 
-type PriceToken = "LQTY" | BOLDTokenSymbol | "LUSD" | CollateralSymbol | "ETH";
+type PriceToken = "LQTY" | BOLDTokenSymbol | "LUSD" | CollateralSymbol;
 
 function useCollateralPrice(symbol: null | CollateralSymbol): UseQueryResult<Dnum> {
   // "ETH" is a fallback when null is passed, so we can return a standard
