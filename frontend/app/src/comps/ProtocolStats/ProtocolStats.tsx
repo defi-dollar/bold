@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const DISPLAYED_PRICES = [
-  "LQTY",
+  // "LQTY",
   BOLD_TOKEN_SYMBOL,
   // "ETH"
 ] as const;
