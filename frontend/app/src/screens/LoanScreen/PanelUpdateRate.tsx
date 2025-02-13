@@ -40,6 +40,7 @@ export function PanelUpdateRate({
   const collPrice = usePrice(collToken.symbol);
 
   const deposit = useInputFieldValue((value) => `${fmtnum(value, "full")} ${collToken.symbol}`, {
+    token: collToken.symbol,
     defaultValue: dn.toString(loan.deposit),
   });
   const debt = useInputFieldValue((value) => `${fmtnum(value, "full")} ${BOLD_TOKEN_SYMBOL}`, {

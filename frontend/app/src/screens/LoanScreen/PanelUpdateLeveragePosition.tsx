@@ -63,7 +63,9 @@ export function PanelUpdateLeveragePosition({
 
   // deposit change
   const [depositMode, setDepositMode] = useState<"add" | "remove">("add");
-  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"));
+  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"), {
+    token: collToken.symbol,
+  });
   const [userLeverageFactor, setUserLeverageFactor] = useState(
     initialLoanDetails.leverageFactor ?? 1,
   );

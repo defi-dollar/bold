@@ -92,6 +92,7 @@ export function LeverageScreen() {
 
   const maxCollDeposit = MAX_COLLATERAL_DEPOSITS[collSymbol] ?? null;
   const depositPreLeverage = useInputFieldValue(fmtnum, {
+    token: collToken.symbol,
     validate: (parsed, value) => {
       const isAboveMax = maxCollDeposit && parsed && dn.gt(parsed, maxCollDeposit);
       return {

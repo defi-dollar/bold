@@ -86,6 +86,7 @@ export function BorrowScreen() {
   const maxCollDeposit = MAX_COLLATERAL_DEPOSITS[collSymbol] ?? null;
 
   const deposit = useInputFieldValue(fmtnum, {
+    token: collateral.symbol,
     validate: (parsed, value) => {
       const isAboveMax = maxCollDeposit && parsed && dn.gt(parsed, maxCollDeposit);
       return {

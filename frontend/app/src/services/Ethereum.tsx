@@ -139,7 +139,7 @@ export function useBalance(
     functionName: "balanceOf",
     args: address && [address],
     query: {
-      select: (value) => dnum18(value ?? 0n),
+      select: (value) => token === 'WBTC' ? [value, 8] as dn.Dnum : dnum18(value ?? 0n),
       enabled: Boolean(!demoMode.enabled && address && token !== "ETH"),
     },
   });
