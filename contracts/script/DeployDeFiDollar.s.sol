@@ -160,16 +160,16 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
         TroveManagerParams[] memory troveManagerParamsArray = new TroveManagerParams[](10);
 
-        troveManagerParamsArray[0] = TroveManagerParams(174e16, 166e16, 131e16, 0, 5e16, 10e16); // FXS
-        troveManagerParamsArray[1] = TroveManagerParams(139e16, 133e16, 110e16, 0, 5e16, 10e16); // LINK
-        troveManagerParamsArray[2] = TroveManagerParams(139e16, 133e16, 110e16, 0, 5e16, 10e16); // UNI
-        troveManagerParamsArray[3] = TroveManagerParams(139e16, 133e16, 110e16, 0, 5e16, 10e16); // SKY
-        troveManagerParamsArray[4] = TroveManagerParams(174e16, 166e16, 131e16, 0, 5e16, 10e16); // CRV
-        troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 0, 5e16, 10e16); // AAVE
-        troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 131e16, 0, 5e16, 10e16); // ENA
-        troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 131e16, 0, 5e16, 10e16); // LDO
-        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 0, 5e16, 10e16); // LQTY
-        troveManagerParamsArray[9] = TroveManagerParams(131e16, 125e16, 110e16, 0, 5e16, 10e16); // WBTC
+        troveManagerParamsArray[0] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // FXS
+        troveManagerParamsArray[1] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // LINK
+        troveManagerParamsArray[2] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // UNI
+        troveManagerParamsArray[3] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // SKY
+        troveManagerParamsArray[4] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // CRV
+        troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // AAVE
+        troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // ENA
+        troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // LDO
+        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[9] = TroveManagerParams(131e16, 125e16, 110e16, 10e16, 5e16, 10e16); // WBTC
 
         address[] memory collTokens = new address[](10);
         collTokens[0] = 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0; // FXS
