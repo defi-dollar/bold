@@ -14,23 +14,35 @@ import * as types from './graphql';
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
-const documents = {
-    "\n  query BorrowerInfo($id: ID!) {\n    borrowerInfo(id: $id) {\n      nextOwnerIndexes\n      troves\n      trovesByCollateral\n    }\n  }\n": types.BorrowerInfoDocument,
+type Documents = {
+    "\n  query BlockNumber {\n    _meta {\n      block {\n        number\n      }\n    }\n  }\n": typeof types.BlockNumberDocument,
+    "\n  query BorrowerInfo($id: ID!) {\n    borrowerInfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n": typeof types.BorrowerInfoDocument,
+    "\n  query TroveStatusesByAccount($account: Bytes!) {\n    troves(\n      where: {\n        borrower: $account,\n        status_in: [active,redeemed,liquidated],\n      }\n      orderBy: updatedAt\n      orderDirection: desc\n    ) {\n      id\n      closedAt\n      createdAt\n      mightBeLeveraged\n      status\n    }\n  }\n": typeof types.TroveStatusesByAccountDocument,
+    "\n  query TroveStatusById($id: ID!) {\n    trove(id: $id) {\n      id\n      closedAt\n      createdAt\n      mightBeLeveraged\n      status\n    }\n  }\n": typeof types.TroveStatusByIdDocument,
+    "\n  query InterestBatches($ids: [ID!]!) {\n    interestBatches(where: { id_in: $ids }) {\n      collateral {\n        collIndex\n      }\n      batchManager\n      debt\n      coll\n      annualInterestRate\n      annualManagementFee\n    }\n  }\n": typeof types.InterestBatchesDocument,
+    "\n  query AllInterestRateBrackets {\n    interestRateBrackets(orderBy: rate) {\n      collateral {\n        collIndex\n      }\n      rate\n      totalDebt\n    }\n  }\n": typeof types.AllInterestRateBracketsDocument,
+    "\n  query GovernanceInitiatives {\n    governanceInitiatives {\n      id\n    }\n  }\n": typeof types.GovernanceInitiativesDocument,
+    "\n  query GovernanceUserAllocations($id: ID!) {\n    governanceUser(id: $id) {\n      allocated\n    }\n  }\n": typeof types.GovernanceUserAllocationsDocument,
+};
+const documents: Documents = {
+    "\n  query BlockNumber {\n    _meta {\n      block {\n        number\n      }\n    }\n  }\n": types.BlockNumberDocument,
+    "\n  query BorrowerInfo($id: ID!) {\n    borrowerInfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n": types.BorrowerInfoDocument,
     "\n  query TroveStatusesByAccount($account: Bytes!) {\n    troves(\n      where: {\n        borrower: $account,\n        status_in: [active,redeemed,liquidated],\n      }\n      orderBy: updatedAt\n      orderDirection: desc\n    ) {\n      id\n      closedAt\n      createdAt\n      mightBeLeveraged\n      status\n    }\n  }\n": types.TroveStatusesByAccountDocument,
     "\n  query TroveStatusById($id: ID!) {\n    trove(id: $id) {\n      id\n      closedAt\n      createdAt\n      mightBeLeveraged\n      status\n    }\n  }\n": types.TroveStatusByIdDocument,
     "\n  query InterestBatches($ids: [ID!]!) {\n    interestBatches(where: { id_in: $ids }) {\n      collateral {\n        collIndex\n      }\n      batchManager\n      debt\n      coll\n      annualInterestRate\n      annualManagementFee\n    }\n  }\n": types.InterestBatchesDocument,
     "\n  query AllInterestRateBrackets {\n    interestRateBrackets(orderBy: rate) {\n      collateral {\n        collIndex\n      }\n      rate\n      totalDebt\n    }\n  }\n": types.AllInterestRateBracketsDocument,
     "\n  query GovernanceInitiatives {\n    governanceInitiatives {\n      id\n    }\n  }\n": types.GovernanceInitiativesDocument,
-    "\n  query GovernanceUser($id: ID!) {\n    governanceUser(id: $id) {\n      id\n      allocatedLQTY\n      stakedLQTY\n      stakedOffset\n      allocations {\n        id\n        atEpoch\n        vetoLQTY\n        voteLQTY\n        initiative {\n          id\n        }\n      }\n    }\n  }\n": types.GovernanceUserDocument,
-    "\n  query GovernanceStats {\n    governanceStats(id: \"stats\") {\n      id\n      totalLQTYStaked\n      totalOffset\n      totalInitiatives\n    }\n  }\n": types.GovernanceStatsDocument,
     "\n  query GovernanceUserAllocations($id: ID!) {\n    governanceUser(id: $id) {\n      allocated\n    }\n  }\n": types.GovernanceUserAllocationsDocument,
-    "\n  query BlockNumber {\n    _meta {\n      block {\n        number\n      }\n    }\n  }\n": types.BlockNumberDocument,
 };
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query BorrowerInfo($id: ID!) {\n    borrowerInfo(id: $id) {\n      nextOwnerIndexes\n      troves\n      trovesByCollateral\n    }\n  }\n"): typeof import('./graphql').BorrowerInfoDocument;
+export function graphql(source: "\n  query BlockNumber {\n    _meta {\n      block {\n        number\n      }\n    }\n  }\n"): typeof import('./graphql').BlockNumberDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BorrowerInfo($id: ID!) {\n    borrowerInfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n"): typeof import('./graphql').BorrowerInfoDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -54,19 +66,7 @@ export function graphql(source: "\n  query GovernanceInitiatives {\n    governan
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GovernanceUser($id: ID!) {\n    governanceUser(id: $id) {\n      id\n      allocatedLQTY\n      stakedLQTY\n      stakedOffset\n      allocations {\n        id\n        atEpoch\n        vetoLQTY\n        voteLQTY\n        initiative {\n          id\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').GovernanceUserDocument;
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query GovernanceStats {\n    governanceStats(id: \"stats\") {\n      id\n      totalLQTYStaked\n      totalOffset\n      totalInitiatives\n    }\n  }\n"): typeof import('./graphql').GovernanceStatsDocument;
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
 export function graphql(source: "\n  query GovernanceUserAllocations($id: ID!) {\n    governanceUser(id: $id) {\n      allocated\n    }\n  }\n"): typeof import('./graphql').GovernanceUserAllocationsDocument;
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query BlockNumber {\n    _meta {\n      block {\n        number\n      }\n    }\n  }\n"): typeof import('./graphql').BlockNumberDocument;
 
 
 export function graphql(source: string) {

@@ -5,7 +5,6 @@ import type { Address, Dnum, PositionLoanUncommitted } from "@/src/types";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { Amount } from "@/src/comps/Amount/Amount";
-// import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
 import { InterestRateField } from "@/src/comps/InterestRateField/InterestRateField";
 import { LeverageField, useLeverageField } from "@/src/comps/LeverageField/LeverageField";
@@ -18,10 +17,9 @@ import { useInputFieldValue } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
 import { useCheckLeverageSlippage } from "@/src/liquity-leverage";
 import { getRedemptionRisk } from "@/src/liquity-math";
-import { getBranch, getBranches, getCollToken } from "@/src/liquity-utils";
+import { getBranch, getBranches, getCollToken, useNextOwnerIndex } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
-import { useNextOwnerIndex } from "@/src/subgraph-hooks";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
@@ -298,6 +296,7 @@ export function LeverageScreen() {
               inputId="input-interest-rate"
               interestRate={interestRate}
               mode={interestRateMode}
+              onAverageInterestRateLoad={setInterestRate}
               onChange={setInterestRate}
               onDelegateChange={setInterestRateDelegate}
               onModeChange={setInterestRateMode}
@@ -349,6 +348,7 @@ export function LeverageScreen() {
             })}
           >
             <Button
+              // oxlint-disable-next-line
               disabled={true || !allowSubmit}
               label="Coming Soon"
               mode="primary"

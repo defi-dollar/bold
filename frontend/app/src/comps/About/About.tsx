@@ -4,10 +4,12 @@ import type { Entries } from "@/src/types";
 import type { ReactNode } from "react";
 
 import { useFlashTransition } from "@/src/anim-utils";
+import { useBreakpoint } from "@/src/breakpoints";
+import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Logo } from "@/src/comps/Logo/Logo";
 import * as env from "@/src/env";
 import { css } from "@/styled-system/css";
-import { AnchorTextButton, Button, Modal } from "@liquity2/uikit";
+import { Button, Modal } from "@liquity2/uikit";
 import { a, useSpring } from "@react-spring/web";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +24,6 @@ const ENV_EXCLUDE: Set<keyof typeof env> = new Set([
   "CONTRACTS_COMMIT_HASH",
   "CONTRACTS_COMMIT_URL",
   "CollateralSymbolSchema",
-  "DEMO_MODE",
   "EnvSchema",
   "VERCEL_ANALYTICS",
   "WALLET_CONNECT_PROJECT_ID",
@@ -61,7 +62,7 @@ function getEnvGroups() {
     });
   }
 
-  delete envConfig["COLLATERAL_CONTRACTS" as keyof typeof envConfig];
+  delete envConfig["ENV_BRANCHES" as keyof typeof envConfig];
 
   const envConfigFinal = Object.fromEntries(
     Object.entries(envConfig)
@@ -72,14 +73,32 @@ function getEnvGroups() {
           return [key, `${name}|${url}`];
         }
         if (key === "CHAIN_CURRENCY") {
-          const { name, symbol, decimals } = value as { name: string; symbol: string; decimals: number };
+          const { name, symbol, decimals } = value as {
+            name: string;
+            symbol: string;
+            decimals: number;
+          };
           return [key, `${name}|${symbol}|${decimals}`];
         }
-        return [key, value === null || value === undefined ? null : String(value)];
+        if (key === "LEGACY_CHECK") {
+          return [key, value ? JSON.stringify(value) : false];
+        }
+        return [
+          key,
+          value === null || value === undefined
+            ? null
+            : typeof value === "boolean"
+            ? value
+            : String(value),
+        ];
       }),
   );
 
-  return { config: envConfigFinal, contracts, branches };
+  return {
+    config: envConfigFinal,
+    contracts,
+    branches,
+  };
 }
 
 const AboutContext = createContext<{
@@ -103,6 +122,10 @@ const envGroups = getEnvGroups();
 export function About({ children }: { children: ReactNode }) {
   const [visible, setVisible] = useState(false);
   const copyTransition = useFlashTransition();
+
+  const [compactMode, setCompactMode] = useState(false);
+  useBreakpoint((bp) => setCompactMode(!bp.medium));
+
   return (
     <AboutContext.Provider
       value={{
@@ -147,7 +170,7 @@ export function About({ children }: { children: ReactNode }) {
               entries={{
                 "Release": env.APP_VERSION_URL
                   ? (
-                    <AnchorTextButton
+                    <LinkTextButton
                       external
                       href={env.APP_VERSION_URL.replace(/\{version\}/, env.APP_VERSION)}
                       label={`v${env.APP_VERSION}`}
@@ -156,7 +179,7 @@ export function About({ children }: { children: ReactNode }) {
                   : `v${env.APP_VERSION}`,
                 "Commit (app)": env.APP_COMMIT_URL
                   ? (
-                    <AnchorTextButton
+                    <LinkTextButton
                       external
                       href={env.APP_COMMIT_URL.replace(/\{commit\}/, env.APP_COMMIT_HASH)}
                       label={env.APP_COMMIT_HASH}
@@ -165,7 +188,7 @@ export function About({ children }: { children: ReactNode }) {
                   : env.APP_COMMIT_HASH,
                 "Commit (contracts)": env.CONTRACTS_COMMIT_URL
                   ? (
-                    <AnchorTextButton
+                    <LinkTextButton
                       external
                       href={env.CONTRACTS_COMMIT_URL.replace(/\{commit\}/, env.CONTRACTS_COMMIT_HASH)}
                       label={env.CONTRACTS_COMMIT_HASH}
@@ -219,6 +242,7 @@ export function About({ children }: { children: ReactNode }) {
               <h1
                 className={css({
                   fontSize: 20,
+                  whiteSpace: "nowrap",
                 })}
               >
                 Build environment
@@ -254,7 +278,7 @@ export function About({ children }: { children: ReactNode }) {
                 <Button
                   mode="secondary"
                   size="mini"
-                  label="Copy to clipboard"
+                  label={compactMode ? "Copy" : "Copy to clipboard"}
                   onClick={() => {
                     navigator.clipboard.writeText(JSON.stringify(envGroups, null, 2));
                     copyTransition.flash();
@@ -268,7 +292,7 @@ export function About({ children }: { children: ReactNode }) {
                 <>
                   Liquity V2 contracts ({env.CONTRACTS_COMMIT_URL
                     ? (
-                      <AnchorTextButton
+                      <LinkTextButton
                         external
                         href={env.CONTRACTS_COMMIT_URL.replace(/\{commit\}/, env.CONTRACTS_COMMIT_HASH)}
                         label={env.CONTRACTS_COMMIT_HASH}
@@ -409,7 +433,21 @@ function AboutTable({
         <tbody>
           {Object.entries(entries).map(([key, value]) => (
             <tr key={key}>
-              <td>{key}</td>
+              <td>
+                <div
+                  title={key}
+                  className={css({
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: {
+                      base: 120,
+                      medium: 260,
+                    },
+                  })}
+                >
+                  {key}
+                </div>
+              </td>
               <td>
                 <div
                   className={css({
@@ -427,6 +465,34 @@ function AboutTable({
                         not set
                       </span>
                     )
+                    : typeof value === "string"
+                    ? (
+                      <input
+                        type="text"
+                        readOnly
+                        value={value}
+                        onFocus={(e) => e.target.select()}
+                        className={css({
+                          color: "contentAlt",
+                          fontFamily: "monospace",
+                          fontSize: 14,
+                          padding: "8px 4px",
+                          width: "100%",
+                          textOverflow: "ellipsis",
+                          textAlign: "right",
+                          background: "fieldSurface",
+                          border: "1px solid",
+                          borderColor: "fieldBorder",
+                          borderRadius: 4,
+                          _focusVisible: {
+                            outlineOffset: -1,
+                            outline: "2px solid token(colors.fieldBorderFocused)",
+                          },
+                        })}
+                      />
+                    )
+                    : typeof value === "boolean"
+                    ? value ? "enabled" : "disabled"
                     : value}
                 </div>
               </td>

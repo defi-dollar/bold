@@ -7,7 +7,6 @@ import { fmtnum } from "@/src/formatting";
 import {
   getBranch,
   getCollToken,
-  getPrefixedTroveId,
   getTroveOperationHints,
   useInterestBatchDelegate,
   usePredictOpenTroveUpfrontFee,
@@ -17,7 +16,7 @@ import { LoanCard } from "@/src/screens/TransactionsScreen/LoanCard";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { usePrice } from "@/src/services/Prices";
-import { graphQuery, TroveStatusByIdQuery } from "@/src/subgraph-queries";
+import { getIndexedTroveById } from "@/src/subgraph";
 import { sleep } from "@/src/utils";
 import { vAddress, vBranchId, vDnum } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
@@ -126,6 +125,7 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
               suffix=" BOLD"
             />,
             <div
+              key="end"
               className={css({
                 display: "flex",
                 alignItems: "center",
@@ -133,7 +133,6 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
               })}
             >
               <Amount
-                key="end"
                 fallback="…"
                 prefix="Incl. "
                 value={upfrontFee.data}
@@ -310,17 +309,13 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
           throw new Error("Failed to extract trove ID from transaction");
         }
 
-        const prefixedTroveId = getPrefixedTroveId(
-          ctx.request.branchId,
-          `0x${troveOperation.args._troveId.toString(16)}`,
-        );
-
         // wait for the trove to appear in the subgraph
         while (true) {
-          const { trove: troveStatus } = await graphQuery(TroveStatusByIdQuery, {
-            id: prefixedTroveId,
-          });
-          if (troveStatus !== null) {
+          const trove = await getIndexedTroveById(
+            branch.branchId,
+            `0x${troveOperation.args._troveId.toString(16)}`,
+          );
+          if (trove !== null) {
             break;
           }
           await sleep(1000);
