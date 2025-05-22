@@ -12,18 +12,11 @@ contract CompositeChainlinkPriceFeed is
     ICompositeChainlinkPriceFeed
 {
     constructor(
-        address _owner,
         address _ethUsdOracleAddress,
         address _tokenEthOracleAddress,
         uint256 _ethUsdStalenessThreshold,
         uint256 _tokenEthStalenessThreshold
-    )
-        ChainlinkPriceFeedBase(
-            _owner,
-            _ethUsdOracleAddress,
-            _ethUsdStalenessThreshold
-        )
-    {
+    ) ChainlinkPriceFeedBase(_ethUsdOracleAddress, _ethUsdStalenessThreshold) {
         // Store token-ETH oracle
         tokenEthOracle.aggregator = AggregatorV3Interface(
             _tokenEthOracleAddress

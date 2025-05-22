@@ -7,23 +7,13 @@ import "../Interfaces/IWBTCPriceFeed.sol";
 
 // import "forge-std/console2.sol";
 
-contract WBTCPriceFeed is
-    ChainlinkPriceFeedBase,
-    IWBTCPriceFeed
-{
+contract WBTCPriceFeed is ChainlinkPriceFeedBase, IWBTCPriceFeed {
     constructor(
-        address _owner,
         address _btcUsdOracleAddress,
         address _tokenBtcOracleAddress,
         uint256 _btcUsdStalenessThreshold,
         uint256 _tokenBtcStalenessThreshold
-    )
-        ChainlinkPriceFeedBase(
-            _owner,
-            _btcUsdOracleAddress,
-            _btcUsdStalenessThreshold
-        )
-    {
+    ) ChainlinkPriceFeedBase(_btcUsdOracleAddress, _btcUsdStalenessThreshold) {
         // Store token-BTC oracle
         tokenBtcOracle.aggregator = AggregatorV3Interface(
             _tokenBtcOracleAddress
@@ -65,7 +55,7 @@ contract WBTCPriceFeed is
             );
         }
 
-        uint256 tokenUsdPrice = (btcUsdPrice * tokenBtcPrice) * 1e10 / 1e18; // wbtc has 8 decimals
+        uint256 tokenUsdPrice = ((btcUsdPrice * tokenBtcPrice) * 1e10) / 1e18; // wbtc has 8 decimals
         lastGoodPrice = tokenUsdPrice;
 
         return (tokenUsdPrice, false);

@@ -6,11 +6,10 @@ import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythUtils.sol";
 
-import "../Dependencies/Ownable.sol";
 import "../Interfaces/IPythPriceFeed.sol";
 import "../BorrowerOperations.sol";
 
-abstract contract PythPriceFeedBase is IPythPriceFeed, Ownable {
+abstract contract PythPriceFeedBase is IPythPriceFeed {
     struct PythCfg {
         IPyth pythContract;
         bytes32 feedId;
@@ -32,20 +31,10 @@ abstract contract PythPriceFeedBase is IPythPriceFeed, Ownable {
     PythCfg public pyth;
     IBorrowerOperations borrowerOperations;
 
-    constructor(
-        address _owner,
-        address _pythContract,
-        bytes32 _feedId,
-        uint256 _ageThreshold
-    ) Ownable(_owner) {
+    constructor(address _pythContract, bytes32 _feedId, uint256 _ageThreshold) {
         pyth.pythContract = IPyth(_pythContract);
         pyth.feedId = _feedId;
         pyth.ageThreshold = _ageThreshold;
-    }
-    function setAddresses(address _borrowOperationsAddress) external onlyOwner {
-        borrowerOperations = IBorrowerOperations(_borrowOperationsAddress);
-
-        _renounceOwnership();
     }
 
     function _getOracleAnswer(

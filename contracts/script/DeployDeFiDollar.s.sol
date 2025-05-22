@@ -237,14 +237,14 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
             for (vars.i = 0; vars.i < vars.numCollaterals; vars.i++) {
                 vars.collaterals[vars.i] = IERC20Metadata(_collTokens[vars.i]);
                 if (_priceFeeds[vars.i].tokenUsdFeed != ZERO_ADDRESS) {
-                    vars.priceFeeds[vars.i] = new ChainlinkPriceFeed(deployer, _priceFeeds[vars.i].tokenUsdFeed, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new ChainlinkPriceFeed(_priceFeeds[vars.i].tokenUsdFeed, STALENESS_THRESHOLD);
                 } else if (_collTokens[vars.i] == WBTC_ADDRESS) {
                     // WBTC/BTC -> BTC/USD = WBTC/USD
-                    vars.priceFeeds[vars.i] = new WBTCPriceFeed(deployer, BTC_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new WBTCPriceFeed(BTC_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
                 } else if (_priceFeeds[vars.i].tokenEthFeed != ZERO_ADDRESS) {
-                    vars.priceFeeds[vars.i] = new CompositeChainlinkPriceFeed(deployer, ETH_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new CompositeChainlinkPriceFeed(ETH_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
                 } else if (_priceFeeds[vars.i].pythFeedId != bytes32(0)) {
-                    vars.priceFeeds[vars.i] = new PythPriceFeed(deployer, PYTH_ORACLE_ADDRESS, _priceFeeds[vars.i].pythFeedId, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new PythPriceFeed(PYTH_ORACLE_ADDRESS, _priceFeeds[vars.i].pythFeedId, STALENESS_THRESHOLD);
                 } else {
                     revert("Invalid price feed params");
                 }
@@ -390,7 +390,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         });
         // TODO: update setAddresses and don't renounce ownership
         contracts.addressesRegistry.setAddresses(addressVars);
-        contracts.priceFeed.setAddresses(addresses.borrowerOperations);
+        // TODO: sync with liquity deployment script
+        // contracts.priceFeed.setAddresses(addresses.borrowerOperations);
 
         contracts.borrowerOperations = new BorrowerOperations{salt: SALT}(contracts.addressesRegistry);
         contracts.troveManager = new TroveManager{salt: SALT}(contracts.addressesRegistry);

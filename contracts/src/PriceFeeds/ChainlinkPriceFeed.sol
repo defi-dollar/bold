@@ -8,10 +8,9 @@ import "./ChainlinkPriceFeedBase.sol";
 
 contract ChainlinkPriceFeed is ChainlinkPriceFeedBase {
     constructor(
-        address _owner,
         address _usdOracleAddress,
         uint256 _stalenessThreshold
-    ) ChainlinkPriceFeedBase(_owner, _usdOracleAddress, _stalenessThreshold) {
+    ) ChainlinkPriceFeedBase(_usdOracleAddress, _stalenessThreshold) {
         _fetchPricePrimary();
 
         // Check the oracle didn't already fail

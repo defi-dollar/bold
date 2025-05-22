@@ -186,10 +186,10 @@ contract OraclesMainnet is TestAccounts {
         wethPriceFeed = IMainnetPriceFeed(address(contractsArray[0].priceFeed));
         rethPriceFeed = IRETHPriceFeed(address(contractsArray[1].priceFeed));
         wstethPriceFeed = IWSTETHPriceFeed(address(contractsArray[2].priceFeed));
-        aavePriceFeed = new ChainlinkPriceFeed(address(deployer), address(aaveOracle), _24_HOURS);
-        ldoPriceFeed = new CompositeChainlinkPriceFeed(address(deployer), address(ethOracle), address(ldoOracle), _24_HOURS, _24_HOURS);
-        wbtcPriceFeed = new WBTCPriceFeed(address(deployer), address(btcOracle), address(wbtcOracle), _24_HOURS, _24_HOURS);
-        lqtyPriceFeed = new PythPriceFeed(address(deployer), address(pythContract), 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63, 7 days);
+        aavePriceFeed = new ChainlinkPriceFeed(address(aaveOracle), _24_HOURS);
+        ldoPriceFeed = new CompositeChainlinkPriceFeed(address(ethOracle), address(ldoOracle), _24_HOURS, _24_HOURS);
+        wbtcPriceFeed = new WBTCPriceFeed(address(btcOracle), address(wbtcOracle), _24_HOURS, _24_HOURS);
+        lqtyPriceFeed = new PythPriceFeed(address(pythContract), 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63, 7 days);
 
         // log some current blockchain state
         // console2.log(block.timestamp, "block.timestamp");
