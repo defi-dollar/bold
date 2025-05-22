@@ -135,7 +135,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     }
 
     function run() external {
-        string memory saltString = "DeFiDollar";
+        string memory saltString = "DeFiDollar_v2";
         SALT = keccak256(abi.encodePacked(saltString));
 
         if (vm.envBytes("DEPLOYER").length == 20) {
@@ -160,16 +160,16 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
         TroveManagerParams[] memory troveManagerParamsArray = new TroveManagerParams[](10);
 
-        troveManagerParamsArray[0] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // FXS
+        troveManagerParamsArray[0] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // FXS
         troveManagerParamsArray[1] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // LINK
         troveManagerParamsArray[2] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // UNI
         troveManagerParamsArray[3] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // SKY
-        troveManagerParamsArray[4] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // CRV
+        troveManagerParamsArray[4] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // CRV
         troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // AAVE
-        troveManagerParamsArray[6] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // ENA
-        troveManagerParamsArray[7] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // LDO
-        troveManagerParamsArray[8] = TroveManagerParams(174e16, 166e16, 131e16, 10e16, 5e16, 10e16); // LQTY
-        troveManagerParamsArray[9] = TroveManagerParams(131e16, 125e16, 110e16, 10e16, 5e16, 10e16); // WBTC
+        troveManagerParamsArray[6] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // YFI
+        troveManagerParamsArray[7] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // LDO
+        troveManagerParamsArray[8] = TroveManagerParams(160e16, 153e16, 120e16, 10e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[9] = TroveManagerParams(122e16, 117e16, 110e16, 10e16, 5e16, 10e16); // WBTC
 
         address[] memory collTokens = new address[](10);
         collTokens[0] = 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0; // FXS
@@ -178,7 +178,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         collTokens[3] = 0x56072C95FAA701256059aa122697B133aDEd9279; // SKY
         collTokens[4] = 0xD533a949740bb3306d119CC777fa900bA034cd52; // CRV
         collTokens[5] = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9; // AAVE
-        collTokens[6] = 0x57e114B691Db790C35207b2e685D4A43181e6061; // ENA
+        collTokens[6] = 0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e; // YFI
         collTokens[7] = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32; // LDO
         collTokens[8] = 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D; // LQTY
         collTokens[9] = WBTC_ADDRESS; // WBTC
@@ -190,7 +190,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         priceFeeds[3] = PriceFeedParams({tokenUsdFeed: 0xee10fE5E7aa92dd7b136597449c3d5813cFC5F18, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // SKY
         priceFeeds[4] = PriceFeedParams({tokenUsdFeed: 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // CRV
         priceFeeds[5] = PriceFeedParams({tokenUsdFeed: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // AAVE
-        priceFeeds[6] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0xb7910ba7322db020416fcac28b48c01212fd9cc8fbcbaf7d30477ed8605f6bd4}); // ENA
+        priceFeeds[6] = PriceFeedParams({tokenUsdFeed: 0xA027702dbb89fbd58938e4324ac03B58d812b0E1, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // YFI
         priceFeeds[7] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0x4e844125952D32AcdF339BE976c98E22F6F318dB, pythFeedId: bytes32(0)}); // LDO
         priceFeeds[8] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63}); // LQTY
         priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23, pythFeedId: bytes32(0)}); // WBTC
@@ -248,7 +248,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 } else {
                     revert("Invalid price feed params");
                 }
-                console2.log(IPriceFeed(vars.priceFeeds[vars.i]).lastGoodPrice(), "lastGoodPrice");
+                console2.log("%18e", IPriceFeed(vars.priceFeeds[vars.i]).lastGoodPrice(), "lastGoodPrice");
             }
         }
 
@@ -303,8 +303,8 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
             deployer,
             _troveManagerParams.CCR,
             _troveManagerParams.MCR,
-            _troveManagerParams.SCR,
             _troveManagerParams.BCR,
+            _troveManagerParams.SCR,
             _troveManagerParams.LIQUIDATION_PENALTY_SP,
             _troveManagerParams.LIQUIDATION_PENALTY_REDISTRIBUTION
         );
@@ -523,7 +523,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
                 string.concat('"hintHelpers":"', address(deployed.hintHelpers).toHexString(), '",'),
                 string.concat('"multiTroveGetter":"', address(deployed.multiTroveGetter).toHexString(), '",'),
                 // string.concat('"exchangeHelpers":"', address(deployed.exchangeHelpers).toHexString(), '",'),
-                string.concat('"branches":[', branches.join(","), "],")
+                string.concat('"branches":[', branches.join(","), "]")
             ),
             "}"
         );
