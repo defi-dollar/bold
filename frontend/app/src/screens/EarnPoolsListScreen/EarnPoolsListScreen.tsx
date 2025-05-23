@@ -3,10 +3,11 @@
 import type { BranchId, TokenSymbol } from "@/src/types";
 
 import { EarnPositionSummary } from "@/src/comps/EarnPositionSummary/EarnPositionSummary";
+import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
 import { getBranches, useEarnPosition } from "@/src/liquity-utils";
-import { useAccount } from "@/src/services/Ethereum";
+import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
@@ -36,7 +37,8 @@ export function EarnPoolsListScreen() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 8,
+              flexFlow: "wrap",
+              gap: "0 8px",
             })}
           >
             {content.earnHome.headline(
@@ -52,16 +54,30 @@ export function EarnPoolsListScreen() {
             )}
           </div>
         ),
-        subtitle: content.earnHome.subheading,
+        subtitle: (
+          <>
+            {content.earnHome.subheading}{" "}
+            <LinkTextButton
+              label={content.earnHome.learnMore[1]}
+              href={content.earnHome.learnMore[0]}
+              external
+            />
+          </>
+        ),
       }}
-      width={67 * 8}
-      gap={16}
     >
-      {poolsTransition((style, branchId) => (
-        <a.div style={style}>
-          <EarnPool branchId={branchId} />
-        </a.div>
-      ))}
+      <div
+        className={css({
+          display: "grid",
+          gap: 16,
+        })}
+      >
+        {poolsTransition((style, branchId) => (
+          <a.div style={style}>
+            <EarnPool branchId={branchId} />
+          </a.div>
+        ))}
+      </div>
     </Screen>
   );
 }

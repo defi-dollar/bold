@@ -1,31 +1,23 @@
 import type { Address, BranchId, Delegate } from "@/src/types";
 import type { Dnum } from "dnum";
 
-import { INTEREST_RATE_DEFAULT, INTEREST_RATE_MAX, INTEREST_RATE_MIN } from "@/src/constants";
+import { useAppear } from "@/src/anim-utils";
+import { useBreakpointName } from "@/src/breakpoints";
+import { INTEREST_RATE_START, REDEMPTION_RISK } from "@/src/constants";
 import content from "@/src/content";
 import { jsonStringifyWithDnum } from "@/src/dnum-utils";
 import { useInputFieldValue } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
-import { getBranch, useInterestRateChartData } from "@/src/liquity-utils";
+import { findClosestRateIndex, getBranch, useAverageInterestRate, useInterestRateChartData } from "@/src/liquity-utils";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { noop } from "@/src/utils";
 import { css } from "@/styled-system/css";
-import {
-  BOLD_TOKEN_SYMBOL,
-  Dropdown,
-  HFlex,
-  InfoTooltip,
-  InputField,
-  lerp,
-  norm,
-  shortenAddress,
-  Slider,
-  TextButton,
-} from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Dropdown, InfoTooltip, InputField, shortenAddress, Slider, TextButton } from "@liquity2/uikit";
+import { a } from "@react-spring/web";
 import { blo } from "blo";
 import * as dn from "dnum";
 import Image from "next/image";
-import { memo, useId, useState } from "react";
+import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { DelegateModal } from "./DelegateModal";
 import { IcStrategiesModal } from "./IcStrategiesModal";
@@ -33,7 +25,11 @@ import { MiniChart } from "./MiniChart";
 
 import icLogo from "./ic-logo.svg";
 
-const DELEGATE_MODES = ["manual", "delegate", "strategy"] as const;
+const DELEGATE_MODES = [
+  "manual",
+  "delegate",
+  "strategy",
+] as const;
 
 export type DelegateMode = typeof DELEGATE_MODES[number];
 
@@ -45,6 +41,7 @@ export const InterestRateField = memo(
     inputId: inputIdFromProps,
     interestRate,
     mode,
+    onAverageInterestRateLoad = noop,
     onChange,
     onDelegateChange,
     onModeChange = noop,
@@ -55,6 +52,7 @@ export const InterestRateField = memo(
     inputId?: string;
     interestRate: Dnum | null;
     mode: DelegateMode;
+    onAverageInterestRateLoad?: (averageInterestRate: Dnum) => void;
     onChange: (interestRate: Dnum) => void;
     onDelegateChange: (delegate: Address | null) => void;
     onModeChange?: (mode: DelegateMode) => void;
@@ -66,38 +64,79 @@ export const InterestRateField = memo(
     const autoInputId = useId();
     const inputId = inputIdFromProps ?? autoInputId;
 
+    const averageInterestRate = useAverageInterestRate(branchId);
+
+    const rateTouchedForBranch = useRef<
+      | null // rate not touched for this branch, average rate should be applied
+      | BranchId // rate touched for this branch, not applying the average rate
+    >(null);
+
+    if (rateTouchedForBranch.current !== branchId) {
+      rateTouchedForBranch.current = null;
+    }
+
+    useEffect(() => {
+      let cancelled = false;
+      if (rateTouchedForBranch.current === null && averageInterestRate.data) {
+        rateTouchedForBranch.current = branchId;
+        setTimeout(() => {
+          if (averageInterestRate.data && !cancelled) {
+            onAverageInterestRateLoad(averageInterestRate.data);
+          }
+        }, 0);
+        return () => {
+          cancelled = true;
+        };
+      }
+    }, [
+      averageInterestRate.data,
+      branchId,
+      onAverageInterestRateLoad,
+    ]);
+
     const fieldValue = useInputFieldValue((value) => `${fmtnum(value)}%`, {
-      defaultValue: interestRate
-        ? dn.toString(dn.mul(interestRate, 100))
-        : String(INTEREST_RATE_DEFAULT),
+      onFocusChange: ({ parsed, focused }) => {
+        if (!focused && parsed) {
+          const rounded = dn.div(dn.round(dn.mul(parsed, 10)), 10);
+          fieldValue.setValue(
+            rounded[0] === 0n
+              ? String(INTEREST_RATE_START * 100)
+              : dn.toString(rounded),
+          );
+        }
+      },
       onChange: ({ parsed }) => {
         if (parsed) {
+          rateTouchedForBranch.current = branchId;
           onChange(dn.div(parsed, 100));
         }
       },
     });
 
-    const boldInterestPerYear = interestRate && debt && dn.mul(interestRate, debt);
+    const interestChartData = useInterestRateChartData();
+    const interestRateRounded = interestRate && dn.div(dn.round(dn.mul(interestRate, 1000)), 1000);
 
-    const interestChartData = useInterestRateChartData(branchId);
+    const bracket = interestRateRounded && interestChartData.data?.find(
+      ({ rate }) => rate[0] === interestRateRounded[0],
+    );
 
-    const interestRateNumber = interestRate && dn.toNumber(
-      dn.mul(interestRate, 100),
-    );
-    const chartdataPoint = interestChartData.data?.find(
-      ({ rate }) => rate === interestRateNumber,
-    );
-    const boldRedeemableInFront = chartdataPoint?.debtInFront ?? dn.from(0, 18);
+    const redeemableTransition = useAppear(bracket?.debtInFront !== undefined);
 
     const handleDelegateSelect = (delegate: Delegate) => {
       setDelegatePicker(null);
+      rateTouchedForBranch.current = branchId;
       onChange(delegate.interestRate);
       onDelegateChange(delegate.address ?? null);
     };
 
     const branch = getBranch(branchId);
+
     const hasStrategies = branch.strategies.length > 0;
     const activeDelegateModes = DELEGATE_MODES.filter((mode) => mode !== "strategy" || hasStrategies);
+
+    const boldInterestPerYear = interestRate && debt && dn.mul(interestRate, debt);
+
+    const breakpoint = useBreakpointName();
 
     return (
       <>
@@ -108,38 +147,11 @@ export const InterestRateField = memo(
           disabled={mode !== "manual"}
           contextual={match(mode)
             .with("manual", () => (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 300,
-                }}
-              >
-                <Slider
-                  gradient={[1 / 3, 2 / 3]}
-                  gradientMode="high-to-low"
-                  chart={interestChartData.data?.map(
-                    ({ size }) => Math.max(0.1, size),
-                  ) ?? []}
-                  onChange={(value) => {
-                    fieldValue.setValue(String(
-                      Math.round(
-                        lerp(
-                          INTEREST_RATE_MIN,
-                          INTEREST_RATE_MAX,
-                          value,
-                        ) * 10,
-                      ) / 10,
-                    ));
-                  }}
-                  value={norm(
-                    interestRate ? dn.toNumber(dn.mul(interestRate, 100)) : 0,
-                    INTEREST_RATE_MIN,
-                    INTEREST_RATE_MAX,
-                  )}
-                />
-              </div>
+              <ManualInterestRateSlider
+                interestChartData={interestChartData}
+                interestRate={interestRate}
+                fieldValue={fieldValue}
+              />
             ))
             .with("strategy", () => (
               <TextButton
@@ -185,6 +197,7 @@ export const InterestRateField = memo(
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
+                        fontSize: 20,
                       })}
                     >
                       <Image
@@ -208,15 +221,49 @@ export const InterestRateField = memo(
             ))
             .exhaustive()}
           label={{
-            start: "Interest rate",
+            start: (
+              <div
+                className={css({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                })}
+              >
+                <div>Interest rate</div>
+                {averageInterestRate.data && (
+                  <div>
+                    <TextButton
+                      size="small"
+                      title={`Set average interest rate (${
+                        fmtnum(averageInterestRate.data, {
+                          preset: "pct1z",
+                          suffix: "%",
+                        })
+                      })`}
+                      label={`(avg. ${
+                        fmtnum(averageInterestRate.data, {
+                          preset: "pct1z",
+                          suffix: "%",
+                        })
+                      })`}
+                      onClick={(event) => {
+                        if (averageInterestRate.data) {
+                          event.preventDefault();
+                          rateTouchedForBranch.current = branchId;
+                          onChange(averageInterestRate.data);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ),
             end: (
               <div>
                 <Dropdown
-                  items={activeDelegateModes.map((
-                    mode,
-                  ) => (
-                    content.interestRateField.delegateModes[mode]
-                  ))}
+                  items={activeDelegateModes.map(
+                    (mode) => content.interestRateField.delegateModes[mode],
+                  )}
                   menuWidth={300}
                   menuPlacement="end"
                   onSelect={(index) => {
@@ -235,34 +282,63 @@ export const InterestRateField = memo(
           placeholder="0.00"
           secondary={{
             start: (
-              <HFlex gap={4}>
-                <div>
-                  {boldInterestPerYear && (mode === "manual" || delegate !== null)
-                    ? fmtnum(boldInterestPerYear)
-                    : "−"} {BOLD_TOKEN_SYMBOL} / year
-                </div>
-                <InfoTooltip
-                  {...infoTooltipProps(
-                    content.generalInfotooltips.interestRateBoldPerYear,
-                  )}
-                />
-              </HFlex>
-            ),
-            end: (
-              <span>
-                Redeemable before you:{" "}
-                <span
+              <div
+                className={css({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  minWidth: 120,
+                  userSelect: "none",
+                })}
+              >
+                <div
                   className={css({
-                    fontVariantNumeric: "tabular-nums",
+                    minWidth: 0,
+                    flexShrink: 1,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
                   })}
                 >
-                  {(mode === "manual" || delegate !== null)
-                    ? fmtnum(boldRedeemableInFront, "compact")
-                    : "−"}
-                </span>
-                <span>{` ${BOLD_TOKEN_SYMBOL}`}</span>
-              </span>
+                  {boldInterestPerYear && (mode === "manual" || delegate !== null)
+                    ? fmtnum(boldInterestPerYear, breakpoint === "small" ? "compact" : "2z")
+                    : "−"} {BOLD_TOKEN_SYMBOL} / year
+                </div>
+                <InfoTooltip {...infoTooltipProps(content.generalInfotooltips.interestRateBoldPerYear)} />
+              </div>
             ),
+            end: redeemableTransition((style, show) => (
+              show && (
+                <a.div
+                  title={`Redeemable before you: ${
+                    (mode === "manual" || delegate !== null)
+                      ? fmtnum(bracket?.debtInFront, "compact")
+                      : "−"
+                  } BOLD`}
+                  className={css({
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    userSelect: "none",
+                  })}
+                  style={style}
+                >
+                  <span>
+                    {breakpoint === "large" ? "Redeemable before you: " : "Red. before: "}
+                    <span
+                      className={css({
+                        fontVariantNumeric: "tabular-nums",
+                      })}
+                    >
+                      {(mode === "manual" || delegate !== null)
+                        ? fmtnum(bracket?.debtInFront, "compact")
+                        : "−"}
+                    </span>
+                    {breakpoint === "large" && <span>{" BOLD"}</span>}
+                  </span>
+                </a.div>
+              )
+            )),
           }}
           {...fieldValue.inputFieldProps}
           value={
@@ -281,10 +357,10 @@ export const InterestRateField = memo(
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 8,
                   }}
                 >
-                  {delegate !== null && <MiniChart size="medium" />}
+                  {delegate !== null && breakpoint === "large" && <MiniChart size="medium" />}
                   <span
                     style={{
                       fontVariantNumeric: "tabular-nums",
@@ -296,12 +372,15 @@ export const InterestRateField = memo(
                     )}
                   </span>
                   <span
-                    style={{
+                    className={css({
                       color: "#878AA4",
-                      fontSize: 24,
-                    }}
+                      fontSize: {
+                        base: 20,
+                        large: 24,
+                      },
+                    })}
                   >
-                    % per year
+                    %{breakpoint === "large" ? " per year" : ""}
                   </span>
                 </span>
               )
@@ -331,3 +410,82 @@ export const InterestRateField = memo(
     jsonStringifyWithDnum(prev) === jsonStringifyWithDnum(next)
   ),
 );
+
+function ManualInterestRateSlider({
+  fieldValue,
+  interestChartData,
+  interestRate,
+}: {
+  fieldValue: ReturnType<typeof useInputFieldValue>;
+  interestChartData: ReturnType<typeof useInterestRateChartData>;
+  interestRate: Dnum | null;
+}) {
+  const value = useMemo(() => {
+    const rate = interestRate?.[0] ?? 0n;
+    const chartRates = interestChartData.data?.map(({ rate }) => rate[0]);
+    if (!rate || !chartRates || chartRates.length === 0) return 0;
+
+    const firstRate = chartRates.at(0) ?? 0n;
+    if (rate <= firstRate) return 0;
+
+    const lastRate = chartRates.at(-1) ?? 0n;
+    if (rate >= lastRate) return 1;
+
+    return findClosestRateIndex(chartRates, rate) / chartRates.length;
+  }, [
+    jsonStringifyWithDnum(interestChartData.data),
+    jsonStringifyWithDnum(interestRate),
+  ]);
+
+  const gradientStops = useMemo((): [number, number] => {
+    if (!interestChartData.data || interestChartData.data.length === 0) {
+      return [0, 0];
+    }
+    const rates = interestChartData.data.map((bar) => bar.rate[0]);
+    const stop = (rate: number) => (
+      findClosestRateIndex(rates, BigInt(rate * 10 ** 18)) / rates.length
+    );
+    return [
+      stop(REDEMPTION_RISK.medium),
+      stop(REDEMPTION_RISK.low),
+    ];
+  }, [interestChartData.data]);
+
+  const transition = useAppear(value !== -1);
+
+  const breakpoint = useBreakpointName();
+
+  return transition((style, show) =>
+    show && (
+      <a.div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: breakpoint === "large" ? 260 : 200,
+          paddingTop: 16,
+          ...style,
+        }}
+      >
+        <Slider
+          gradient={gradientStops}
+          gradientMode="high-to-low"
+          chart={interestChartData.data?.map(({ size }) => size) ?? []}
+          onChange={(value) => {
+            if (interestChartData.data) {
+              const index = Math.min(
+                interestChartData.data.length - 1,
+                Math.round(value * (interestChartData.data.length)),
+              );
+              fieldValue.setValue(String(dn.toNumber(dn.mul(
+                interestChartData.data[index]?.rate ?? dn.from(0, 18),
+                100,
+              ))));
+            }
+          }}
+          value={value}
+        />
+      </a.div>
+    )
+  );
+}

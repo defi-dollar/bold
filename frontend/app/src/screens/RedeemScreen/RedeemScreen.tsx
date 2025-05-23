@@ -10,8 +10,8 @@ import { dnum18 } from "@/src/dnum-utils";
 import { parseInputPercentage, useInputFieldValue } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
 import { getBranches, getCollToken } from "@/src/liquity-utils";
-import { useAccount, useBalance } from "@/src/services/Ethereum";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
+import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, Button, HFlex, InfoTooltip, InputField, TextButton, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
@@ -117,7 +117,9 @@ export function RedeemScreen() {
                     <TextButton
                       label={`Max ${fmtnum(boldBalance.data)} ${BOLD_TOKEN_SYMBOL}`}
                       onClick={() => {
-                        amount.setValue(dn.toString(boldBalance.data));
+                        if (boldBalance.data) {
+                          amount.setValue(dn.toString(boldBalance.data));
+                        }
                       }}
                     />
                   )
@@ -262,7 +264,6 @@ export function RedeemScreen() {
                   successLink: ["/", "Go to the Dashboard"],
                   successMessage: "The redemption was successful.",
 
-                  time: Date.now(),
                   amount: amount.parsed,
                   maxFee: maxFee.parsed,
                 });

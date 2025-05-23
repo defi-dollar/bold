@@ -1,4 +1,4 @@
-import type { BranchId, PositionEarn } from "@/src/types";
+import type { BranchId, Dnum, PositionEarn } from "@/src/types";
 import type { ReactNode } from "react";
 
 import { Amount } from "@/src/comps/Amount/Amount";
@@ -9,41 +9,52 @@ import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
-
 export function EarnPositionSummary({
   branchId,
-  prevEarnPosition,
   earnPosition,
   linkToScreen,
+  poolDeposit,
+  prevEarnPosition = null,
+  prevPoolDeposit,
   title,
   txPreviewMode,
-}: {
-  branchId: BranchId;
-  prevEarnPosition?: PositionEarn | null;
-  earnPosition: PositionEarn | null;
-  linkToScreen?: boolean;
-  title?: ReactNode;
-  txPreviewMode?: boolean;
-}) {
+}:
+  & {
+    branchId: BranchId;
+    earnPosition: PositionEarn | null;
+    linkToScreen?: boolean;
+    prevEarnPosition?: PositionEarn | null;
+    title?: ReactNode;
+    txPreviewMode?: boolean;
+  }
+  & (
+    | { poolDeposit: Dnum; prevPoolDeposit: Dnum }
+    | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
+  ))
+{
   const collToken = getCollToken(branchId);
   const earnPool = useEarnPool(branchId);
 
-  const { totalDeposited: totalPoolDeposit } = earnPool.data;
+  // The earnUpdate tx flow provides static values
+  // for poolDeposit and prevPoolDeposit. If these are
+  // not provided, we use the values from the earnPool data.
+  if (!poolDeposit) {
+    poolDeposit = earnPool.data?.totalDeposited ?? undefined;
+  }
 
   let share = dn.from(0, 18);
+  if (earnPosition && poolDeposit && dn.gt(poolDeposit, 0)) {
+    share = dn.div(earnPosition.deposit, poolDeposit);
+  }
+
   let prevShare = dn.from(0, 18);
-  if (totalPoolDeposit && dn.gt(totalPoolDeposit, 0)) {
-    if (earnPosition) {
-      share = dn.div(earnPosition.deposit, totalPoolDeposit);
-    }
-    if (prevEarnPosition) {
-      prevShare = dn.div(prevEarnPosition.deposit, totalPoolDeposit);
-    }
+  if (prevEarnPosition && prevPoolDeposit && dn.gt(prevPoolDeposit, 0)) {
+    prevShare = dn.div(prevEarnPosition.deposit, prevPoolDeposit);
   }
 
   const active = txPreviewMode || isEarnPositionActive(earnPosition);
 
-  return collToken && (
+  return (
     <div
       className={css({
         position: "relative",
@@ -129,7 +140,7 @@ export function EarnPositionSummary({
                   fallback="-"
                   format="compact"
                   prefix="$"
-                  value={totalPoolDeposit}
+                  value={poolDeposit}
                 />
               </div>
               <InfoTooltip heading="Total Value Locked (TVL)">
@@ -188,6 +199,7 @@ export function EarnPositionSummary({
                 >
                   <div
                     className={css({
+                      whiteSpace: "nowrap",
                       color: "contentAlt2",
                     })}
                   >
@@ -224,14 +236,22 @@ export function EarnPositionSummary({
           alignItems: "center",
           justifyContent: "space-between",
           paddingTop: 12,
-          height: 56,
+          height: {
+            base: "auto",
+            large: 56,
+          },
           fontSize: 14,
         })}
       >
         <div
           className={css({
             display: "flex",
-            gap: 32,
+            flexDirection: "column",
+            gap: 8,
+            large: {
+              flexDirection: "row",
+              gap: 32,
+            },
           })}
         >
           <div>
@@ -338,6 +358,9 @@ export function EarnPositionSummary({
           {active && (
             <div>
               <div
+                className={css({
+                  whiteSpace: "nowrap",
+                })}
                 style={{
                   color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
                 }}
@@ -398,10 +421,15 @@ function OpenLink({
         position: "absolute",
         inset: "0 -16px -12px auto",
         display: "grid",
-        placeItems: "center",
-        padding: "0 12px 0 24px",
-        borderRadius: 10,
-        transition: "scale 80ms",
+        placeItems: {
+          base: "end center",
+          large: "center",
+        },
+        padding: {
+          base: "16px 12px",
+          large: "0 12px 0 24px",
+        },
+        borderRadius: 8,
         _focusVisible: {
           outline: "2px solid token(colors.focused)",
           outlineOffset: -2,
@@ -409,8 +437,15 @@ function OpenLink({
         _active: {
           translate: "0 1px",
         },
+
+        "& > div": {
+          transformOrigin: "50% 50%",
+          transition: "scale 80ms",
+        },
         _hover: {
-          scale: 1.05,
+          "& > div": {
+            scale: 1.05,
+          },
         },
       })}
     >

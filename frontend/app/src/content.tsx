@@ -4,9 +4,21 @@
 import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 import type { ReactNode as N } from "react";
 
+import { css } from "@/styled-system/css";
+
 export default {
   // Used in the top bar and other places
   appName: "Liquity V2",
+  appDescription: `
+    Liquity V2 is a new borrowing protocol that lets users
+    deposit ETH or LSTs as collateral and mint the stablecoin BOLD.
+  `,
+  appUrl: typeof window === "undefined"
+    ? "https://www.liquity.org/"
+    : window.location.origin,
+  appIcon: (
+    typeof window === "undefined" ? "" : window.location.origin
+  ) + "/favicon.svg",
 
   // Menu bar
   menu: {
@@ -231,16 +243,16 @@ export default {
 
   // Borrow screen
   borrowScreen: {
-    headline: (tokensIcons: N, boldIcon: N) => (
+    headline: (eth: N, bold: N) => (
       <>
-        Borrow {boldIcon} {BOLD_TOKEN_SYMBOL} with {tokensIcons}
+        Borrow {bold} with {eth}
       </>
     ),
     depositField: {
-      label: "You deposit",
+      label: "Collateral",
     },
     borrowField: {
-      label: "You borrow",
+      label: "Loan",
     },
     liquidationPriceField: {
       label: "ETH liquidation price",
@@ -297,17 +309,20 @@ export default {
 
   // Earn home screen
   earnHome: {
-    headline: (tokensIcons: N, boldIcon: N) => (
+    headline: (rewards: N, bold: N) => (
       <>
-        Deposit {boldIcon} {BOLD_TOKEN_SYMBOL} to earn rewards {tokensIcons}
+        Deposit
+        <NoWrap>{bold} {BOLD_TOKEN_SYMBOL}</NoWrap>
+        to earn <NoWrap>rewards {rewards}</NoWrap>
       </>
     ),
     subheading: (
       <>
-        A {BOLD_TOKEN_SYMBOL} deposit in a stability pool earns rewards from the fees that users pay on their loans. Also, in case the
-        system needs to liquidate positions, the {BOLD_TOKEN_SYMBOL} may be swapped to collateral.
+        A {BOLD_TOKEN_SYMBOL} deposit in a stability pool earns rewards from the fees that users pay on their loans. Also, the {BOLD_TOKEN_SYMBOL} may
+        be swapped to collateral in case the system needs to liquidate positions.
       </>
     ),
+    learnMore: ["https://docs.liquity.org/v2-faq/bold-and-earn", "Learn more"],
     poolsColumns: {
       pool: "Pool",
       apr: "APR",
@@ -340,7 +355,7 @@ export default {
       rewardsLabel: "My rewards",
     },
     tabs: {
-      deposit: "Withdraw",
+      deposit: "Deposit",
       claim: "Claim rewards",
     },
     depositPanel: {
@@ -472,5 +487,28 @@ function Link({
     <a href={href} {...props}>
       {children}
     </a>
+  );
+}
+
+function NoWrap({
+  children,
+  gap = 8,
+}: {
+  children: N;
+  gap?: number;
+}) {
+  return (
+    <span
+      className={css({
+        display: "inline-flex",
+        alignItems: "center",
+        whiteSpace: "nowrap",
+      })}
+      style={{
+        gap,
+      }}
+    >
+      {children}
+    </span>
   );
 }

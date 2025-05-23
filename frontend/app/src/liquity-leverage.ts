@@ -1,14 +1,14 @@
 import type { BranchId, Dnum, TroveId } from "@/src/types";
 import type { Config as WagmiConfig } from "wagmi";
 
-import { CLOSE_FROM_COLLATERAL_SLIPPAGE, DATA_REFRESH_INTERVAL } from "@/src/constants";
+import { CLOSE_FROM_COLLATERAL_SLIPPAGE } from "@/src/constants";
 import { getProtocolContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
 import { getBranch } from "@/src/liquity-utils";
 import { useDebouncedQueryKey } from "@/src/react-utils";
-import { useWagmiConfig } from "@/src/services/Ethereum";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
+import { useConfig as useWagmiConfig } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
 
 const DECIMAL_PRECISION = 10n ** 18n;
@@ -125,8 +125,12 @@ export async function getOpenLeveragedTroveParams(
   wagmiConfig: WagmiConfig,
 ) {
   const { PriceFeed } = getBranch(branchId).contracts;
+  const FetchPriceAbi = PriceFeed.abi.find((fn) => fn.name === "fetchPrice");
+  if (!FetchPriceAbi) {
+    throw new Error("fetchPrice ABI not found");
+  }
   const [price] = await readContract(wagmiConfig, {
-    abi: PriceFeed.abi,
+    abi: [{ ...FetchPriceAbi, stateMutability: "view" }] as const,
     address: PriceFeed.address,
     functionName: "fetchPrice",
   });
@@ -210,12 +214,12 @@ export function useCheckLeverageSlippage({
   return useQuery({
     queryKey: debouncedQueryKey,
     queryFn: async () => {
-      const params = initialDeposit && await getOpenLeveragedTroveParams(
+      const params = initialDeposit && (await getOpenLeveragedTroveParams(
         branchId,
         initialDeposit[0],
         leverageFactor,
         wagmiConfig,
-      );
+      ));
 
       if (params === null) {
         return null;
@@ -239,6 +243,5 @@ export function useCheckLeverageSlippage({
         && dn.gt(initialDeposit, 0)
         && ownerIndex !== null,
     ),
-    refetchInterval: DATA_REFRESH_INTERVAL,
   });
 }
