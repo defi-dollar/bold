@@ -10,10 +10,10 @@ import type { ReadContractOptions } from "wagmi/query";
 import { GAS_MIN_HEADROOM, GAS_RELATIVE_HEADROOM, LOCAL_STORAGE_PREFIX } from "@/src/constants";
 import { CONTRACTS } from "@/src/contracts";
 import { jsonParseWithDnum, jsonStringifyWithDnum } from "@/src/dnum-utils";
-import { useAccount } from "@/src/services/Ethereum";
 import { useStoredState } from "@/src/services/StoredState";
 import { noop } from "@/src/utils";
 import { vAddress } from "@/src/valibot-utils";
+import { useAccount } from "@/src/wagmi-utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +29,10 @@ import { claimCollateralSurplus, type ClaimCollateralSurplusRequest } from "@/sr
 import { closeLoanPosition, type CloseLoanPositionRequest } from "@/src/tx-flows/closeLoanPosition";
 import { earnClaimRewards, type EarnClaimRewardsRequest } from "@/src/tx-flows/earnClaimRewards";
 import { earnUpdate, type EarnUpdateRequest } from "@/src/tx-flows/earnUpdate";
+import { legacyCloseLoanPosition, type LegacyCloseLoanPositionRequest } from "@/src/tx-flows/legacyCloseLoanPosition";
+import { legacyEarnWithdrawAll, type LegacyEarnWithdrawAllRequest } from "@/src/tx-flows/legacyEarnWithdrawAll";
+import { legacyRedeemCollateral, type LegacyRedeemCollateralRequest } from "@/src/tx-flows/legacyRedeemCollateral";
+import { legacyUnstakeAll, type LegacyUnstakeAllRequest } from "@/src/tx-flows/legacyUnstakeAll";
 import { openBorrowPosition, type OpenBorrowPositionRequest } from "@/src/tx-flows/openBorrowPosition";
 import { openLeveragePosition, type OpenLeveragePositionRequest } from "@/src/tx-flows/openLeveragePosition";
 import { redeemCollateral, type RedeemCollateralRequest } from "@/src/tx-flows/redeemCollateral";
@@ -45,6 +49,10 @@ export type FlowRequestMap = {
   "closeLoanPosition": CloseLoanPositionRequest;
   "earnClaimRewards": EarnClaimRewardsRequest;
   "earnUpdate": EarnUpdateRequest;
+  "legacyCloseLoanPosition": LegacyCloseLoanPositionRequest;
+  "legacyEarnWithdrawAll": LegacyEarnWithdrawAllRequest;
+  "legacyRedeemCollateral": LegacyRedeemCollateralRequest;
+  "legacyUnstakeAll": LegacyUnstakeAllRequest;
   "openBorrowPosition": OpenBorrowPositionRequest;
   "openLeveragePosition": OpenLeveragePositionRequest;
   "stakeClaimRewards": StakeClaimRewardsRequest;
@@ -62,6 +70,10 @@ const FlowIdSchema = v.union([
   v.literal("closeLoanPosition"),
   v.literal("earnClaimRewards"),
   v.literal("earnUpdate"),
+  v.literal("legacyCloseLoanPosition"),
+  v.literal("legacyEarnWithdrawAll"),
+  v.literal("legacyRedeemCollateral"),
+  v.literal("legacyUnstakeAll"),
   v.literal("openBorrowPosition"),
   v.literal("openLeveragePosition"),
   v.literal("stakeClaimRewards"),
@@ -79,6 +91,10 @@ export const flows: FlowsMap = {
   closeLoanPosition,
   earnClaimRewards,
   earnUpdate,
+  legacyCloseLoanPosition,
+  legacyEarnWithdrawAll,
+  legacyRedeemCollateral,
+  legacyUnstakeAll,
   openBorrowPosition,
   openLeveragePosition,
   stakeClaimRewards,
@@ -141,11 +157,13 @@ export type FlowStepDeclaration<FlowRequest extends BaseFlowRequest = BaseFlowRe
 
 export type FlowDeclaration<FlowRequest extends BaseFlowRequest> = {
   title: ReactNode;
-  Summary: ComponentType<{
-    account: Address;
-    request: FlowRequest;
-    steps: FlowStep[] | null;
-  }>;
+  Summary:
+    | null
+    | ComponentType<{
+      account: Address;
+      request: FlowRequest;
+      steps: FlowStep[] | null;
+    }>;
   Details: ComponentType<{
     account: Address;
     request: FlowRequest;
@@ -488,6 +506,11 @@ function useFlowManager(account: Address | null, isSafe: boolean = false) {
 
     const verifyingStep = flow.steps.find((step) => step.status === "awaiting-verify" && step.artifact);
     if (!verifyingStep) return;
+
+    // if runningStepRef is set, no need to resume
+    if (runningStepRef.current !== null) {
+      return;
+    }
 
     const stepIndex = flow.steps.indexOf(verifyingStep);
     const flowDeclaration = getFlowDeclaration(flow.request.flowId);

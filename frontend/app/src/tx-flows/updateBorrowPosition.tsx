@@ -14,7 +14,7 @@ import { match, P } from "ts-pattern";
 import * as v from "valibot";
 import { maxUint256 } from "viem";
 import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
-import { createRequestSchema, verifyTransaction, verifyTroveUpdate } from "./shared";
+import { createRequestSchema, verifyTransaction } from "./shared";
 
 const RequestSchema = createRequestSchema(
   "updateBorrowPosition",
@@ -104,7 +104,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
         )}
         {debtChangeWithFee && !dn.eq(debtChangeWithFee, 0n) && (
           <TransactionDetailsRow
-            label={isBorrowing ? "You borrow" : "You repay"}
+            label={isBorrowing ? "Loan increase" : "Loan decrease"}
             value={[
               <Amount
                 key="start"
@@ -227,7 +227,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
       },
 
       async verify(ctx, hash) {
-        await verifyTroveUpdate(ctx.wagmiConfig, hash, ctx.request.loan);
+        await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
       },
     },
 
@@ -257,7 +257,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
       },
 
       async verify(ctx, hash) {
-        await verifyTroveUpdate(ctx.wagmiConfig, hash, ctx.request.loan);
+        await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
       },
     },
 
@@ -288,7 +288,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
       },
 
       async verify(ctx, hash) {
-        await verifyTroveUpdate(ctx.wagmiConfig, hash, ctx.request.loan);
+        await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
       },
     },
 
@@ -317,7 +317,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
       },
 
       async verify(ctx, hash) {
-        await verifyTroveUpdate(ctx.wagmiConfig, hash, ctx.request.loan);
+        await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
       },
     },
 
@@ -346,7 +346,7 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
       },
 
       async verify(ctx, hash) {
-        await verifyTroveUpdate(ctx.wagmiConfig, hash, ctx.request.loan);
+        await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
       },
     },
   },
@@ -364,22 +364,22 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
     const isBoldApproved = !dn.lt(debtChange, 0) || !dn.gt(
       dn.abs(debtChange),
       [
-        await ctx.readContract({
+        (await ctx.readContract({
           ...ctx.contracts.BoldToken,
           functionName: "allowance",
           args: [ctx.account, Controller.address],
-        }) ?? 0n,
+        })) ?? 0n,
         18,
       ],
     );
 
     // Collateral token needs to be approved if collChange > 0 and collToken != "ETH" (no LeverageWETHZapper)
     const isCollApproved = branch.symbol === "ETH" || !dn.gt(collChange, 0) || !dn.gt(collChange, [
-      await ctx.readContract({
+      (await ctx.readContract({
         ...branch.contracts.CollToken,
         functionName: "allowance",
         args: [ctx.account, Controller.address],
-      }) ?? 0n,
+      })) ?? 0n,
       18,
     ]);
 

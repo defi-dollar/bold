@@ -4,19 +4,19 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { ETH_GAS_COMPENSATION } from "@/src/constants";
 import { fmtnum } from "@/src/formatting";
 import { getCloseFlashLoanAmount } from "@/src/liquity-leverage";
-import { getBranch, getCollToken, getPrefixedTroveId } from "@/src/liquity-utils";
+import { getBranch, getCollToken } from "@/src/liquity-utils";
 import { LoanCard } from "@/src/screens/TransactionsScreen/LoanCard";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { usePrice } from "@/src/services/Prices";
-import { graphQuery, TroveByIdQuery } from "@/src/subgraph-queries";
+import { getIndexedTroveById } from "@/src/subgraph";
 import { sleep } from "@/src/utils";
 import { vPositionLoanCommited } from "@/src/valibot-utils";
 import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
 import { maxUint256 } from "viem";
-import { readContract } from "wagmi/actions";
+import { readContract, readContracts } from "wagmi/actions";
 import { createRequestSchema, verifyTransaction } from "./shared";
 
 const RequestSchema = createRequestSchema(
@@ -198,15 +198,13 @@ export const closeLoanPosition: FlowDeclaration<CloseLoanPositionRequest> = {
       async verify(ctx, hash) {
         await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
 
-        const prefixedTroveId = getPrefixedTroveId(
-          ctx.request.loan.branchId,
-          ctx.request.loan.troveId,
-        );
-
         // wait for the trove to be seen as closed in the subgraph
         while (true) {
-          const { trove } = await graphQuery(TroveByIdQuery, { id: prefixedTroveId });
-          if (trove?.closedAt !== undefined) {
+          const trove = await getIndexedTroveById(
+            ctx.request.loan.branchId,
+            ctx.request.loan.troveId,
+          );
+          if (trove?.status === "closed") {
             break;
           }
           await sleep(1000);
@@ -223,20 +221,22 @@ export const closeLoanPosition: FlowDeclaration<CloseLoanPositionRequest> = {
       ? branch.contracts.LeverageWETHZapper
       : branch.contracts.LeverageLSTZapper;
 
-    const { entireDebt } = await ctx.readContract({
-      ...branch.contracts.TroveManager,
-      functionName: "getLatestTroveData",
-      args: [BigInt(loan.troveId)],
-    });
-
-    const isBoldApproved = ctx.request.repayWithCollateral || !dn.gt(entireDebt, [
-      await ctx.readContract({
+    const [{ entireDebt }, boldAllowance] = await readContracts(ctx.wagmiConfig, {
+      contracts: [{
+        ...branch.contracts.TroveManager,
+        functionName: "getLatestTroveData",
+        args: [BigInt(loan.troveId)],
+      }, {
         ...ctx.contracts.BoldToken,
         functionName: "allowance",
         args: [ctx.account, Zapper.address],
-      }) ?? 0n,
-      18,
-    ]);
+      }],
+      allowFailure: false,
+    });
+
+    const isBoldApproved = ctx.request.repayWithCollateral || (
+      entireDebt <= boldAllowance
+    );
 
     const steps: string[] = [];
 

@@ -4,6 +4,7 @@ import "@liquity2/uikit/index.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { BreakpointName } from "@/src/breakpoints";
 import { About } from "@/src/comps/About/About";
 import { AppLayout } from "@/src/comps/AppLayout/AppLayout";
 import { Blocking } from "@/src/comps/Blocking/Blocking";
@@ -44,25 +45,27 @@ export default function Layout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={GeistSans.className}>
-        <UiKit>
-          <ReactQuery>
+        <ReactQuery>
+          <UiKit>
             <StoredState>
-              <DemoMode>
-                <Ethereum>
-                  <Blocking>
-                    <TransactionFlow>
-                      <About>
-                        <AppLayout>
-                          {children}
-                        </AppLayout>
-                      </About>
-                    </TransactionFlow>
-                  </Blocking>
-                </Ethereum>
-              </DemoMode>
+              <BreakpointName>
+                <DemoMode>
+                  <Ethereum>
+                    <Blocking>
+                      <TransactionFlow>
+                        <About>
+                          <AppLayout>
+                            {children}
+                          </AppLayout>
+                        </About>
+                      </TransactionFlow>
+                    </Blocking>
+                  </Ethereum>
+                </DemoMode>
+              </BreakpointName>
             </StoredState>
-          </ReactQuery>
-        </UiKit>
+          </UiKit>
+        </ReactQuery>
         {VERCEL_ANALYTICS && <Analytics />}
       </body>
     </html>
