@@ -164,8 +164,8 @@ export const updateBorrowPosition: FlowDeclaration<UpdateBorrowPositionRequest> 
 
     approveColl: {
       name: ({ request }) => {
-        const branch = getBranch(request.loan.branchId);
-        return `Approve ${branch.symbol}`;
+        const token = getCollToken(request.loan.branchId);
+        return `Approve ${token.name}`;
       },
       Status: (props) => (
         <TransactionStatus

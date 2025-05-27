@@ -226,8 +226,8 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
     // Approve LST
     approveLst: {
       name: (ctx) => {
-        const branch = getBranch(ctx.request.branchId);
-        return `Approve ${branch.symbol}`;
+        const token = getCollToken(ctx.request.branchId);
+        return `Approve ${token.name}`;
       },
       Status: (props) => (
         <TransactionStatus

@@ -11,7 +11,7 @@ export default {
   appName: "DeFi Dollar",
   appDescription: `
     DeFi Dollar is a new borrowing protocol that lets users
-    deposit ETH or LSTs as collateral and mint the stablecoin ${BOLD_TOKEN_SYMBOL}.
+    deposit DeFi governance tokens and mint the stablecoin ${BOLD_TOKEN_SYMBOL}.
   `,
   appUrl: typeof window === "undefined"
     ? "https://defidollar.io/"

@@ -87,7 +87,7 @@ function BorrowTable({
 
   return (
     <HomeTable
-      title={`Borrow ${BOLD_TOKEN_SYMBOL} against ETH and staked ETH`}
+      title={`Borrow ${BOLD_TOKEN_SYMBOL} against DeFi governance tokens`}
       subtitle="You can adjust your loans, including your interest rate, at any time"
       icon={<IconBorrow />}
       columns={columns}
