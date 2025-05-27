@@ -28,7 +28,7 @@ const actionCards = [
   "borrow",
   // "multiply",
   "earn",
-  "stake",
+  // "stake",
 ] as const;
 
 export function Positions({
@@ -162,7 +162,7 @@ function PositionsGroup({
     .with("loading", () => [
       [0, <PositionCard key="0" loading />],
       [1, <PositionCard key="1" loading />],
-      [2, <PositionCard key="2" loading />],
+      // [2, <PositionCard key="2" loading />],
     ])
     .with("actions", () => (
       (showNewPositionCard ? actionCards : []).map((type, index) => [
@@ -266,7 +266,7 @@ function PositionsGroup({
             },
           })}
           style={{
-            gridTemplateColumns: `repeat(${columns}, 1fr)`,
+            gridTemplateColumns: `repeat(${4}, 1fr)`,
             gridAutoRows: cardHeight,
           }}
         >
