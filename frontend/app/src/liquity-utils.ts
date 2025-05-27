@@ -220,6 +220,7 @@ function earnPositionsContractsReadSetup(branchId: BranchId, account: Address | 
       if (!account) {
         throw new Error(); // should never happen (see enabled)
       }
+      const collToken = getCollToken(branchId);
       return deposit === 0n ? null : {
         type: "earn",
         owner: account,
@@ -228,8 +229,8 @@ function earnPositionsContractsReadSetup(branchId: BranchId, account: Address | 
         rewards: {
           bold: dnum18(yieldGainWithPending),
           coll: dn.add(
-            dnum18(collGain),
-            dnum18(stashedColl),
+            [collGain, collToken.decimals],
+            [stashedColl, collToken.decimals],
           ),
         },
       } as const;
@@ -910,6 +911,8 @@ export async function fetchLoanById(
   const status = troveTuple[3];
   const batchManager = troveTuple[8];
 
+  const collToken = getCollToken(branchId);
+
   return {
     type: indexdTrove?.mightBeLeveraged ? "multiply" : "borrow",
     batchManager: BigInt(batchManager) === 0n ? null : batchManager,
@@ -917,7 +920,7 @@ export async function fetchLoanById(
     borrower,
     branchId,
     createdAt: indexdTrove?.createdAt ?? 0,
-    deposit: dnum18(troveData.entireColl),
+    deposit: [troveData.entireColl, collToken.decimals],
     interestRate: dnum18(troveData.annualInterestRate),
     status: indexdTrove?.status ?? statusFromEnum(status),
     troveId,

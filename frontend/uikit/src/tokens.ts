@@ -50,6 +50,7 @@ export function isCollateralSymbol(symbol: string): symbol is CollateralSymbol {
 export type CollateralToken = Token & {
   collateralRatio: number;
   symbol: CollateralSymbol;
+  decimals: number;
 };
 
 export const WBTC: CollateralToken  = {
@@ -57,6 +58,7 @@ export const WBTC: CollateralToken  = {
   name: "WBTC",
   symbol: "WBTC" as const,
   collateralRatio: 1.25,
+  decimals: 8,
 };
 
 export const LINK: CollateralToken  = {
@@ -64,6 +66,7 @@ export const LINK: CollateralToken  = {
   name: "LINK",
   symbol: "LINK" as const,
   collateralRatio: 1.33,
+  decimals: 18,
 };
 
 export const UNI: CollateralToken  = {
@@ -71,6 +74,7 @@ export const UNI: CollateralToken  = {
   name: "UNI",
   symbol: "UNI" as const,
   collateralRatio: 1.33,
+  decimals: 18,
 };
 
 export const AAVE: CollateralToken  = {
@@ -91,21 +95,21 @@ export const LDO: CollateralToken  = {
   icon: tokenLDO,
   name: "LDO",
   symbol: "LDO" as const,
-  collateralRatio: 1.66,
+  decimals: 18,
 };
 
 export const CRV: CollateralToken  = {
   icon: tokenCRV,
   name: "CRV",
   symbol: "CRV" as const,
-  collateralRatio: 1.66,
+  decimals: 18,
 };
 
 export const FXS: CollateralToken  = {
   icon: tokenFXS,
   name: "FXS",
   symbol: "FXS" as const,
-  collateralRatio: 1.66,
+  decimals: 18,
 };
 
 export const SKY: CollateralToken  = {
@@ -113,13 +117,14 @@ export const SKY: CollateralToken  = {
   name: "SKY",
   symbol: "SKY" as const,
   collateralRatio: 1.33,
+  decimals: 18,
 };
 
 export const LQTY: CollateralToken  = {
   icon: tokenLQTY,
   name: "LQTY",
   symbol: "LQTY" as const,
-  collateralRatio: 1.66,
+  decimals: 18,
 };
 
 export const ETH: Token = {

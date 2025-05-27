@@ -17,7 +17,7 @@ import { usePrice } from "@/src/services/Prices";
 import { infoTooltipProps, riskLevelToStatusMode } from "@/src/uikit-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, addressesEqual, HFlex, IconSuggestion, InfoTooltip, StatusDot } from "@liquity2/uikit";
+import { addressesEqual, BOLD_TOKEN_SYMBOL, HFlex, IconSuggestion, InfoTooltip, StatusDot } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useEffect, useRef, useState } from "react";
 
@@ -32,8 +32,8 @@ export function PanelInterestRate({
   const collPrice = usePrice(collToken.symbol);
 
   const deposit = useInputFieldValue((value) => `${fmtnum(value, "full")} ${collToken.symbol}`, {
-    token: collToken.symbol,
     defaultValue: dn.toString(loan.deposit),
+    decimals: collToken.decimals,
   });
   const debt = useInputFieldValue((value) => `${fmtnum(value, "full")} ${BOLD_TOKEN_SYMBOL}`, {
     defaultValue: dn.toString(loan.borrowed),

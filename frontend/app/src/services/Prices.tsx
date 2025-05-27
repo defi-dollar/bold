@@ -35,6 +35,11 @@ async function fetchCollateralPrice(
     functionName: "fetchPrice",
   });
 
+  if (symbol === 'WBTC') {
+    return [price, 18 + 10];
+  }
+  
+
   return dnum18(price);
 }
 

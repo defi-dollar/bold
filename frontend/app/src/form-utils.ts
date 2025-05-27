@@ -1,6 +1,6 @@
 import type { Dnum } from "dnum";
 
-import { ADDRESS_ZERO, isAddress, TokenSymbol } from "@liquity2/uikit";
+import { ADDRESS_ZERO, isAddress } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useMemo, useRef, useState } from "react";
 
@@ -124,20 +124,21 @@ type InputFieldUpdateData = {
 export function useInputFieldValue(
   format: (value: Dnum) => string,
   {
-    token,
     defaultValue = "",
+    decimals = 18,
     onChange,
     onFocusChange,
+    parse = parseInputFloat,
     validate = (parsed, value) => ({ parsed, value }),
   }: {
-    token?: TokenSymbol;
     defaultValue?: string;
+    decimals?: number;
     onChange?: (data: InputFieldUpdateData) => void;
     onFocusChange?: (data: InputFieldUpdateData) => void;
+    parse?: (value: string, decimals: number) => Dnum | null;
     validate?: (parsed: Dnum | null, value: string) => { parsed: Dnum | null; value: string };
   } = {},
 ) {
-  const decimals = token === 'WBTC' ? 8 : 18;
   const [{ value, focused, parsed }, set] = useState<{
     value: string;
     focused: boolean;
@@ -145,14 +146,14 @@ export function useInputFieldValue(
   }>({
     value: defaultValue,
     focused: false,
-    parsed: parseInputFloat(defaultValue, decimals),
+    parsed: parse(defaultValue, decimals),
   });
 
   const ref = useRef<HTMLInputElement>(null);
 
   return useMemo(() => {
     const setValue = (value: string) => {
-      let parsed = parseInputFloat(value, decimals);
+      let parsed = parse(value, decimals);
 
       const result = validate(parsed, value);
       parsed = result.parsed;

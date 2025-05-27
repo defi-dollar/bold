@@ -60,7 +60,7 @@ export function PanelUpdateBorrowPosition({
   // deposit change
   const [depositMode, setDepositMode] = useState<ValueUpdateMode>("add");
   const depositChange = useInputFieldValue((value) => fmtnum(value, "full"), {
-    token: collToken.symbol,
+    decimals: collToken.decimals,
   });
 
   // deposit update

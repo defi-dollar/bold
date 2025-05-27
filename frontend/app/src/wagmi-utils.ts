@@ -1,10 +1,10 @@
 import type { Dnum, Token } from "@/src/types";
 import type { Address } from "@liquity2/uikit";
 
-import { ACCOUNT_BALANCES, useDemoMode } from "@/src/demo-mode";
+import { useDemoMode } from "@/src/demo-mode";
 import { dnum18 } from "@/src/dnum-utils";
 import { CONTRACT_BOLD_TOKEN, CONTRACT_LQTY_TOKEN, CONTRACT_LUSD_TOKEN } from "@/src/env";
-import { getBranch } from "@/src/liquity-utils";
+import { getBranch, getCollToken } from "@/src/liquity-utils";
 import { getSafeStatus } from "@/src/safe-utils";
 import { BOLD_TOKEN_SYMBOL, isCollateralSymbol } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
@@ -78,7 +78,7 @@ export function useBalances(
   // combine results
   return tokens.reduce((result, token) => {
     if (demoMode.enabled) {
-      result[token] = { data: ACCOUNT_BALANCES[token], isLoading: false };
+      result[token] = { data: [0n, 18], isLoading: false };
     } else if (token === "ETH") {
       result[token] = {
         data: ethBalance.data ? dnum18(ethBalance.data.value) : undefined,
@@ -88,8 +88,14 @@ export function useBalances(
       const erc20Index = erc20Tokens.findIndex((config) => config.token === token);
       if (erc20Index !== -1) {
         const balance = erc20Balances.data?.[erc20Index];
+        let decimals = 18;
+        if (isCollateralSymbol(token)) {
+          const branch = getBranch(token);
+          const collToken = getCollToken(branch.id);
+          decimals = collToken.decimals;
+        }
         result[token] = {
-          data: balance?.result !== undefined ? dnum18(balance.result) : undefined,
+          data: balance?.result !== undefined ? [balance.result, decimals] : undefined,
           isLoading: erc20Balances.isLoading,
         };
       }

@@ -38,7 +38,8 @@ export function PanelUpdateDeposit({
   const hasDeposit = dn.gt(position?.deposit ?? DNUM_0, 0);
   const isActive = isEarnPositionActive(position ?? null);
 
-  const parsedValue = parseInputFloat(value);
+  const token = getCollToken(branchId);
+  const parsedValue = parseInputFloat(value, token.decimals);
   const depositDifference = dn.mul(parsedValue ?? DNUM_0, mode === "remove" ? -1 : 1);
   const value_ = (focused || !parsedValue || dn.lte(parsedValue, 0)) ? value : `${fmtnum(parsedValue, "full")}`;
   const updatedDeposit = dnumMax(
