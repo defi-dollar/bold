@@ -11,7 +11,7 @@ export default {
   appName: "DeFi Dollar",
   appDescription: `
     DeFi Dollar is a new borrowing protocol that lets users
-    deposit ETH or LSTs as collateral and mint the stablecoin BOLD.
+    deposit ETH or LSTs as collateral and mint the stablecoin ${BOLD_TOKEN_SYMBOL}.
   `,
   appUrl: typeof window === "undefined"
     ? "https://defidollar.io/"
@@ -70,7 +70,7 @@ export default {
     ethPrice: (symbol: string) => [
       `${symbol} Price`,
       <>
-        The current price of ETH, as reported by the oracle. The {symbol} price is used to calculate the Loan-To-Value (LTV)
+        The current price of {symbol}, as reported by the oracle. The {symbol} price is used to calculate the Loan-To-Value (LTV)
         ratio of a loan.
       </>,
     ],

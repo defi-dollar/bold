@@ -314,7 +314,7 @@ export const InterestRateField = memo(
                     (mode === "manual" || delegate !== null)
                       ? fmtnum(bracket?.debtInFront, "compact")
                       : "−"
-                  } BOLD`}
+                  } ${BOLD_TOKEN_SYMBOL}`}
                   className={css({
                     overflow: "hidden",
                     whiteSpace: "nowrap",
@@ -334,7 +334,7 @@ export const InterestRateField = memo(
                         ? fmtnum(bracket?.debtInFront, "compact")
                         : "−"}
                     </span>
-                    {breakpoint === "large" && <span>{" BOLD"}</span>}
+                    {breakpoint === "large" && <span>{` ${BOLD_TOKEN_SYMBOL}`}</span>}
                   </span>
                 </a.div>
               )

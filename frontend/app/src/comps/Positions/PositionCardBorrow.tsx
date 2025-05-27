@@ -70,7 +70,7 @@ export function PositionCardBorrow({
             color: "positionContent",
           })}
         >
-          <div>BOLD loan</div>
+          <div>{BOLD_TOKEN_SYMBOL} loan</div>
           {statusTag}
         </div>
       }
@@ -89,7 +89,7 @@ export function PositionCardBorrow({
             <Amount value={debt} fallback="−" />
             <TokenIcon
               size={24}
-              symbol="BOLD"
+              symbol={BOLD_TOKEN_SYMBOL}
             />
           </HFlex>
         ),

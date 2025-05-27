@@ -58,8 +58,9 @@ export function BorrowScreen() {
 
   const maxCollDeposit = MAX_COLLATERAL_DEPOSITS[collSymbol];
 
+  const collToken = getCollToken(branch.id);
   const deposit = useInputFieldValue(fmtnum, {
-    token: collateral.symbol,
+    decimals: collToken.decimals,
     validate: (parsed, value) => {
       const isAboveMax = parsed && dn.gt(parsed, maxCollDeposit);
       return {
@@ -177,7 +178,6 @@ export function BorrowScreen() {
                     />
                   ))}
                 </TokenIcon.Group>
-                {NBSP}{BOLD_TOKEN_SYMBOL}
               </div>,
               <div
                 className={css({
@@ -186,7 +186,7 @@ export function BorrowScreen() {
                 })}
               >
                 <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
-                {NBSP}ETH
+                {NBSP}{BOLD_TOKEN_SYMBOL}
               </div>,
             )}
           </div>
