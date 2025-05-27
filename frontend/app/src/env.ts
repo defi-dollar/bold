@@ -80,12 +80,18 @@ const DEFAULT_LEGACY_CHECKS = new Map<number, LegacyCheck>([
   }],
 ]);
 
-export const CollateralSymbolSchema = v.string();
-// export const CollateralSymbolSchema = v.union([
-//   v.literal("ETH"),
-//   v.literal("RETH"),
-//   v.literal("WSTETH"),
-// ]);
+export const CollateralSymbolSchema = v.union([
+  v.literal("FXS"),
+  v.literal("LINK"),
+  v.literal("UNI"),
+  v.literal("SKY"),
+  v.literal("CRV"),
+  v.literal("AAVE"),
+  v.literal("YFI"),
+  v.literal("LDO"),
+  v.literal("LQTY"),
+  v.literal("WBTC"),
+]);
 
 const contractsEnvNames = [
   "ACTIVE_POOL",
