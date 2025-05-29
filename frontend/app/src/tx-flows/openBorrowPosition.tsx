@@ -7,7 +7,6 @@ import { fmtnum } from "@/src/formatting";
 import {
   getBranch,
   getCollToken,
-  getPrefixedTroveId,
   getTroveOperationHints,
   useInterestBatchDelegate,
   usePredictOpenTroveUpfrontFee,
@@ -17,11 +16,11 @@ import { LoanCard } from "@/src/screens/TransactionsScreen/LoanCard";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { usePrice } from "@/src/services/Prices";
-import { graphQuery, TroveStatusByIdQuery } from "@/src/subgraph-queries";
+import { getIndexedTroveById } from "@/src/subgraph";
 import { sleep } from "@/src/utils";
 import { vAddress, vBranchId, vDnum } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
-import { ADDRESS_ZERO, InfoTooltip } from "@liquity2/uikit";
+import { ADDRESS_ZERO, BOLD_TOKEN_SYMBOL, InfoTooltip } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
 import { maxUint256, parseEventLogs } from "viem";
@@ -123,7 +122,7 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
               key="start"
               fallback="…"
               value={boldAmountWithFee}
-              suffix=" BOLD"
+              suffix={` ${BOLD_TOKEN_SYMBOL}`}
             />,
             <div
               className={css({
@@ -137,9 +136,9 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
                 fallback="…"
                 prefix="Incl. "
                 value={upfrontFee.data}
-                suffix=" BOLD creation fee"
+                suffix={` ${BOLD_TOKEN_SYMBOL} creation fee`}
               />
-              <InfoTooltip heading="BOLD Creation Fee">
+              <InfoTooltip heading={`${BOLD_TOKEN_SYMBOL} Creation Fee`}>
                 This fee is charged when you open a new loan or increase your debt. It corresponds to 7 days of average
                 interest for the respective collateral asset.
               </InfoTooltip>
@@ -177,7 +176,7 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
                         <Amount
                           format="2z"
                           prefix="~"
-                          suffix=" BOLD per year"
+                          suffix={` ${BOLD_TOKEN_SYMBOL} per year`}
                           value={yearlyBoldInterest}
                         />
                       </>
@@ -202,7 +201,7 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
                     boldAmountWithFee,
                     request.annualInterestRate,
                   )}
-                  suffix=" BOLD per year"
+                  suffix={` ${BOLD_TOKEN_SYMBOL} per year`}
                 />,
               ]}
             />
@@ -227,8 +226,8 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
     // Approve LST
     approveLst: {
       name: (ctx) => {
-        const branch = getBranch(ctx.request.branchId);
-        return `Approve ${branch.symbol}`;
+        const token = getCollToken(ctx.request.branchId);
+        return `Approve ${token.name}`;
       },
       Status: (props) => (
         <TransactionStatus
@@ -310,17 +309,13 @@ export const openBorrowPosition: FlowDeclaration<OpenBorrowPositionRequest> = {
           throw new Error("Failed to extract trove ID from transaction");
         }
 
-        const prefixedTroveId = getPrefixedTroveId(
-          ctx.request.branchId,
-          `0x${troveOperation.args._troveId.toString(16)}`,
-        );
-
         // wait for the trove to appear in the subgraph
         while (true) {
-          const { trove: troveStatus } = await graphQuery(TroveStatusByIdQuery, {
-            id: prefixedTroveId,
-          });
-          if (troveStatus !== null) {
+          const trove = await getIndexedTroveById(
+            branch.branchId,
+            `0x${troveOperation.args._troveId.toString(16)}`,
+          );
+          if (trove !== null) {
             break;
           }
           await sleep(1000);

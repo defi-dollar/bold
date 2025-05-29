@@ -1,9 +1,9 @@
-import type { Address, CollateralSymbol, Token, TokenSymbol } from "@liquity2/uikit";
+import type { Address, CollateralSymbol, CollateralSymbols, Token, TokenSymbol } from "@liquity2/uikit";
 import type { Dnum } from "dnum";
 import type { ReactNode } from "react";
 import type { BranchContracts } from "./contracts";
 
-export type { Address, CollateralSymbol, Dnum, Token, TokenSymbol };
+export type { Address, CollateralSymbol, CollateralSymbols, Dnum, Token, TokenSymbol };
 
 export type RiskLevel = "low" | "medium" | "high";
 
@@ -51,6 +51,12 @@ export type MenuSection = {
   label: ReactNode;
 };
 
+export type TroveStatus =
+  | "active"
+  | "closed"
+  | "liquidated"
+  | "redeemed";
+
 export type PositionLoanBase = {
   // TODO: rename the type to "loan" and move "borrow" | "multiply" to
   // a "mode" field. The two separate types come from a previous design
@@ -62,11 +68,7 @@ export type PositionLoanBase = {
   branchId: BranchId;
   deposit: Dnum;
   interestRate: Dnum;
-  status:
-    | "active"
-    | "closed"
-    | "liquidated"
-    | "redeemed";
+  status: TroveStatus;
 };
 
 export type PositionLoanCommitted = PositionLoanBase & {

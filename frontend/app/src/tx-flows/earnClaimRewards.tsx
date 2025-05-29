@@ -9,6 +9,7 @@ import { usePrice } from "@/src/services/Prices";
 import { vPositionEarn } from "@/src/valibot-utils";
 import * as dn from "dnum";
 import * as v from "valibot";
+import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 import { createRequestSchema, verifyTransaction } from "./shared";
 
 const RequestSchema = createRequestSchema(
@@ -36,7 +37,7 @@ export const earnClaimRewards: FlowDeclaration<EarnClaimRewardsRequest> = {
   Details({ request }) {
     const collateral = getCollToken(request.earnPosition.branchId);
 
-    const boldPrice = usePrice("BOLD");
+    const boldPrice = usePrice(BOLD_TOKEN_SYMBOL);
     const collPrice = usePrice(collateral.symbol);
 
     const rewardsBold = request.earnPosition.rewards.bold;
@@ -47,12 +48,12 @@ export const earnClaimRewards: FlowDeclaration<EarnClaimRewardsRequest> = {
     return (
       <>
         <TransactionDetailsRow
-          label="Claim BOLD rewards"
+          label={`Claim ${BOLD_TOKEN_SYMBOL} rewards`}
           value={[
             <Amount
               key="start"
               value={rewardsBold}
-              suffix=" BOLD"
+              suffix={` ${BOLD_TOKEN_SYMBOL}`}
             />,
             <Amount
               key="end"

@@ -6,7 +6,7 @@ import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { fmtnum } from "@/src/formatting";
 import { getCollToken, isEarnPositionActive, useEarnPool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
 export function EarnPositionSummary({
@@ -144,7 +144,7 @@ export function EarnPositionSummary({
                 />
               </div>
               <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of BOLD deposited in this stability pool.
+                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability pool.
               </InfoTooltip>
             </div>
           </div>
@@ -199,6 +199,7 @@ export function EarnPositionSummary({
                 >
                   <div
                     className={css({
+                      whiteSpace: "nowrap",
                       color: "contentAlt2",
                     })}
                   >
@@ -235,14 +236,22 @@ export function EarnPositionSummary({
           alignItems: "center",
           justifyContent: "space-between",
           paddingTop: 12,
-          height: 56,
+          height: {
+            base: "auto",
+            large: 56,
+          },
           fontSize: 14,
         })}
       >
         <div
           className={css({
             display: "flex",
-            gap: 32,
+            flexDirection: "column",
+            gap: 8,
+            large: {
+              flexDirection: "row",
+              gap: 32,
+            },
           })}
         >
           <div>
@@ -262,7 +271,7 @@ export function EarnPositionSummary({
             >
               <div
                 title={active
-                  ? `${fmtnum(earnPosition?.deposit, "full")} BOLD`
+                  ? `${fmtnum(earnPosition?.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`
                   : undefined}
                 className={css({
                   display: "flex",
@@ -273,11 +282,11 @@ export function EarnPositionSummary({
                 })}
               >
                 {active && fmtnum(earnPosition?.deposit)}
-                <TokenIcon symbol="BOLD" size="mini" title={null} />
+                <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
               </div>
               {prevEarnPosition && (
                 <div
-                  title={`${fmtnum(prevEarnPosition.deposit, "full")} BOLD`}
+                  title={`${fmtnum(prevEarnPosition.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`}
                   className={css({
                     display: "flex",
                     justifyContent: "flex-start",
@@ -289,7 +298,7 @@ export function EarnPositionSummary({
                   })}
                 >
                   {fmtnum(prevEarnPosition.deposit)}
-                  <TokenIcon symbol="BOLD" size="mini" title={null} />
+                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
                 </div>
               )}
             </div>
@@ -323,13 +332,13 @@ export function EarnPositionSummary({
                     <>
                       <HFlex
                         gap={4}
-                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} BOLD`}
+                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
                         className={css({
                           fontVariantNumeric: "tabular-nums",
                         })}
                       >
                         {fmtnum(earnPosition?.rewards.bold)}
-                        <TokenIcon symbol="BOLD" size="mini" title={null} />
+                        <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
                       </HFlex>
                       <HFlex gap={4}>
                         <Amount value={earnPosition?.rewards.coll} />
@@ -339,7 +348,7 @@ export function EarnPositionSummary({
                   )
                   : (
                     <TokenIcon.Group size="mini">
-                      <TokenIcon symbol="BOLD" />
+                      <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
                       <TokenIcon symbol={collToken.symbol} />
                     </TokenIcon.Group>
                   )}
@@ -349,6 +358,9 @@ export function EarnPositionSummary({
           {active && (
             <div>
               <div
+                className={css({
+                  whiteSpace: "nowrap",
+                })}
                 style={{
                   color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
                 }}
@@ -409,10 +421,15 @@ function OpenLink({
         position: "absolute",
         inset: "0 -16px -12px auto",
         display: "grid",
-        placeItems: "center",
-        padding: "0 12px 0 24px",
-        borderRadius: 10,
-        transition: "scale 80ms",
+        placeItems: {
+          base: "end center",
+          large: "center",
+        },
+        padding: {
+          base: "16px 12px",
+          large: "0 12px 0 24px",
+        },
+        borderRadius: 8,
         _focusVisible: {
           outline: "2px solid token(colors.focused)",
           outlineOffset: -2,
@@ -420,8 +437,15 @@ function OpenLink({
         _active: {
           translate: "0 1px",
         },
+
+        "& > div": {
+          transformOrigin: "50% 50%",
+          transition: "scale 80ms",
+        },
         _hover: {
-          scale: 1.05,
+          "& > div": {
+            scale: 1.05,
+          },
         },
       })}
     >

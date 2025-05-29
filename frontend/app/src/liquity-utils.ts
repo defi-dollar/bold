@@ -5,12 +5,12 @@ import type {
   Delegate,
   Dnum,
   PositionEarn,
-  PositionLoanBase,
   PositionLoanCommitted,
   PositionStake,
   PrefixedTroveId,
   TokenSymbol,
   TroveId,
+  TroveStatus,
 } from "@/src/types";
 import type { Address, CollateralSymbol, CollateralToken } from "@liquity2/uikit";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -20,7 +20,6 @@ import { Governance } from "@/src/abi/Governance";
 import { StabilityPool } from "@/src/abi/StabilityPool";
 import { TroveManager } from "@/src/abi/TroveManager";
 import {
-  DATA_REFRESH_INTERVAL,
   INTEREST_RATE_ADJ_COOLDOWN,
   INTEREST_RATE_END,
   INTEREST_RATE_INCREMENT_NORMAL,
@@ -32,7 +31,14 @@ import { CONTRACTS, getBranchContract, getProtocolContract } from "@/src/contrac
 import { ACCOUNT_POSITIONS } from "@/src/demo-mode";
 import { dnum18, DNUM_0, dnumOrNull, jsonStringifyWithDnum } from "@/src/dnum-utils";
 import { CHAIN_BLOCK_EXPLORER, DEMO_MODE, ENV_BRANCHES, LEGACY_CHECK, LIQUITY_STATS_URL } from "@/src/env";
-import { useAllInterestRateBrackets, useInterestRateBrackets } from "@/src/subgraph-hooks";
+import {
+  getAllInterestRateBrackets,
+  getIndexedTroveById,
+  getIndexedTrovesByAccount,
+  getInterestBatches,
+  getInterestRateBrackets,
+  getNextOwnerIndex,
+} from "@/src/subgraph";
 import { isBranchId, isPositionLoanCommitted, isPrefixedtroveId, isTroveId } from "@/src/types";
 import { bigIntAbs, jsonStringifyWithBigInt, sleep } from "@/src/utils";
 import { vAddress, vPrefixedTroveId } from "@/src/valibot-utils";
@@ -44,12 +50,6 @@ import * as v from "valibot";
 import { encodeAbiParameters, erc20Abi, keccak256, parseAbiParameters } from "viem";
 import { useBalance, useConfig as useWagmiConfig, useReadContract, useReadContracts } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
-import {
-  graphQuery,
-  InterestBatchesQuery,
-  TroveStatusByIdQuery,
-  TroveStatusesByAccountQuery,
-} from "./subgraph-queries";
 
 export function shortenTroveId(troveId: TroveId, chars = 8) {
   return troveId.length < chars * 2 + 2
@@ -137,7 +137,7 @@ export function getBranch(
   return branch;
 }
 
-function statusFromEnum(status: number): PositionLoanBase["status"] {
+function statusFromEnum(status: number): TroveStatus {
   if (status === 1) return "active";
   if (status === 2) return "closed";
   if (status === 3) return "liquidated";
@@ -172,7 +172,6 @@ export function useEarnPool(branchId: BranchId) {
         totalDeposited: dnum18(totalBoldDeposits),
       };
     },
-    refetchInterval: DATA_REFRESH_INTERVAL,
     enabled: stats.isSuccess,
   });
 }
@@ -221,6 +220,7 @@ function earnPositionsContractsReadSetup(branchId: BranchId, account: Address | 
       if (!account) {
         throw new Error(); // should never happen (see enabled)
       }
+      const collToken = getCollToken(branchId);
       return deposit === 0n ? null : {
         type: "earn",
         owner: account,
@@ -229,8 +229,8 @@ function earnPositionsContractsReadSetup(branchId: BranchId, account: Address | 
         rewards: {
           bold: dnum18(yieldGainWithPending),
           coll: dn.add(
-            dnum18(collGain),
-            dnum18(stashedColl),
+            [collGain, collToken.decimals],
+            [stashedColl, collToken.decimals],
           ),
         },
       } as const;
@@ -248,7 +248,6 @@ export function useEarnPosition(
     allowFailure: false,
     query: {
       enabled: Boolean(account),
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: setup.select,
     },
   });
@@ -287,7 +286,6 @@ export function useEarnPositionsByAccount(account: null | Address) {
   return useQuery({
     queryKey: ["StabilityPoolDepositsByAccount", account],
     queryFn,
-    refetchInterval: DATA_REFRESH_INTERVAL,
   });
 }
 
@@ -300,12 +298,16 @@ export function useStakePosition(address: null | Address) {
     ...Governance,
     functionName: "deriveUserProxyAddress",
     args: [address ?? "0x"],
-    query: { enabled: Boolean(address) },
+    query: {
+      enabled: Boolean(address),
+    },
   });
 
   const userProxyBalance = useBalance({
     address: userProxyAddress.data ?? "0x",
-    query: { enabled: Boolean(address) && userProxyAddress.isSuccess },
+    query: {
+      enabled: Boolean(address) && userProxyAddress.isSuccess,
+    },
   });
 
   const stakePosition = useReadContracts({
@@ -337,7 +339,6 @@ export function useStakePosition(address: null | Address) {
     ],
     query: {
       enabled: Boolean(address) && userProxyAddress.isSuccess && userProxyBalance.isSuccess,
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: ([
         depositResult,
         totalStakedResult,
@@ -376,7 +377,16 @@ export function useTroveNftUrl(branchId: null | BranchId, troveId: null | TroveI
   return TroveNft && troveId && `${CHAIN_BLOCK_EXPLORER?.url}nft/${TroveNft.address}/${BigInt(troveId)}`;
 }
 
-export function useAverageInterestRate(branchId: null | BranchId) {
+export function useInterestRateBrackets(branchId: BranchId) {
+  let queryFn = async () => getInterestRateBrackets(branchId);
+  if (DEMO_MODE) queryFn = async () => [];
+  return useQuery({
+    queryKey: ["InterestRateBrackets", branchId],
+    queryFn,
+  });
+}
+
+export function useAverageInterestRate(branchId: BranchId) {
   const brackets = useInterestRateBrackets(branchId);
 
   const data = useMemo(() => {
@@ -404,6 +414,15 @@ export function useAverageInterestRate(branchId: null | BranchId) {
     ...brackets,
     data,
   };
+}
+
+export function useAllInterestRateBrackets() {
+  let queryFn = async () => getAllInterestRateBrackets();
+  if (DEMO_MODE) queryFn = async () => [];
+  return useQuery({
+    queryKey: ["AllInterestRateBrackets"],
+    queryFn,
+  });
 }
 
 export function useInterestRateChartData() {
@@ -471,7 +490,6 @@ export function useInterestRateChartData() {
 
       return chartData;
     },
-    refetchInterval: DATA_REFRESH_INTERVAL,
     enabled: brackets.isSuccess,
   });
 }
@@ -523,7 +541,6 @@ export function usePredictOpenTroveUpfrontFee(
       ? [BigInt(branchId), borrowedAmount[0], interestRateOrBatch]
       : [BigInt(branchId), borrowedAmount[0], interestRateOrBatch[0]],
     query: {
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: dnum18,
     },
   });
@@ -543,7 +560,6 @@ export function usePredictAdjustTroveUpfrontFee(
       debtIncrease[0],
     ],
     query: {
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: dnum18,
     },
   });
@@ -576,7 +592,6 @@ export function usePredictAdjustInterestRateUpfrontFee(
         : newInterestRateOrBatch[0],
     ],
     query: {
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: dnum18,
     },
   });
@@ -693,7 +708,6 @@ export function useBranchDebt(branchId: BranchId) {
     ...BorrowerOperations,
     functionName: "getEntireBranchDebt",
     query: {
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: dnum18,
     },
   });
@@ -722,9 +736,6 @@ export function useLatestTroveData(branchId: BranchId, troveId: TroveId) {
     ...TroveManager,
     functionName: "getLatestTroveData",
     args: [BigInt(troveId)],
-    query: {
-      refetchInterval: DATA_REFRESH_INTERVAL,
-    },
   });
 }
 
@@ -791,10 +802,8 @@ export function useInterestBatchDelegates(
         return [];
       }
 
-      const [{ interestBatches: batches }, batchesFromChain] = await Promise.all([
-        graphQuery(InterestBatchesQuery, {
-          ids: batchAddresses.map((addr) => `${branchId}:${addr.toLowerCase()}`),
-        }),
+      const [batches, batchesFromChain] = await Promise.all([
+        getInterestBatches(branchId, batchAddresses),
         readContracts(wagmiConfig, {
           allowFailure: false,
           contracts: batchAddresses.map((address) => ({
@@ -826,14 +835,14 @@ export function useInterestBatchDelegates(
             id: `${branchId}:${batchAddress}`,
             address: batchAddress,
             name: shortenAddress(batchAddress, 4),
-            interestRate: dnum18(batch.annualInterestRate),
-            boldAmount: dnum18(batch.debt),
+            interestRate: batch.interestRate,
+            boldAmount: batch.debt,
             interestRateChange: {
               min: dnum18(batchFromChain.minInterestRate),
               max: dnum18(batchFromChain.maxInterestRate),
               period: batchFromChain.minInterestRateChangePeriod,
             },
-            fee: dnum18(batch.annualManagementFee),
+            fee: batch.fee,
 
             // not available in the subgraph yet
             followers: 0,
@@ -843,7 +852,6 @@ export function useInterestBatchDelegates(
         })
         .filter((delegate) => delegate !== null);
     },
-    refetchInterval: DATA_REFRESH_INTERVAL,
     enabled: batchAddresses.length > 0,
   });
 }
@@ -878,10 +886,10 @@ export async function fetchLoanById(
   const TroveNft = getBranchContract(branchId, "TroveNFT");
 
   const [
-    { trove: troveStatus },
+    indexdTrove,
     [troveTuple, troveData, borrower],
   ] = await Promise.all([
-    graphQuery(TroveStatusByIdQuery, { id: fullId }),
+    getIndexedTroveById(branchId, troveId),
     readContracts(wagmiConfig, {
       allowFailure: false,
       contracts: [{
@@ -903,16 +911,18 @@ export async function fetchLoanById(
   const status = troveTuple[3];
   const batchManager = troveTuple[8];
 
+  const collToken = getCollToken(branchId);
+
   return {
-    type: troveStatus?.mightBeLeveraged ? "multiply" : "borrow",
+    type: indexdTrove?.mightBeLeveraged ? "multiply" : "borrow",
     batchManager: BigInt(batchManager) === 0n ? null : batchManager,
     borrowed: dnum18(troveData.entireDebt),
     borrower,
     branchId,
-    createdAt: Number(troveStatus?.createdAt ?? 0n) * 1000,
-    deposit: dnum18(troveData.entireColl),
+    createdAt: indexdTrove?.createdAt ?? 0,
+    deposit: [troveData.entireColl, collToken.decimals],
     interestRate: dnum18(troveData.annualInterestRate),
-    status: troveStatus?.status ?? statusFromEnum(status),
+    status: indexdTrove?.status ?? statusFromEnum(status),
     troveId,
   };
 }
@@ -942,7 +952,6 @@ export function useLoanById(id?: null | PrefixedTroveId) {
   return useQuery<PositionLoanCommitted | null>({
     queryKey: ["TroveById", id],
     queryFn,
-    refetchInterval: DATA_REFRESH_INTERVAL,
   });
 }
 
@@ -952,16 +961,13 @@ export async function fetchLoansByAccount(
 ): Promise<PositionLoanCommitted[] | null> {
   if (!account) return null;
 
-  const { troves: troveStatuses } = await graphQuery(
-    TroveStatusesByAccountQuery,
-    { account: account.toLowerCase() },
-  );
+  const troves = await getIndexedTrovesByAccount(account);
 
-  const results = await Promise.all(troveStatuses.map((troveStatus) => {
-    if (!isPrefixedtroveId(troveStatus.id)) {
-      throw new Error(`Invalid prefixed trove ID: ${troveStatus.id}`);
+  const results = await Promise.all(troves.map((trove) => {
+    if (!isPrefixedtroveId(trove.id)) {
+      throw new Error(`Invalid prefixed trove ID: ${trove.id}`);
     }
-    return fetchLoanById(wagmiConfig, troveStatus.id);
+    return fetchLoanById(wagmiConfig, trove.id);
   }));
 
   return results.filter((result) => result !== null);
@@ -984,7 +990,6 @@ export function useLoansByAccount(account?: Address | null) {
   return useQuery({
     queryKey: ["TrovesByAccount", account],
     queryFn,
-    refetchInterval: DATA_REFRESH_INTERVAL,
   });
 }
 
@@ -1035,6 +1040,7 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
       return trovesByAccount[account.toLowerCase() as `0x${string}`] ?? [];
     },
     enabled: checkLegacyPositions,
+    staleTime: Infinity,
   });
 
   const legacyTroves = useReadContracts({
@@ -1052,7 +1058,6 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
     allowFailure: false,
     query: {
       enabled: checkLegacyPositions,
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: (results) => {
         return (
           results
@@ -1110,7 +1115,6 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
     allowFailure: false,
     query: {
       enabled: checkLegacyPositions,
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: (results) => {
         if (!LEGACY_CHECK) {
           throw new Error("LEGACY_CHECK not defined");
@@ -1144,7 +1148,6 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
     args: [account ?? "0x"],
     query: {
       enabled: checkLegacyPositions,
-      refetchInterval: DATA_REFRESH_INTERVAL,
     },
   });
 
@@ -1155,7 +1158,6 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
     args: [account ?? "0x"],
     query: {
       enabled: checkLegacyPositions,
-      refetchInterval: DATA_REFRESH_INTERVAL,
       select: ([
         unallocatedLQTY,
         _unallocatedOffset,
@@ -1192,7 +1194,6 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
       };
     },
     placeholderData: (data) => data,
-    refetchInterval: DATA_REFRESH_INTERVAL,
     enabled: (
       checkLegacyPositions
       && legacyBoldBalance.isSuccess
@@ -1200,5 +1201,32 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
       && spDeposits.isSuccess
       && stakedLqty.isSuccess
     ),
+  });
+}
+
+export function useNextOwnerIndex(
+  borrower: null | Address,
+  branchId: null | BranchId,
+) {
+  let queryFn = async () => (
+    borrower && branchId !== null
+      ? getNextOwnerIndex(branchId, borrower)
+      : null
+  );
+
+  if (DEMO_MODE) {
+    queryFn = async () => (
+      borrower
+        ? Object.values(ACCOUNT_POSITIONS)
+          .filter(isPositionLoanCommitted)
+          .length
+        : null
+    );
+  }
+
+  return useQuery({
+    queryKey: ["NextTroveId", borrower, branchId],
+    queryFn,
+    enabled: borrower !== null && branchId !== null,
   });
 }

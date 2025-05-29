@@ -5,7 +5,6 @@ import type { Address, Dnum, PositionLoanUncommitted } from "@/src/types";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { Amount } from "@/src/comps/Amount/Amount";
-// import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
 import { InterestRateField } from "@/src/comps/InterestRateField/InterestRateField";
 import { LeverageField, useLeverageField } from "@/src/comps/LeverageField/LeverageField";
@@ -18,15 +17,15 @@ import { useInputFieldValue } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
 import { useCheckLeverageSlippage } from "@/src/liquity-leverage";
 import { getRedemptionRisk } from "@/src/liquity-math";
-import { getBranch, getBranches, getCollToken } from "@/src/liquity-utils";
+import { getBranch, getBranches, getCollToken, useNextOwnerIndex } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
-import { useNextOwnerIndex } from "@/src/subgraph-hooks";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import {
   ADDRESS_ZERO,
+  BOLD_TOKEN_SYMBOL,
   Button,
   Dropdown,
   HFlex,
@@ -77,6 +76,7 @@ export function LeverageScreen() {
         value: isAboveMax ? dn.toString(maxCollDeposit) : value,
       };
     },
+    decimals: collateral.decimals,
   });
 
   const [interestRate, setInterestRate] = useState<null | Dnum>(null);
@@ -139,7 +139,7 @@ export function LeverageScreen() {
     && dn.lte(leverageSlippage.data, LEVERAGE_MAX_SLIPPAGE);
 
   const leverageFieldDrawer = (hasDeposit && newLoan.borrowed && dn.lt(newLoan.borrowed, MIN_DEBT))
-    ? { mode: "error" as const, message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} BOLD.` }
+    ? { mode: "error" as const, message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} ${BOLD_TOKEN_SYMBOL}.` }
     : leverageSlippageElements.drawer;
 
   const allowSubmit = account.isConnected
@@ -298,6 +298,7 @@ export function LeverageScreen() {
               inputId="input-interest-rate"
               interestRate={interestRate}
               mode={interestRateMode}
+              onAverageInterestRateLoad={setInterestRate}
               onChange={setInterestRate}
               onDelegateChange={setInterestRateDelegate}
               onModeChange={setInterestRateMode}

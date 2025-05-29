@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { a, useSpring, useTransition } from "@react-spring/web";
-import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { css, cx } from "../../styled-system/css";
 import { IconCross } from "../icons";
 import { useElementSize } from "../react-utils";
@@ -20,7 +20,28 @@ type Drawer = {
   autoClose?: number;
 };
 
-const InputField = forwardRef<HTMLInputElement, {
+function InputField({
+  contextual,
+  difference,
+  disabled = false,
+  drawer,
+  id: idFromProps,
+  onDrawerClose,
+  label,
+  labelHeight = 12,
+  labelSpacing = 12,
+  onBlur,
+  onChange,
+  onDifferenceClick,
+  onFocus,
+  placeholder,
+  ref,
+  secondary,
+  secondaryHeight = 24,
+  secondarySpacing = 14,
+  value,
+  valueUnfocused,
+}: {
   contextual?: ReactNode;
   difference?: ReactNode;
   disabled?: boolean;
@@ -38,6 +59,7 @@ const InputField = forwardRef<HTMLInputElement, {
   onDifferenceClick?: () => void;
   onFocus?: () => void;
   placeholder?: string;
+  ref?: Ref<HTMLInputElement>;
   secondary?:
     | ReactNode
     | { end: ReactNode; start?: ReactNode }
@@ -46,27 +68,7 @@ const InputField = forwardRef<HTMLInputElement, {
   secondarySpacing?: number;
   value?: string;
   valueUnfocused?: ReactNode;
-}>(function InputField({
-  contextual,
-  difference,
-  disabled = false,
-  drawer,
-  id: idFromProps,
-  onDrawerClose,
-  label,
-  labelHeight = 12,
-  labelSpacing = 12,
-  onBlur,
-  onChange,
-  onDifferenceClick,
-  onFocus,
-  placeholder,
-  secondary,
-  secondaryHeight = 24,
-  secondarySpacing = 14,
-  value,
-  valueUnfocused,
-}, ref) {
+}) {
   const [focused, setFocused] = useState(false);
 
   const label_ = label
@@ -310,6 +312,8 @@ const InputField = forwardRef<HTMLInputElement, {
                 zIndex: 2,
                 inset: `50% 0 auto auto`,
                 transform: "translateY(-50%)",
+                display: "flex",
+                alignItems: "center",
               })}
             >
               {contextual}
@@ -320,7 +324,7 @@ const InputField = forwardRef<HTMLInputElement, {
           <div
             className={css({
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "auto auto",
               gap: 16,
               fontSize: 16,
               fontWeight: 500,
@@ -383,7 +387,7 @@ const InputField = forwardRef<HTMLInputElement, {
       <Drawer drawer={drawer} />
     </div>
   );
-});
+}
 
 function Drawer({
   drawer,

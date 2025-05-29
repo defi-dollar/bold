@@ -2,19 +2,18 @@ import type { BranchId, PositionEarn } from "@/src/types";
 import type { Dnum } from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
-import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
+import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
 import { InputTokenBadge } from "@/src/comps/InputTokenBadge/InputTokenBadge";
 import content from "@/src/content";
 import { DNUM_0, dnumMax } from "@/src/dnum-utils";
 import { parseInputFloat } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
 import { getCollToken, isEarnPositionActive, useEarnPool } from "@/src/liquity-utils";
-import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { Button, Checkbox, HFlex, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Checkbox, HFlex, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useState } from "react";
 
@@ -30,7 +29,6 @@ export function PanelUpdateDeposit({
   position?: PositionEarn;
 }) {
   const account = useAccount();
-  const txFlow = useTransactionFlow();
 
   const [mode, setMode] = useState<ValueUpdateMode>("add");
   const [value, setValue] = useState("");
@@ -40,7 +38,8 @@ export function PanelUpdateDeposit({
   const hasDeposit = dn.gt(position?.deposit ?? DNUM_0, 0);
   const isActive = isEarnPositionActive(position ?? null);
 
-  const parsedValue = parseInputFloat(value);
+  const token = getCollToken(branchId);
+  const parsedValue = parseInputFloat(value, token.decimals);
   const depositDifference = dn.mul(parsedValue ?? DNUM_0, mode === "remove" ? -1 : 1);
   const value_ = (focused || !parsedValue || dn.lte(parsedValue, 0)) ? value : `${fmtnum(parsedValue, "full")}`;
   const updatedDeposit = dnumMax(
@@ -52,7 +51,7 @@ export function PanelUpdateDeposit({
   const poolDeposit = earnPool.data?.totalDeposited;
   const updatedPoolDeposit = poolDeposit && dn.add(poolDeposit, depositDifference);
 
-  const boldBalance = useBalance(account.address, "BOLD");
+  const boldBalance = useBalance(account.address, BOLD_TOKEN_SYMBOL);
 
   const updatedBoldQty = dn.add(deposited, depositDifference);
 
@@ -93,21 +92,21 @@ export function PanelUpdateDeposit({
             drawer={insufficientBalance
               ? {
                 mode: "error",
-                message: `Insufficient balance. You have ${fmtnum(boldBalance.data ?? 0)} BOLD.`,
+                message: `Insufficient balance. You have ${fmtnum(boldBalance.data ?? 0)} ${BOLD_TOKEN_SYMBOL}.`,
               }
               : withdrawAboveDeposit
               ? {
                 mode: "error",
                 message: hasDeposit
                   ? `You can’t withdraw more than you have deposited.`
-                  : `No BOLD deposited.`,
+                  : `No ${BOLD_TOKEN_SYMBOL} deposited.`,
               }
               : null}
             contextual={
               <InputTokenBadge
                 background={false}
-                icon={<TokenIcon symbol="BOLD" />}
-                label="BOLD"
+                icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
+                label={BOLD_TOKEN_SYMBOL}
               />
             }
             id="input-deposit-change"
@@ -157,13 +156,17 @@ export function PanelUpdateDeposit({
               end: mode === "add"
                 ? boldBalance.data && (
                   <TextButton
-                    label={dn.gt(boldBalance.data, 0) ? `Max ${fmtnum(boldBalance.data, 2)} BOLD` : null}
-                    onClick={() => setValue(dn.toString(boldBalance.data))}
+                    label={dn.gt(boldBalance.data, 0) ? `Max ${fmtnum(boldBalance.data, 2)} ${BOLD_TOKEN_SYMBOL}` : null}
+                    onClick={() => {
+                      if (boldBalance.data) {
+                        setValue(dn.toString(boldBalance.data));
+                      }
+                    }}
                   />
                 )
                 : position?.deposit && dn.gt(position.deposit, 0) && (
                   <TextButton
-                    label={`Max ${fmtnum(position.deposit, 2)} BOLD`}
+                    label={`Max ${fmtnum(position.deposit, 2)} ${BOLD_TOKEN_SYMBOL}`}
                     onClick={() => {
                       setValue(dn.toString(position.deposit));
                       setClaimRewards(true);
@@ -231,7 +234,7 @@ export function PanelUpdateDeposit({
                       color: "contentAlt",
                     })}
                   >
-                    BOLD
+                    {BOLD_TOKEN_SYMBOL}
                   </span>
                 </div>
                 {collateral && (
@@ -250,14 +253,10 @@ export function PanelUpdateDeposit({
             )}
           </HFlex>
         )}
-        <ConnectWarningBox />
-        <Button
+
+        <FlowButton
           disabled={!allowSubmit}
-          label={content.earnScreen.depositPanel.action}
-          mode="primary"
-          size="large"
-          wide
-          onClick={() => {
+          request={() => {
             if (
               !account.address
               || !collateral
@@ -265,7 +264,7 @@ export function PanelUpdateDeposit({
               || !poolDeposit
               || !updatedPoolDeposit
             ) {
-              return;
+              return null;
             }
 
             const prevEarnPosition = position ?? {
@@ -276,7 +275,7 @@ export function PanelUpdateDeposit({
               rewards: { bold: DNUM_0, coll: DNUM_0 },
             };
 
-            txFlow.start({
+            return {
               flowId: "earnUpdate",
               backLink: [
                 `/earn/${collateral.name.toLowerCase()}`,
@@ -296,7 +295,7 @@ export function PanelUpdateDeposit({
                 deposit: updatedDeposit,
               },
               claimRewards,
-            });
+            };
           }}
         />
       </div>

@@ -1,9 +1,9 @@
 import type { Delegate, Position, PositionLoanUncommitted } from "@/src/types";
-import type { CollateralToken } from "@liquity2/uikit";
 import type { Dnum } from "dnum";
 
 import { INTEREST_RATE_END, INTEREST_RATE_START } from "@/src/constants";
 import * as dn from "dnum";
+import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 
 const INTEREST_RATE_INCREMENT = 0.1;
 const INTEREST_RATE_MIN = INTEREST_RATE_START * 100;
@@ -18,7 +18,7 @@ export const ACCOUNT_STAKED_LQTY = {
 } as const;
 
 export const ACCOUNT_BALANCES = {
-  BOLD: dn.from(3_987, 18),
+  [BOLD_TOKEN_SYMBOL]: dn.from(3_987, 18),
   ETH: dn.from(2.429387, 18),
   LQTY: dn.from(2008.217, 18),
   RETH: dn.from(1.3732, 18),
@@ -96,7 +96,7 @@ export const BORROW_STATS = {
 } as const;
 
 export const EARN_POOLS: Record<
-  CollateralToken["symbol"],
+  string,
   { apr: Dnum; boldQty: Dnum }
 > = {
   ETH: {

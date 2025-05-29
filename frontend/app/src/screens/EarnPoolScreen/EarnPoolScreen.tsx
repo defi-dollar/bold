@@ -1,11 +1,12 @@
 "use client";
 
+import { useBreakpointName } from "@/src/breakpoints";
 import { EarnPositionSummary } from "@/src/comps/EarnPositionSummary/EarnPositionSummary";
 import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import { getBranch, getCollToken, isEarnPositionActive, useEarnPool, useEarnPosition } from "@/src/liquity-utils";
+import { getBranch, getCollToken, useEarnPool, useEarnPosition } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, isCollateralSymbol, Tabs } from "@liquity2/uikit";
@@ -42,9 +43,7 @@ export function EarnPoolScreen() {
   const earnPosition = useEarnPosition(branch.id, account.address ?? null);
   const earnPool = useEarnPool(branch.id);
 
-  const active = isEarnPositionActive(earnPosition.data ?? null);
-
-  const loadingState = earnPool.isLoading || earnPosition.status === "pending" ? "loading" : "success";
+  const loadingState = earnPool.isLoading || earnPosition.isLoading ? "loading" : "success";
 
   const tabsTransition = useTransition(loadingState, {
     from: { opacity: 0 },
@@ -56,6 +55,8 @@ export function EarnPoolScreen() {
       friction: 120,
     },
   });
+
+  const breakpointName = useBreakpointName();
 
   return (
     <Screen
@@ -71,7 +72,7 @@ export function EarnPoolScreen() {
             .with("success", () => "ready")
             .with("loading", () => "loading")
             .exhaustive()}
-          finalHeight={140}
+          finalHeight={breakpointName === "large" ? 140 : 248}
         >
           {loadingState === "success"
             ? (
@@ -128,37 +129,24 @@ export function EarnPoolScreen() {
               opacity: style.opacity,
             }}
           >
-            {active
-              ? (
-                <Tabs
-                  selected={TABS.indexOf(tab)}
-                  onSelect={(index) => {
-                    const tab = TABS[index];
-                    if (!tab) {
-                      throw new Error("Invalid tab index");
-                    }
-                    router.push(`/earn/${collateralSymbol.toLowerCase()}/${tab.action}`, {
-                      scroll: false,
-                    });
-                  }}
-                  items={TABS.map((tab) => ({
-                    label: tab.label,
-                    panelId: `panel-${tab.action}`,
-                    tabId: `tab-${tab.action}`,
-                  }))}
-                />
-              )
-              : (
-                <p
-                  className={css({
-                    fontSize: 18,
-                    textAlign: "center",
-                  })}
-                >
-                  Stability Pool (“Earn”) deposits are disabled, see top banner.
-                </p>
-              )}
-            {tab.action === "deposit" && active && (
+            <Tabs
+              selected={TABS.indexOf(tab)}
+              onSelect={(index) => {
+                const tab = TABS[index];
+                if (!tab) {
+                  throw new Error("Invalid tab index");
+                }
+                router.push(`/earn/${collateralSymbol.toLowerCase()}/${tab.action}`, {
+                  scroll: false,
+                });
+              }}
+              items={TABS.map((tab) => ({
+                label: tab.label,
+                panelId: `panel-${tab.action}`,
+                tabId: `tab-${tab.action}`,
+              }))}
+            />
+            {tab.action === "deposit" && (
               <PanelUpdateDeposit
                 branchId={branch.id}
                 deposited={earnPool.data?.totalDeposited ?? dn.from(0, 18)}

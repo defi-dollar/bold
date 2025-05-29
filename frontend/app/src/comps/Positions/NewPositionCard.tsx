@@ -8,48 +8,51 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const contentActions = content.home.actions;
-const actionAttributes = {
+
+const actions = {
   borrow: {
     colors: {
-      background: token("colors.brandDarkBlue"),
-      foreground: token("colors.brandDarkBlueContent"),
-      foregroundAlt: token("colors.strongSurfaceContentAlt"),
+      background: "linear-gradient(180deg, #44E1BF 0%, #44B5E1 100%)",
+      foreground: "white",
+      foregroundAlt: "#F5F6F8",
     },
     description: contentActions.borrow.description,
     path: "/borrow",
     title: "Borrow",
   },
-  multiply: {
-    colors: {
-      background: token("colors.brandGreen"),
-      foreground: token("colors.brandGreenContent"),
-      foregroundAlt: token("colors.brandGreenContentAlt"),
-    },
-    description: contentActions.multiply.description,
-    path: "/multiply",
-    title: "Multiply",
-  },
+  // multiply: {
+  //   colors: {
+  //     background: "linear-gradient(180deg, #C1E99B 0%, #9BE9C6 100%)",
+  //     foreground: "#082B12",
+  //     foregroundAlt: token("colors.text:black"),
+  //   },
+  //   description: contentActions.multiply.description,
+  //   path: "/multiply",
+  //   title: "Multiply",
+  // },
   earn: {
     colors: {
-      background: token("colors.brandBlue"),
-      foreground: token("colors.brandBlueContent"),
-      foregroundAlt: token("colors.brandBlueContentAlt"),
+      background: token("colors.bg:black"),
+      foreground: "white",
+      foregroundAlt: "white",
     },
     description: contentActions.earn.description,
     path: "/earn",
     title: "Earn",
   },
-  stake: {
-    colors: {
-      background: token("colors.brandGolden"),
-      foreground: token("colors.brandGoldenContent"),
-      foregroundAlt: token("colors.brandGoldenContentAlt"),
-    },
-    description: contentActions.stake.description,
-    path: "/stake",
-    title: "Stake",
-  },
+  // stake: {
+  //   colors: {
+  //     background: "linear-gradient(180deg, #E3F893 0%, #FDE8AA 100%)",
+  //     foreground: "#402108",
+  //     foregroundAlt: token("colors.text:black"),
+  //   },
+  //   description: contentActions.stake.description,
+  //   path: "/stake",
+  //   title: "Stake",
+  // },
 } as const;
+
+const actionsEntries = Object.entries(actions);
 
 const RESET_DELAY = 500;
 const COMPRESSED_WIDTH = 28;
@@ -58,7 +61,7 @@ const ANIMATE_ICONS = true;
 export function NewPositionCard() {
   const [hovered, setHovered_] = useState(-1);
 
-  const delayedSetHovered = useRef<ReturnType<typeof setTimeout>>();
+  const delayedSetHovered = useRef<ReturnType<typeof setTimeout>>(undefined);
   const setHovered = (index: number, delay: number = 0) => {
     clearTimeout(delayedSetHovered.current);
     delayedSetHovered.current = setTimeout(() => {
@@ -80,8 +83,9 @@ export function NewPositionCard() {
       compressed1: 0,
       compressed2: 0,
       compressed3: 0,
+      // gridTemplateColumns: "25% 25% 25% 25%",
 
-      gridTemplateColumns: "25% 25% 25% 25%",
+      gridTemplateColumns: `repeat(${actionsEntries.length}, ${100 / actionsEntries.length}%)`,
     },
     to: {
       hovered0: hovered === 0 ? 1 : 0,
@@ -94,14 +98,14 @@ export function NewPositionCard() {
       compressed2: hovered !== -1 && hovered !== 2 ? 1 : 0,
       compressed3: hovered !== -1 && hovered !== 3 ? 1 : 0,
 
-      gridTemplateColumns: Array.from({ length: 4 }).map((_, index) => (
+      gridTemplateColumns: Array.from({ length: actionsEntries.length }).map((_, index) => (
         hovered === -1
-          ? "25%"
-          : `${
-            (hovered === index
-              ? (348 - (COMPRESSED_WIDTH * 3)) / 348
-              : (COMPRESSED_WIDTH / 348)) * 100
-          }%`
+          ? `${100 / actionsEntries.length}%`
+          : `${((
+            hovered === index
+              ? (348 - (COMPRESSED_WIDTH * (actionsEntries.length - 1))) / 348
+              : (COMPRESSED_WIDTH / 348)
+          ) * 100)}%`
       )).join(" "),
     },
     config: {
@@ -126,7 +130,7 @@ export function NewPositionCard() {
           gridTemplateColumns: spring.gridTemplateColumns,
         }}
       >
-        {Object.entries(actionAttributes).map(([type, {
+        {actionsEntries.map(([type, {
           description,
           path,
           title,
@@ -177,7 +181,10 @@ export function NewPositionCard() {
                   fontSize: 14,
                 })}
                 style={{
-                  transform: hprogress.to([0, 0.9, 1], [0, 0, 1]).to((p) => `
+                  transform: hprogress.to(
+                    [0, 0.9, 1],
+                    [0, 0, 1],
+                  ).to((p) => `
                     translateY(${(1 - p) * 20}px) 
                   `),
                   opacity: hprogress.to([0, 0.9, 1], [0, 0, 1]),
@@ -197,7 +204,7 @@ export function NewPositionCard() {
               >
                 <ActionIcon
                   colors={colors}
-                  iconType={type as keyof typeof actionAttributes}
+                  iconType={type as keyof typeof actions}
                   state={ANIMATE_ICONS && hovered === index ? "active" : "idle"}
                 />
               </a.div>
@@ -219,7 +226,11 @@ export function NewPositionCard() {
             zIndex: index === hovered ? 1 : 0,
             background: colors.background,
             color: colors.foreground,
-            borderRadius: index === 0 ? "8px 0 0 8px" : index === 3 ? "0 8px 8px 0" : 0,
+            borderRadius: index === 0
+              ? "8px 0 0 8px"
+              : index === actionsEntries.length - 1
+              ? "0 8px 8px 0"
+              : 0,
           };
 
           return (
