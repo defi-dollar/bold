@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import { Banner } from "@/Banner";
 import { LegacyPositionsBanner } from "@/src/comps/LegacyPositionsBanner/LegacyPositionsBanner";
@@ -16,6 +17,10 @@ export function AppLayout({
 }: {
   children: ReactNode;
 }) {
+  const pathName = usePathname();
+  if (pathName === '/restricted') {
+    return children;
+  }
   return (
     <div
       className={css({
