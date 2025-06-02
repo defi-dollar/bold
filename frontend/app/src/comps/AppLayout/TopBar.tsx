@@ -11,7 +11,7 @@ import {
   IconBorrow,
   IconDashboard,
   IconEarn,
-  // IconStake
+  IconStake
 } from "@liquity2/uikit";
 import Link from "next/link";
 import { AccountButton } from "./AccountButton";
@@ -22,7 +22,7 @@ const menuItems: MenuItem[] = [
   [content.menu.dashboard, "/", IconDashboard],
   [content.menu.borrow, "/borrow", IconBorrow],
   [content.menu.earn, "/earn", IconEarn],
-  // [content.menu.stake, "/stake", IconStake],
+  [content.menu.stake, "/stake", IconStake],
 ];
 
 export function TopBar() {
