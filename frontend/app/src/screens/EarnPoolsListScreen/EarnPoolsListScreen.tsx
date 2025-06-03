@@ -11,12 +11,13 @@ import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
+import { sortAlphabetically, sortBranches } from "@/src/utils";
 
 export function EarnPoolsListScreen() {
   const branches = getBranches();
   const collSymbols = branches.map((b) => b.symbol);
 
-  const poolsTransition = useTransition(branches.map((c) => c.branchId), {
+  const poolsTransition = useTransition(branches.sort(sortBranches).map((c) => c.branchId), {
     from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
     enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
     leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
@@ -43,7 +44,7 @@ export function EarnPoolsListScreen() {
           >
             {content.earnHome.headline(
               <TokenIcon.Group>
-                {[BOLD_TOKEN_SYMBOL, ...collSymbols].map((symbol) => (
+                {[BOLD_TOKEN_SYMBOL, ...collSymbols.sort(sortAlphabetically)].map((symbol) => (
                   <TokenIcon
                     key={symbol}
                     symbol={symbol as TokenSymbol}

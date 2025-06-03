@@ -22,6 +22,7 @@ import { BOLD_TOKEN_SYMBOL, IconBorrow, IconEarn, TokenIcon } from "@liquity2/ui
 import * as dn from "dnum";
 import { useState } from "react";
 import { HomeTable } from "./HomeTable";
+import { sortBranches } from "@/src/utils";
 
 export function HomeScreen() {
   const account = useAccount();
@@ -91,7 +92,7 @@ function BorrowTable({
       subtitle="You can adjust your loans, including your interest rate, at any time"
       icon={<IconBorrow />}
       columns={columns}
-      rows={getBranches().map(({ symbol }) => (
+      rows={getBranches().sort(sortBranches).map(({ symbol }) => (
         <BorrowingRow
           key={symbol}
           compact={compact}
@@ -126,7 +127,7 @@ function EarnTable({
       subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & (staked) ETH rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
       icon={<IconEarn />}
       columns={columns}
-      rows={getBranches().map(({ symbol }) => (
+      rows={getBranches().sort(sortBranches).map(({ symbol }) => (
         <EarnRewardsRow
           key={symbol}
           compact={compact}

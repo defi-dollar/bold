@@ -37,6 +37,7 @@ import * as dn from "dnum";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { maxUint256 } from "viem";
+import { sortCollaterals } from "@/src/utils";
 
 const KNOWN_COLLATERAL_SYMBOLS = KNOWN_COLLATERALS.map(({ symbol }) => symbol);
 
@@ -171,7 +172,7 @@ export function BorrowScreen() {
                 })}
               >
                 <TokenIcon.Group>
-                  {collaterals.map(({ symbol }) => (
+                  {collaterals.sort(sortCollaterals).map(({ symbol }) => (
                     <TokenIcon
                       key={symbol}
                       symbol={symbol}
@@ -200,7 +201,7 @@ export function BorrowScreen() {
             id="input-deposit"
             contextual={
               <Dropdown
-                items={collaterals.map(({ symbol, name }) => ({
+                items={collaterals.sort(sortCollaterals).map(({ symbol, name }) => ({
                   icon: <TokenIcon symbol={symbol} />,
                   label: name,
                   value: account.isConnected
