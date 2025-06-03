@@ -141,6 +141,7 @@ export default {
       delegate: {
         label: "Delegated",
         secondary: <>The interest rate is set and updated by a third party of your choice. They may charge a fee.</>,
+        disabled: true,
       },
       strategy: {
         label: "Autonomous Rate Manager",
