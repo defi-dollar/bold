@@ -4,6 +4,7 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
 import { Screen } from "@/src/comps/Screen/Screen";
+import { DUNE_REDEMPTION_URL } from "@/src/constants";
 import content from "@/src/content";
 import { getProtocolContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
@@ -177,7 +178,7 @@ export function RedeemScreen() {
                         </>
                       ),
                       footerLink: {
-                        href: "https://dune.com/queries/4641717/7730245",
+                        href: DUNE_REDEMPTION_URL,
                         label: "Redemption fee on Dune",
                       },
                     }}

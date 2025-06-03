@@ -9,6 +9,7 @@ import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
+import { DUNE_URL } from "@/src/constants";
 export function EarnPositionSummary({
   branchId,
   earnPosition,
@@ -185,7 +186,7 @@ export function EarnPositionSummary({
                         + "deposits earned over the last 24 hours.",
                       footerLink: {
                         label: "Check Dune for more details",
-                        href: "https://dune.com/liquity/liquity-v2",
+                        href: DUNE_URL,
                       },
                     }}
                   />
@@ -218,7 +219,7 @@ export function EarnPositionSummary({
                         + "deposits earned over the past 7 days.",
                       footerLink: {
                         label: "Check Dune for more details",
-                        href: "https://dune.com/liquity/liquity-v2",
+                        href: DUNE_URL,
                       },
                     }}
                   />

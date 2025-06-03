@@ -68,11 +68,7 @@ export const LEVERAGE_FACTOR_SUGGESTIONS = [
 ];
 
 // DEBT suggestions, as ratios of the max LTV
-export const DEBT_SUGGESTIONS = [
-  0.3,
-  0.6,
-  0.8,
-];
+export const DEBT_SUGGESTIONS = [0.3, 0.6, 0.8];
 
 // ltv risk levels, as ratios of the max ltv
 export const LTV_RISK: Record<Exclude<RiskLevel, "low">, number> = {
@@ -85,3 +81,6 @@ export const REDEMPTION_RISK: Record<Exclude<RiskLevel, "high">, number> = {
   medium: 3.5 / 100,
   low: 5 / 100,
 };
+
+export const DUNE_URL = "https://dune.com/defidollar/dashboard";
+export const DUNE_REDEMPTION_URL = 'https://dune.com/queries/4739167/7870054'
