@@ -4,6 +4,7 @@ import "@liquity2/uikit/index.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { BreakpointName } from "@/src/breakpoints";
 import { About } from "@/src/comps/About/About";
 import { AppLayout } from "@/src/comps/AppLayout/AppLayout";
 import { Blocking } from "@/src/comps/Blocking/Blocking";
@@ -20,7 +21,7 @@ import { GeistSans } from "geist/font/sans";
 
 export const metadata: Metadata = {
   title: content.appName,
-  icons: "/favicon.svg",
+  icons: "/favicon.ico",
 };
 
 export const viewport: Viewport = {
@@ -37,26 +38,34 @@ export default function Layout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+      </head>
       <body className={GeistSans.className}>
-        <UiKit>
-          <ReactQuery>
+        <ReactQuery>
+          <UiKit>
             <StoredState>
-              <DemoMode>
-                <Ethereum>
-                  <Blocking>
-                    <TransactionFlow>
-                      <About>
-                        <AppLayout>
-                          {children}
-                        </AppLayout>
-                      </About>
-                    </TransactionFlow>
-                  </Blocking>
-                </Ethereum>
-              </DemoMode>
+              <BreakpointName>
+                <DemoMode>
+                  <Ethereum>
+                    <Blocking>
+                      <TransactionFlow>
+                        <About>
+                          <AppLayout>
+                            {children}
+                          </AppLayout>
+                        </About>
+                      </TransactionFlow>
+                    </Blocking>
+                  </Ethereum>
+                </DemoMode>
+              </BreakpointName>
             </StoredState>
-          </ReactQuery>
-        </UiKit>
+          </UiKit>
+        </ReactQuery>
         {VERCEL_ANALYTICS && <Analytics />}
       </body>
     </html>

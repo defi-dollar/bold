@@ -4,8 +4,8 @@ import type { PositionLoanCommitted } from "@/src/types";
 
 import { ARROW_RIGHT } from "@/src/characters";
 import { Amount } from "@/src/comps/Amount/Amount";
-import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
+import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
 import { InputTokenBadge } from "@/src/comps/InputTokenBadge/InputTokenBadge";
 import { UpdateBox } from "@/src/comps/UpdateBox/UpdateBox";
 import { ETH_MAX_RESERVE, MIN_DEBT } from "@/src/constants";
@@ -15,12 +15,11 @@ import { fmtnum, formatRisk } from "@/src/formatting";
 import { getLoanDetails } from "@/src/liquity-math";
 import { getCollToken } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
-import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import {
-  Button,
+  BOLD_TOKEN_SYMBOL,
   HFlex,
   InfoTooltip,
   InputField,
@@ -44,7 +43,6 @@ export function PanelUpdateBorrowPosition({
   loan: PositionLoanCommitted;
 }) {
   const account = useAccount();
-  const txFlow = useTransactionFlow();
 
   const collToken = getCollToken(loan.branchId);
   if (!collToken) {
@@ -53,15 +51,17 @@ export function PanelUpdateBorrowPosition({
 
   // balances
   const collBalance = useBalance(account.address, collToken.symbol);
-  const boldBalance = useBalance(account.address, "BOLD");
+  const boldBalance = useBalance(account.address, BOLD_TOKEN_SYMBOL);
 
   // prices
   const collPrice = usePrice(collToken.symbol ?? null);
-  const boldPriceUsd = usePrice("BOLD") ?? dnum18(0);
+  const boldPriceUsd = usePrice(BOLD_TOKEN_SYMBOL) ?? dnum18(0);
 
   // deposit change
   const [depositMode, setDepositMode] = useState<ValueUpdateMode>("add");
-  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"));
+  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"), {
+    decimals: collToken.decimals,
+  });
 
   // deposit update
   const newDeposit = depositChange.parsed && (
@@ -282,14 +282,14 @@ export function PanelUpdateBorrowPosition({
               contextual={
                 <InputTokenBadge
                   background={false}
-                  icon={<TokenIcon symbol="BOLD" />}
-                  label="BOLD"
+                  icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
+                  label={BOLD_TOKEN_SYMBOL}
                 />
               }
               drawer={!debtChange.isFocused && isBelowMinDebt
-                ? { mode: "error", message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} BOLD.` }
+                ? { mode: "error", message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} ${BOLD_TOKEN_SYMBOL}.` }
                 : insufficientBold
-                ? { mode: "error", message: "Insufficient BOLD balance." }
+                ? { mode: "error", message: `Insufficient ${BOLD_TOKEN_SYMBOL} balance.` }
                 : null}
               label={{
                 start: debtMode === "remove"
@@ -321,7 +321,7 @@ export function PanelUpdateBorrowPosition({
                 end: (
                   boldMax && (
                     <TextButton
-                      label={`Max ${fmtnum(boldMax)} BOLD`}
+                      label={`Max ${fmtnum(boldMax)} ${BOLD_TOKEN_SYMBOL}`}
                       onClick={() => {
                         debtChange.setValue(dn.toString(boldMax));
                       }}
@@ -352,15 +352,15 @@ export function PanelUpdateBorrowPosition({
                     >
                       <Amount
                         value={newLoanDetails.debt}
-                        suffix=" BOLD"
+                        suffix={` ${BOLD_TOKEN_SYMBOL}`}
                       />
                     </div>
                     <InfoTooltip heading="Debt update">
                       <div>
-                        Before: <Amount value={loanDetails.debt} suffix=" BOLD" />
+                        Before: <Amount value={loanDetails.debt} suffix={` ${BOLD_TOKEN_SYMBOL}`} />
                       </div>
                       <div>
-                        After: <Amount value={newLoanDetails.debt} suffix=" BOLD" />
+                        After: <Amount value={newLoanDetails.debt} suffix={` ${BOLD_TOKEN_SYMBOL}`} />
                       </div>
                     </InfoTooltip>
                   </HFlex>
@@ -430,43 +430,23 @@ export function PanelUpdateBorrowPosition({
           />
         </div>
       </VFlex>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          gap: 32,
-          width: "100%",
+      <FlowButton
+        disabled={!allowSubmit}
+        label="Update position"
+        request={{
+          flowId: "updateBorrowPosition",
+          backLink: [`/loan?id=${loan.branchId}:${loan.troveId}`, "Back to editing"],
+          successLink: ["/", "Go to the dashboard"],
+          successMessage: "The position has been updated successfully.",
+          prevLoan: { ...loan },
+          loan: {
+            ...loan,
+            deposit: newDeposit ?? loan.deposit,
+            borrowed: newDebt ?? loan.borrowed,
+          },
+          maxUpfrontFee: dnum18(maxUint256),
         }}
-      >
-        <ConnectWarningBox />
-        <Button
-          disabled={!allowSubmit}
-          label="Update position"
-          mode="primary"
-          size="large"
-          wide
-          onClick={() => {
-            if (account.address) {
-              txFlow.start({
-                flowId: "updateBorrowPosition",
-                backLink: [`/loan?id=${loan.branchId}:${loan.troveId}`, "Back to editing"],
-                successLink: ["/", "Go to the dashboard"],
-                successMessage: "The position has been updated successfully.",
-
-                prevLoan: { ...loan },
-                loan: {
-                  ...loan,
-                  deposit: newDeposit ?? loan.deposit,
-                  borrowed: newDebt ?? loan.borrowed,
-                },
-                maxUpfrontFee: dnum18(maxUint256),
-              });
-            }
-          }}
-        />
-      </div>
+      />
     </>
   );
 }

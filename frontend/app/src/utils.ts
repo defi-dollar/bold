@@ -1,3 +1,6 @@
+import { CollateralToken } from "@liquity2/uikit";
+import { Branch } from "./types";
+
 export function noop() {}
 
 export function debounce<T extends unknown[]>(
@@ -38,4 +41,16 @@ export function jsonStringifyWithBigInt(data: unknown) {
 
 export function bigIntAbs(value: bigint) {
   return value < 0n ? -value : value;
+}
+
+export function sortBranches(a: Branch, b: Branch) {
+  return a.symbol.localeCompare(b.symbol);
+}
+
+export function sortCollaterals(a: CollateralToken, b: CollateralToken) {
+  return a.symbol.localeCompare(b.symbol);
+}
+
+export function sortAlphabetically(a: string, b: string) {
+  return a.localeCompare(b);
 }

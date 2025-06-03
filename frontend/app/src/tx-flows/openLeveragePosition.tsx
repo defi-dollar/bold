@@ -5,23 +5,17 @@ import { ETH_GAS_COMPENSATION, MAX_UPFRONT_FEE } from "@/src/constants";
 import { dnum18 } from "@/src/dnum-utils";
 import { fmtnum } from "@/src/formatting";
 import { getOpenLeveragedTroveParams } from "@/src/liquity-leverage";
-import {
-  getBranch,
-  getCollToken,
-  getPrefixedTroveId,
-  getTroveOperationHints,
-  usePredictOpenTroveUpfrontFee,
-} from "@/src/liquity-utils";
+import { getBranch, getCollToken, getTroveOperationHints, usePredictOpenTroveUpfrontFee } from "@/src/liquity-utils";
 import { AccountButton } from "@/src/screens/TransactionsScreen/AccountButton";
 import { LoanCard } from "@/src/screens/TransactionsScreen/LoanCard";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { usePrice } from "@/src/services/Prices";
-import { graphQuery, TroveStatusByIdQuery } from "@/src/subgraph-queries";
+import { getIndexedTroveById } from "@/src/subgraph";
 import { noop, sleep } from "@/src/utils";
 import { vPositionLoanUncommited } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
-import { ADDRESS_ZERO, InfoTooltip } from "@liquity2/uikit";
+import { ADDRESS_ZERO, BOLD_TOKEN_SYMBOL, InfoTooltip } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
 import { maxUint256, parseEventLogs } from "viem";
@@ -87,7 +81,7 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
         <TransactionDetailsRow
           label="Borrowed"
           value={[
-            `${fmtnum(borrowedWithFee)} BOLD`,
+            `${fmtnum(borrowedWithFee)} ${BOLD_TOKEN_SYMBOL}`,
             <div
               className={css({
                 display: "flex",
@@ -100,9 +94,9 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
                 fallback="…"
                 prefix="Incl. "
                 value={upfrontFee.data}
-                suffix=" BOLD creation fee"
+                suffix={` ${BOLD_TOKEN_SYMBOL} creation fee`}
               />
-              <InfoTooltip heading="BOLD Creation Fee">
+              <InfoTooltip heading={`${BOLD_TOKEN_SYMBOL} Creation Fee`}>
                 This fee is charged when you open a new loan or increase your debt. It corresponds to 7 days of average
                 interest for the respective collateral asset.
               </InfoTooltip>
@@ -120,7 +114,7 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
                     digits: 4,
                     dust: false,
                     prefix: "~",
-                  })} BOLD per year)
+                  })} {BOLD_TOKEN_SYMBOL} per year)
                 </div>,
               ]}
             />
@@ -130,7 +124,7 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
               label="Interest rate"
               value={[
                 `${fmtnum(loan.interestRate, "pct2")}%`,
-                `${fmtnum(dn.mul(loan.borrowed, loan.interestRate))} BOLD per year`,
+                `${fmtnum(dn.mul(loan.borrowed, loan.interestRate))} ${BOLD_TOKEN_SYMBOL} per year`,
               ]}
             />
           )}
@@ -261,16 +255,12 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
         }
 
         // Wait for trove to appear in subgraph
-        const prefixedTroveId = getPrefixedTroveId(
-          ctx.request.loan.branchId,
-          `0x${troveOperation.args._troveId.toString(16)}`,
-        );
-
         while (true) {
-          const { trove: troveStatus } = await graphQuery(TroveStatusByIdQuery, {
-            id: prefixedTroveId,
-          });
-          if (troveStatus !== null) {
+          const trove = await getIndexedTroveById(
+            branch.branchId,
+            `0x${troveOperation.args._troveId.toString(16)}`,
+          );
+          if (trove !== null) {
             break;
           }
           await sleep(1000);

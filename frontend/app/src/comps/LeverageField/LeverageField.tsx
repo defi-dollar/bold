@@ -16,7 +16,7 @@ import {
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { roundToDecimal } from "@/src/utils";
 import { css } from "@/styled-system/css";
-import { HFlex, InfoTooltip, InputField, lerp, norm, Slider } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, InfoTooltip, InputField, lerp, norm, Slider } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
@@ -91,7 +91,7 @@ export function LeverageField({
                 >
                   {fmtnum(debt)}
                 </span>
-                {" BOLD"}
+                {` ${BOLD_TOKEN_SYMBOL}`}
               </>
             )}
           </div>

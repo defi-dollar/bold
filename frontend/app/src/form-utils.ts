@@ -16,7 +16,7 @@ export function isInputValueInt(value: string) {
   return inputIntRegex.test(value);
 }
 
-export function parseInputFloat(value: string) {
+export function parseInputFloat(value: string, decimals: number = 18) {
   value = value.trim();
 
   if (!isInputFloat(value)) {
@@ -27,7 +27,7 @@ export function parseInputFloat(value: string) {
     .replace(/\.$/, "")
     .replace(/^\./, "0.");
 
-  return dn.from(value === "" ? 0 : value, 18);
+  return dn.from(value === "" ? 0 : value, decimals);
 }
 
 export function parseInputPercentage(value: string) {
@@ -125,15 +125,17 @@ export function useInputFieldValue(
   format: (value: Dnum) => string,
   {
     defaultValue = "",
+    decimals = 18,
     onChange,
     onFocusChange,
     parse = parseInputFloat,
     validate = (parsed, value) => ({ parsed, value }),
   }: {
     defaultValue?: string;
+    decimals?: number;
     onChange?: (data: InputFieldUpdateData) => void;
     onFocusChange?: (data: InputFieldUpdateData) => void;
-    parse?: (value: string) => Dnum | null;
+    parse?: (value: string, decimals: number) => Dnum | null;
     validate?: (parsed: Dnum | null, value: string) => { parsed: Dnum | null; value: string };
   } = {},
 ) {
@@ -144,14 +146,14 @@ export function useInputFieldValue(
   }>({
     value: defaultValue,
     focused: false,
-    parsed: parse(defaultValue),
+    parsed: parse(defaultValue, decimals),
   });
 
   const ref = useRef<HTMLInputElement>(null);
 
   return useMemo(() => {
     const setValue = (value: string) => {
-      let parsed = parse(value);
+      let parsed = parse(value, decimals);
 
       const result = validate(parsed, value);
       parsed = result.parsed;

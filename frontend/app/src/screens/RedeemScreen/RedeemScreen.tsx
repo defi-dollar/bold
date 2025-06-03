@@ -4,6 +4,7 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
 import { Screen } from "@/src/comps/Screen/Screen";
+import { DUNE_REDEMPTION_URL } from "@/src/constants";
 import content from "@/src/content";
 import { getProtocolContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
@@ -13,7 +14,7 @@ import { getBranches, getCollToken } from "@/src/liquity-utils";
 import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { Button, HFlex, InfoTooltip, InputField, TextButton, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, HFlex, InfoTooltip, InputField, TextButton, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import Link from "next/link";
 import { useRef } from "react";
@@ -23,7 +24,7 @@ export function RedeemScreen() {
   const account = useAccount();
   const txFlow = useTransactionFlow();
 
-  const boldBalance = useBalance(account.address, "BOLD");
+  const boldBalance = useBalance(account.address, BOLD_TOKEN_SYMBOL);
 
   const CollateralRegistry = getProtocolContract("CollateralRegistry");
   const redemptionRate = useReadContract({
@@ -62,7 +63,7 @@ export function RedeemScreen() {
       heading={{
         title: (
           <HFlex>
-            Redeem <TokenIcon symbol="BOLD" /> BOLD for
+            Redeem <TokenIcon symbol={BOLD_TOKEN_SYMBOL} /> {BOLD_TOKEN_SYMBOL} for
             <TokenIcon.Group>
               {branches.map((b) => getCollToken(b.branchId)).map(({ symbol }) => (
                 <TokenIcon
@@ -70,8 +71,7 @@ export function RedeemScreen() {
                   symbol={symbol}
                 />
               ))}
-            </TokenIcon.Group>{" "}
-            ETH
+            </TokenIcon.Group>
           </HFlex>
         ),
       }}
@@ -90,8 +90,8 @@ export function RedeemScreen() {
               id="input-redeem-amount"
               contextual={
                 <InputField.Badge
-                  icon={<TokenIcon symbol="BOLD" />}
-                  label="BOLD"
+                  icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
+                  label={BOLD_TOKEN_SYMBOL}
                 />
               }
               drawer={amount.isFocused
@@ -101,7 +101,7 @@ export function RedeemScreen() {
                     && dn.gt(amount.parsed, boldBalance.data)
                 ? {
                   mode: "error",
-                  message: `Insufficient BOLD balance. You have ${fmtnum(boldBalance.data)} BOLD.`,
+                  message: `Insufficient ${BOLD_TOKEN_SYMBOL} balance. You have ${fmtnum(boldBalance.data)} ${BOLD_TOKEN_SYMBOL}.`,
                 }
                 : null}
               label="Redeeming"
@@ -115,9 +115,11 @@ export function RedeemScreen() {
                 end: (
                   boldBalance.data && dn.gt(boldBalance.data, 0) && (
                     <TextButton
-                      label={`Max ${fmtnum(boldBalance.data)} BOLD`}
+                      label={`Max ${fmtnum(boldBalance.data)} ${BOLD_TOKEN_SYMBOL}`}
                       onClick={() => {
-                        amount.setValue(dn.toString(boldBalance.data));
+                        if (boldBalance.data) {
+                          amount.setValue(dn.toString(boldBalance.data));
+                        }
                       }}
                     />
                   )
@@ -176,7 +178,7 @@ export function RedeemScreen() {
                         </>
                       ),
                       footerLink: {
-                        href: "https://dune.com/queries/4641717/7730245",
+                        href: DUNE_REDEMPTION_URL,
                         label: "Redemption fee on Dune",
                       },
                     }}
@@ -223,7 +225,7 @@ export function RedeemScreen() {
               },
             })}
           >
-            You will be charged a dynamic redemption fee (the more redemptions, the higher the fee). Trading BOLD on an
+            You will be charged a dynamic redemption fee (the more redemptions, the higher the fee). Trading {BOLD_TOKEN_SYMBOL} on an
             exchange could be more favorable.{" "}
             <Link
               href="https://docs.liquity.org/v2-faq/redemptions-and-delegation"

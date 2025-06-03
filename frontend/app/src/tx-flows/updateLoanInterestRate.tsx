@@ -16,7 +16,7 @@ import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/Transact
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { vPositionLoanCommited } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
-import { ADDRESS_ZERO, InfoTooltip } from "@liquity2/uikit";
+import { ADDRESS_ZERO, BOLD_TOKEN_SYMBOL, InfoTooltip } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { match, P } from "ts-pattern";
 import * as v from "valibot";
@@ -34,7 +34,7 @@ const RequestSchema = createRequestSchema(
 export type UpdateLoanInterestRateRequest = v.InferOutput<typeof RequestSchema>;
 
 export const updateLoanInterestRate: FlowDeclaration<UpdateLoanInterestRateRequest> = {
-  title: "Review & Confirm",
+  title: "Review & Send Transaction",
 
   Summary({ request }) {
     const { loan, prevLoan } = request;
@@ -120,7 +120,7 @@ export const updateLoanInterestRate: FlowDeclaration<UpdateLoanInterestRateReque
                     <Amount
                       format="2z"
                       prefix="~"
-                      suffix=" BOLD per year"
+                      suffix={` ${BOLD_TOKEN_SYMBOL} per year`}
                       value={yearlyBoldInterest}
                     />
                   </>
@@ -139,13 +139,13 @@ export const updateLoanInterestRate: FlowDeclaration<UpdateLoanInterestRateReque
               </div>,
               <div
                 key="end"
-                title={`${fmtnum(yearlyBoldInterest, "full")} BOLD per year`}
+                title={`${fmtnum(yearlyBoldInterest, "full")} ${BOLD_TOKEN_SYMBOL} per year`}
               >
                 {fmtnum(yearlyBoldInterest, {
                   digits: 4,
                   dust: false,
                   prefix: "~",
-                })} BOLD per year
+                })} {BOLD_TOKEN_SYMBOL} per year
               </div>,
             ]}
           />
@@ -184,7 +184,7 @@ export const updateLoanInterestRate: FlowDeclaration<UpdateLoanInterestRateReque
                   <Amount
                     format="2z"
                     prefix="~"
-                    suffix=" BOLD per year"
+                    suffix={` ${BOLD_TOKEN_SYMBOL} per year`}
                     value={prevYearlyBoldInterest}
                   />
                 </div>,
@@ -223,7 +223,7 @@ export const updateLoanInterestRate: FlowDeclaration<UpdateLoanInterestRateReque
                   key="start"
                   fallback="…"
                   value={upfrontFee.data}
-                  suffix=" BOLD"
+                  suffix={` ${BOLD_TOKEN_SYMBOL}`}
                 />,
               ]}
             />

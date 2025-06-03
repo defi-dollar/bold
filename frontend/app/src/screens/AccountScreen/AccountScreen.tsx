@@ -11,9 +11,10 @@ import { CHAIN_ID } from "@/src/env";
 import { fmtnum } from "@/src/formatting";
 import { getBranches } from "@/src/liquity-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
-import { css } from "@/styled-system/css";
+import { css, cx } from "@/styled-system/css";
 import {
   addressesEqual,
+  BOLD_TOKEN_SYMBOL,
   Button,
   IconAccount,
   isCollateralSymbol,
@@ -106,10 +107,10 @@ export function AccountScreen({
               gridTemplateColumns: `repeat(3, 1fr)`,
             }}
           >
-            <GridItem label="BOLD balance">
+            <GridItem label={`${BOLD_TOKEN_SYMBOL} balance`}>
               <Balance
                 address={address}
-                tokenSymbol="BOLD"
+                tokenSymbol={BOLD_TOKEN_SYMBOL}
               />
             </GridItem>
             <GridItem label="LQTY balance">
@@ -175,11 +176,14 @@ function Balance({
 
   return (
     <div
-      className={css({
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-      })}
+      className={cx(
+        `balance-${tokenSymbol.toLowerCase()}`,
+        css({
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }),
+      )}
     >
       <div
         title={`${fmtnum(balance.data, "full")} ${tokenSymbol}`}
@@ -198,6 +202,7 @@ function Balance({
           size="mini"
           label="tap"
           onClick={() => {
+            // @ts-ignore
             if ((tokenSymbol === "WSTETH" || tokenSymbol === "RETH") && CollToken) {
               writeContract({
                 abi: ERC20Faucet,

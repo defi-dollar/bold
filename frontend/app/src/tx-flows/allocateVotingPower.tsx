@@ -4,10 +4,10 @@ import type { Address, Dnum, Initiative, VoteAllocation } from "@/src/types";
 import { AddressLink } from "@/src/comps/AddressLink/AddressLink";
 import { Amount } from "@/src/comps/Amount/Amount";
 import { GAS_ALLOCATE_LQTY_MIN_HEADROOM } from "@/src/constants";
-import { getUserStates, useGovernanceUser, useInitiatives } from "@/src/liquity-governance";
+import { getUserStates, useGovernanceUser, useNamedInitiatives } from "@/src/liquity-governance";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
-import { GovernanceUserAllocated, graphQuery } from "@/src/subgraph-queries";
+import { getIndexedUserAllocated } from "@/src/subgraph";
 import { vVoteAllocations } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
 import { IconDownvote, IconStake, IconUpvote } from "@liquity2/uikit";
@@ -150,24 +150,31 @@ export const allocateVotingPower: FlowDeclaration<AllocateVotingPowerRequest> = 
   },
 
   Details({ request, account }) {
-    const initiatives = useInitiatives();
+    const initiatives = useNamedInitiatives();
     const governanceUser = useGovernanceUser(account);
     const stakedLQTY = governanceUser.data?.stakedLQTY ?? 0n;
-    return (
-      <>
-        {Object.entries(request.voteAllocations).map(([address, vote]) => {
-          const initiative = initiatives.data?.find((i) => i.address === address);
-          return !initiative || !vote ? null : (
-            <VoteAllocation
-              key={address}
-              initiative={initiative}
-              vote={vote}
-              stakedLQTY={stakedLQTY}
-            />
-          );
-        })}
-      </>
-    );
+    const allocations = Object.entries(request.voteAllocations);
+    if (allocations.length === 0) {
+      return (
+        <TransactionDetailsRow
+          label="Allocation reset"
+          value={[
+            "All your votes will be dealocated.",
+          ]}
+        />
+      );
+    }
+    return allocations.map(([address, vote]) => {
+      const initiative = initiatives.data?.find((i) => i.address === address);
+      return !initiative || !vote ? null : (
+        <VoteAllocation
+          key={address}
+          initiative={initiative}
+          vote={vote}
+          stakedLQTY={stakedLQTY}
+        />
+      );
+    });
   },
 
   steps: {
@@ -193,7 +200,7 @@ export const allocateVotingPower: FlowDeclaration<AllocateVotingPowerRequest> = 
         let [remainingVotes] = Object.values(voteAllocations)
           .map((x) => x?.value)
           .filter((x) => x !== undefined)
-          .reduce((a, b) => dn.add(a, b));
+          .reduce((a, b) => dn.add(a, b), [0n, 18]);
 
         for (const [index, address] of initiativeAddresses.entries()) {
           const vote = voteAllocations[address];
@@ -212,16 +219,13 @@ export const allocateVotingPower: FlowDeclaration<AllocateVotingPowerRequest> = 
           }
         }
 
-        const allocated = await graphQuery(
-          GovernanceUserAllocated,
-          { id: ctx.account.toLowerCase() },
-        );
+        const allocated = await getIndexedUserAllocated(ctx.account);
 
         return ctx.writeContract({
           ...ctx.contracts.Governance,
           functionName: "allocateLQTY",
           args: [
-            (allocated.governanceUser?.allocated ?? []) as Address[],
+            allocated, // allocations to reset
             allocationArgs.initiatives,
             allocationArgs.votes,
             allocationArgs.vetos,

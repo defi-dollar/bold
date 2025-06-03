@@ -3,8 +3,8 @@ import type { BranchId, PositionLoanCommitted, TroveId } from "@/src/types";
 
 import { ARROW_RIGHT, NBSP } from "@/src/characters";
 import { Amount } from "@/src/comps/Amount/Amount";
-import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
+import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
 import { InterestRateField } from "@/src/comps/InterestRateField/InterestRateField";
 import { UpdateBox } from "@/src/comps/UpdateBox/UpdateBox";
 import content from "@/src/content";
@@ -14,11 +14,10 @@ import { formatRisk } from "@/src/formatting";
 import { getLoanDetails } from "@/src/liquity-math";
 import { getBranch, getCollToken, useTroveRateUpdateCooldown } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
-import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { infoTooltipProps, riskLevelToStatusMode } from "@/src/uikit-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { addressesEqual, Button, HFlex, IconSuggestion, InfoTooltip, StatusDot } from "@liquity2/uikit";
+import { addressesEqual, BOLD_TOKEN_SYMBOL, HFlex, IconSuggestion, InfoTooltip, StatusDot } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,15 +27,15 @@ export function PanelInterestRate({
   loan: PositionLoanCommitted;
 }) {
   const account = useAccount();
-  const txFlow = useTransactionFlow();
 
   const collToken = getCollToken(loan.branchId);
   const collPrice = usePrice(collToken.symbol);
 
   const deposit = useInputFieldValue((value) => `${fmtnum(value, "full")} ${collToken.symbol}`, {
     defaultValue: dn.toString(loan.deposit),
+    decimals: collToken.decimals,
   });
-  const debt = useInputFieldValue((value) => `${fmtnum(value, "full")} BOLD`, {
+  const debt = useInputFieldValue((value) => `${fmtnum(value, "full")} ${BOLD_TOKEN_SYMBOL}`, {
     defaultValue: dn.toString(loan.borrowed),
   });
 
@@ -118,7 +117,7 @@ export function PanelInterestRate({
           start: (
             <Field.FooterInfo
               label={updateRateCooldown.status === "success" && (
-                <span
+                <div
                   className={css({
                     display: "flex",
                     alignItems: "center",
@@ -127,15 +126,31 @@ export function PanelInterestRate({
                     fontSize: 14,
                   })}
                 >
-                  <IconSuggestion size={16} />
-                  {updateRateCooldown.active
-                    ? (
-                      <>
-                        Adjust without fee
-                        <div ref={updateRateCooldown.remainingRef} />
-                      </>
-                    )
-                    : <>No fee for rate adjustment</>}
+                  <div
+                    className={css({
+                      flexShrink: 0,
+                    })}
+                  >
+                    <IconSuggestion size={16} />
+                  </div>
+                  <div
+                    className={css({
+                      flexShrink: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      minWidth: 0,
+                    })}
+                  >
+                    {updateRateCooldown.active
+                      ? (
+                        <>
+                          {"Adjust without fee "}
+                          <span ref={updateRateCooldown.remainingRef} />
+                        </>
+                      )
+                      : <>No fee for rate adjustment</>}
+                  </div>
                   <InfoTooltip
                     content={{
                       heading: "Interest rate updates",
@@ -151,7 +166,7 @@ export function PanelInterestRate({
                       },
                     }}
                   />
-                </span>
+                </div>
               )}
             />
           ),
@@ -204,57 +219,38 @@ export function PanelInterestRate({
             {
               label: (
                 <>
-                  <div>BOLD interest per year</div>
+                  <div>{BOLD_TOKEN_SYMBOL} interest per year</div>
                   <InfoTooltip {...infoTooltipProps(content.generalInfotooltips.interestRateBoldPerYear)} />
                 </>
               ),
-              before: <Amount value={boldInterestPerYearPrev} suffix=" BOLD" />,
-              after: <Amount value={boldInterestPerYear} suffix=" BOLD" />,
+              before: <Amount value={boldInterestPerYearPrev} suffix={` ${BOLD_TOKEN_SYMBOL}`} />,
+              after: <Amount value={boldInterestPerYear} suffix={` ${BOLD_TOKEN_SYMBOL}`} />,
             },
           ]}
         />
       </div>
+      <FlowButton
+        disabled={!allowSubmit}
+        label="Update position"
+        request={{
+          flowId: "updateLoanInterestRate",
+          backLink: [
+            `/loan/rate?id=${loan.branchId}:${loan.troveId}`,
+            "Back to editing",
+          ],
+          successLink: ["/", "Go to the dashboard"],
+          successMessage: "The position interest rate has been updated successfully.",
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          gap: 32,
-          width: "100%",
+          prevLoan: { ...loan },
+          loan: {
+            ...loan,
+            batchManager: interestRateMode === "delegate" || interestRateMode === "strategy"
+              ? interestRateDelegate
+              : null,
+            interestRate,
+          },
         }}
-      >
-        <ConnectWarningBox />
-        <Button
-          disabled={!allowSubmit}
-          label="Update position"
-          mode="primary"
-          size="large"
-          wide
-          onClick={() => {
-            if (account.address) {
-              txFlow.start({
-                flowId: "updateLoanInterestRate",
-                backLink: [
-                  `/loan/rate?id=${loan.branchId}:${loan.troveId}`,
-                  "Back to editing",
-                ],
-                successLink: ["/", "Go to the dashboard"],
-                successMessage: "The position interest rate has been updated successfully.",
-
-                prevLoan: { ...loan },
-                loan: {
-                  ...loan,
-                  batchManager: interestRateMode === "delegate" || interestRateMode === "strategy"
-                    ? interestRateDelegate
-                    : null,
-                  interestRate,
-                },
-              });
-            }
-          }}
-        />
-      </div>
+      />
     </>
   );
 }

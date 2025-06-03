@@ -39,6 +39,7 @@ export const SP_YIELD_SPLIT = 75n * 10n ** 16n; // 75%
 
 export const DATA_REFRESH_INTERVAL = 30_000;
 export const PRICE_REFRESH_INTERVAL = 60_000;
+export const DATA_STALE_TIME = 5_000;
 
 export const LEVERAGE_MAX_SLIPPAGE = 0.05; // 5%
 export const CLOSE_FROM_COLLATERAL_SLIPPAGE = 0.05; // 5%
@@ -47,8 +48,16 @@ export const MIN_DEBT = dn.from(2000, 18);
 
 export const MAX_COLLATERAL_DEPOSITS: Record<CollateralSymbol, dn.Dnum> = {
   ETH: dn.from(100_000_000n, 18),
-  WSTETH: dn.from(100_000_000n, 18),
-  RETH: dn.from(100_000_000n, 18),
+  FXS: dn.from(100_000_000n, 18),
+  LINK: dn.from(100_000_000n, 18),
+  UNI: dn.from(100_000_000n, 18),
+  SKY: dn.from(100_000_000n, 18),
+  CRV: dn.from(100_000_000n, 18),
+  AAVE: dn.from(100_000_000n, 18),
+  YFI: dn.from(100_000_000n, 18),
+  LDO: dn.from(100_000_000n, 18),
+  LQTY: dn.from(100_000_000n, 18),
+  WBTC: dn.from(100_000_000n, 8),
 };
 
 // LTV factor suggestions, as ratios of the multiply factor range
@@ -59,11 +68,7 @@ export const LEVERAGE_FACTOR_SUGGESTIONS = [
 ];
 
 // DEBT suggestions, as ratios of the max LTV
-export const DEBT_SUGGESTIONS = [
-  0.3,
-  0.6,
-  0.8,
-];
+export const DEBT_SUGGESTIONS = [0.3, 0.6, 0.8];
 
 // ltv risk levels, as ratios of the max ltv
 export const LTV_RISK: Record<Exclude<RiskLevel, "low">, number> = {
@@ -76,3 +81,6 @@ export const REDEMPTION_RISK: Record<Exclude<RiskLevel, "high">, number> = {
   medium: 3.5 / 100,
   low: 5 / 100,
 };
+
+export const DUNE_URL = "https://dune.com/defidollar/dashboard";
+export const DUNE_REDEMPTION_URL = 'https://dune.com/queries/4739167/7870054'

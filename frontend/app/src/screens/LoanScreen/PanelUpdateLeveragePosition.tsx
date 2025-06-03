@@ -2,8 +2,8 @@ import type { PositionLoanCommitted } from "@/src/types";
 
 import { INFINITY } from "@/src/characters";
 import { Amount } from "@/src/comps/Amount/Amount";
-import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { Field } from "@/src/comps/Field/Field";
+import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
 import { InputTokenBadge } from "@/src/comps/InputTokenBadge/InputTokenBadge";
 import { LeverageField, useLeverageField } from "@/src/comps/LeverageField/LeverageField";
 import { UpdateBox } from "@/src/comps/UpdateBox/UpdateBox";
@@ -17,12 +17,11 @@ import { fmtnum, formatRisk } from "@/src/formatting";
 import { getLiquidationPriceFromLeverage, getLoanDetails } from "@/src/liquity-math";
 import { getCollToken } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
-import { useTransactionFlow } from "@/src/services/TransactionFlow";
 import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import {
-  Button,
+  BOLD_TOKEN_SYMBOL,
   Checkbox,
   HFlex,
   InfoTooltip,
@@ -42,7 +41,6 @@ export function PanelUpdateLeveragePosition({
   loan: PositionLoanCommitted;
 }) {
   const account = useAccount();
-  const txFlow = useTransactionFlow();
 
   const collToken = getCollToken(loan.branchId);
   if (!collToken) {
@@ -62,7 +60,9 @@ export function PanelUpdateLeveragePosition({
 
   // deposit change
   const [depositMode, setDepositMode] = useState<"add" | "remove">("add");
-  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"));
+  const depositChange = useInputFieldValue((value) => fmtnum(value, "full"), {
+    decimals: collToken.decimals,
+  });
   const [userLeverageFactor, setUserLeverageFactor] = useState(
     initialLoanDetails.leverageFactor ?? 1,
   );
@@ -157,9 +157,7 @@ export function PanelUpdateLeveragePosition({
       !dn.eq(
         initialLoanDetails.deposit ?? dnum18(0),
         newLoanDetails.deposit ?? dnum18(0),
-      ) || (
-        initialLoanDetails.leverageFactor !== newLoanDetails.leverageFactor
-      )
+      ) || (initialLoanDetails.leverageFactor !== newLoanDetails.leverageFactor)
     )
     // above the minimum debt
     && newLoanDetails.debt && dn.gt(newLoanDetails.debt, MIN_DEBT);
@@ -274,7 +272,7 @@ export function PanelUpdateLeveragePosition({
               drawer={newLoanDetails.debt && dn.lt(newLoanDetails.debt, MIN_DEBT)
                 ? {
                   mode: "error",
-                  message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} BOLD.`,
+                  message: `You must borrow at least ${fmtnum(MIN_DEBT, 2)} ${BOLD_TOKEN_SYMBOL}.`,
                 }
                 : null}
               {...leverageField}
@@ -342,11 +340,11 @@ export function PanelUpdateLeveragePosition({
                 <ValueUpdate
                   fontSize={14}
                   before={initialLoanDetails.debt && (
-                    `${fmtnum(initialLoanDetails.debt)} BOLD`
+                    `${fmtnum(initialLoanDetails.debt)} ${BOLD_TOKEN_SYMBOL}`
                   )}
                   after={newLoanDetails.debt && dn.gt(newLoanDetails.debt, 0)
                     ? (
-                      `${fmtnum(newLoanDetails.debt)} BOLD`
+                      `${fmtnum(newLoanDetails.debt)} ${BOLD_TOKEN_SYMBOL}`
                     )
                     : (
                       `N/A`
@@ -464,56 +462,37 @@ export function PanelUpdateLeveragePosition({
             : null}
         </VFlex>
       </VFlex>
+      <FlowButton
+        disabled={!allowSubmit}
+        label="Update position"
+        request={{
+          flowId: "updateLeveragePosition",
+          backLink: [
+            `/loan?id=${loan.branchId}:${loan.troveId}`,
+            "Back to editing",
+          ],
+          successLink: ["/", "Go to the dashboard"],
+          successMessage: "The position has been updated successfully.",
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          gap: 32,
-          width: "100%",
+          depositChange: (!depositChange.parsed || dn.eq(depositChange.parsed, 0))
+            ? null
+            : dn.mul(depositChange.parsed, depositMode === "remove" ? -1 : 1),
+
+          leverageFactorChange: (
+              !initialLoanDetails.leverageFactor
+              || userLeverageFactor === initialLoanDetails.leverageFactor
+            )
+            ? null
+            : [initialLoanDetails.leverageFactor, userLeverageFactor],
+
+          prevLoan: { ...loan },
+          loan: {
+            ...loan,
+            deposit: newDeposit,
+            borrowed: newDebt,
+          },
         }}
-      >
-        <ConnectWarningBox />
-        <Button
-          disabled={!allowSubmit}
-          label="Update position"
-          mode="primary"
-          size="large"
-          wide
-          onClick={() => {
-            if (account.address) {
-              txFlow.start({
-                flowId: "updateLeveragePosition",
-                backLink: [
-                  `/loan?id=${loan.branchId}:${loan.troveId}`,
-                  "Back to editing",
-                ],
-                successLink: ["/", "Go to the dashboard"],
-                successMessage: "The position has been updated successfully.",
-
-                depositChange: (!depositChange.parsed || dn.eq(depositChange.parsed, 0))
-                  ? null
-                  : dn.mul(depositChange.parsed, depositMode === "remove" ? -1 : 1),
-
-                leverageFactorChange: (
-                    !initialLoanDetails.leverageFactor
-                    || userLeverageFactor === initialLoanDetails.leverageFactor
-                  )
-                  ? null
-                  : [initialLoanDetails.leverageFactor, userLeverageFactor],
-
-                prevLoan: { ...loan },
-                loan: {
-                  ...loan,
-                  deposit: newDeposit,
-                  borrowed: newDebt,
-                },
-              });
-            }
-          }}
-        />
-      </div>
+      />
     </>
   );
 }

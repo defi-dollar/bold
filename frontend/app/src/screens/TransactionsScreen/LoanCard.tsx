@@ -15,7 +15,7 @@ import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { roundToDecimal } from "@/src/utils";
 import { css } from "@/styled-system/css";
 import { token } from "@/styled-system/tokens";
-import { Button, HFlex, IconBorrow, IconLeverage, StatusDot, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, HFlex, IconBorrow, IconLeverage, StatusDot, TokenIcon } from "@liquity2/uikit";
 import { a, useSpring } from "@react-spring/web";
 import * as dn from "dnum";
 import { match, P } from "ts-pattern";
@@ -426,7 +426,7 @@ function TotalDebt({
         })}
       >
         <div
-          title={`${fmtnum(loan.borrowed, "full")} BOLD`}
+          title={`${fmtnum(loan.borrowed, "full")} ${BOLD_TOKEN_SYMBOL}`}
           className={css({
             display: "flex",
             alignItems: "center",
@@ -440,10 +440,10 @@ function TotalDebt({
           >
             {fmtnum(loan.borrowed)}
           </div>
-          <TokenIcon symbol="BOLD" size={32} />
+          <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size={32} />
           {prevLoan && !dn.eq(prevLoan.borrowed, loan.borrowed) && (
             <div
-              title={`${fmtnum(prevLoan.borrowed, "full")} BOLD`}
+              title={`${fmtnum(prevLoan.borrowed, "full")} ${BOLD_TOKEN_SYMBOL}`}
               className={css({
                 color: "contentAlt",
                 textDecoration: "line-through",
@@ -555,7 +555,7 @@ function LoadingCard({
   onRetry: () => void;
   txPreviewMode?: boolean;
 }) {
-  const title = leverage ? "Multiply" : "BOLD loan";
+  const title = leverage ? "Multiply" : `${BOLD_TOKEN_SYMBOL} loan`;
 
   const spring = useSpring({
     to: match(loadingState)
@@ -572,12 +572,11 @@ function LoadingCard({
             - 120 // top bar
             - 24 * 2 // padding
             - 48 // bottom bar 1
-            - 40
-            // - 40 // bottom bar 2
+            - 40 // bottom bar 2
           ),
           cardHeight: s === "error" || s === "not-found" ? 180 : 120,
-          cardBackground: token("colors.blue:50"),
-          cardColor: token("colors.blue:950"),
+          cardBackground: token("colors.green:100"),
+          cardColor: token("colors.green:1000"),
         }),
       )
       .otherwise(() => ({
@@ -721,8 +720,7 @@ function GridItem({
   return (
     <div
       className={css({
-        display: "flex",
-        flexDirection: "column",
+        display: "grid",
         gap: 4,
         fontSize: 14,
       })}
@@ -730,10 +728,20 @@ function GridItem({
       <div
         title={title}
         className={css({
+          minWidth: 0,
           color: "strongSurfaceContentAlt",
         })}
       >
-        {label}
+        <div
+          title={label}
+          className={css({
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          })}
+        >
+          {label}
+        </div>
       </div>
       <div
         className={css({
