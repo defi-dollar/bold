@@ -2,7 +2,7 @@
 import "@liquity2/uikit/index.css";
 
 import type { Metadata, Viewport } from "next";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { BreakpointName } from "@/src/breakpoints";
 import { About } from "@/src/comps/About/About";
@@ -18,6 +18,7 @@ import { TransactionFlow } from "@/src/services/TransactionFlow";
 import { UiKit } from "@liquity2/uikit";
 import { Analytics } from "@vercel/analytics/react";
 import { GeistSans } from "geist/font/sans";
+import { OnboardingProvider } from "./_onboard";
 
 export const metadata: Metadata = {
   title: content.appName,
@@ -52,13 +53,15 @@ export default function Layout({
                 <DemoMode>
                   <Ethereum>
                     <Blocking>
-                      <TransactionFlow>
-                        <About>
-                          <AppLayout>
-                            {children}
-                          </AppLayout>
-                        </About>
-                      </TransactionFlow>
+                      <OnboardingProvider>
+                        <TransactionFlow>
+                          <About>
+                            <AppLayout>
+                              {children}
+                            </AppLayout>
+                          </About>
+                        </TransactionFlow>
+                      </OnboardingProvider>
                     </Blocking>
                   </Ethereum>
                 </DemoMode>
@@ -71,3 +74,4 @@ export default function Layout({
     </html>
   );
 }
+

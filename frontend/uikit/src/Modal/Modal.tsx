@@ -16,12 +16,14 @@ export function Modal({
   title,
   visible,
   maxWidth = 534,
+  withCloseButton = true,
 }: {
   children: ReactNode;
   onClose: () => void;
   title?: ReactNode;
   visible: boolean;
   maxWidth?: number;
+  withCloseButton?: boolean;
 }) {
   const visibility = useTransition(visible, {
     config: {
@@ -171,22 +173,27 @@ export function Modal({
                         )}
                         {children}
                       </div>
-                      <div
-                        className={css({
-                          position: "absolute",
-                          top: 24,
-                          right: 24,
-                          display: "flex",
-                        })}
-                      >
-                        <TextButton
-                          label={<IconCross size={32} />}
-                          onClick={onClose}
-                          className={css({
-                            color: "content!",
-                          })}
-                        />
-                      </div>
+                      {
+                        withCloseButton && (
+                          <div
+                            className={css({
+                              position: "absolute",
+                              top: 24,
+                              right: 24,
+                              display: "flex",
+                            })}
+                          >
+                            <TextButton
+                              label={<IconCross size={32} />}
+                              onClick={onClose}
+                              className={css({
+                                color: "content!",
+                              })}
+                            />
+                          </div>
+                        )
+                      }
+                      
                     </a.div>
                   </div>
                 </FocusTrap>
