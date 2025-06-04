@@ -16,6 +16,7 @@ import {
 } from "@/src/env";
 import { blo } from "blo";
 import { ConnectKitProvider, getDefaultConfig as getDefaultConfigFromConnectKit } from "connectkit";
+import Image from "next/image";
 import { createConfig, http, WagmiProvider } from "wagmi";
 
 export const wagmiConfig = createConfig(
@@ -40,6 +41,7 @@ export const wagmiConfig = createConfig(
         multicall3: { address: CHAIN_CONTRACT_MULTICALL },
       },
     }],
+    enableFamily: false,
     ssr: true,
     transports: { [CHAIN_ID]: http(CHAIN_RPC_URL) },
     walletConnectProjectId: WALLET_CONNECT_PROJECT_ID,
@@ -59,7 +61,7 @@ export function Ethereum({
           avoidLayoutShift: true,
           customAvatar: ({ address, size }) => (
             address && (
-              <img
+              <Image
                 alt={address}
                 src={blo(address)}
                 width={size}

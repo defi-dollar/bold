@@ -6,18 +6,10 @@ import "./PythPriceFeedBase.sol";
 
 contract PythPriceFeed is PythPriceFeedBase {
     constructor(
-        address _owner,
         address _pythContract,
         bytes32 _priceFeedId,
         uint256 _priceAgeThreshold
-    )
-        PythPriceFeedBase(
-            _owner,
-            _pythContract,
-            _priceFeedId,
-            _priceAgeThreshold
-        )
-    {
+    ) PythPriceFeedBase(_pythContract, _priceFeedId, _priceAgeThreshold) {
         _fetchPrice();
         assert(priceSource == PriceSource.primary);
     }

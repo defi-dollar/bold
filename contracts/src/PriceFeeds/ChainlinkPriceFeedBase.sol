@@ -2,14 +2,13 @@
 
 pragma solidity 0.8.24;
 
-import "../Dependencies/Ownable.sol";
 import "../Dependencies/AggregatorV3Interface.sol";
 import "../Interfaces/IChainlinkPriceFeed.sol";
 import "../BorrowerOperations.sol";
 
 // import "forge-std/console2.sol";
 
-abstract contract ChainlinkPriceFeedBase is IChainlinkPriceFeed, Ownable {
+abstract contract ChainlinkPriceFeedBase is IChainlinkPriceFeed {
     // Determines where the PriceFeed sources data from. Possible states:
     // - primary: Uses the primary price calcuation, which depends on the specific feed
     // - lastGoodPrice: the last good price recorded by this PriceFeed.
@@ -39,24 +38,13 @@ abstract contract ChainlinkPriceFeedBase is IChainlinkPriceFeed, Ownable {
 
     IBorrowerOperations borrowerOperations;
 
-    constructor(
-        address _owner,
-        address _usdOracleAddress,
-        uint256 _stalenessThreshold
-    ) Ownable(_owner) {
+    constructor(address _usdOracleAddress, uint256 _stalenessThreshold) {
         // Store oracle
         usdOracle.aggregator = AggregatorV3Interface(_usdOracleAddress);
         usdOracle.stalenessThreshold = _stalenessThreshold;
         usdOracle.decimals = usdOracle.aggregator.decimals();
 
         assert(usdOracle.decimals == 8);
-    }
-
-    // TODO: remove this and set address in constructor, since we'll use CREATE2
-    function setAddresses(address _borrowOperationsAddress) external onlyOwner {
-        borrowerOperations = IBorrowerOperations(_borrowOperationsAddress);
-
-        _renounceOwnership();
     }
 
     function _getOracleAnswer(

@@ -2,6 +2,7 @@ import type { Address, BranchId, Delegate } from "@/src/types";
 import type { Dnum } from "dnum";
 
 import { useAppear } from "@/src/anim-utils";
+import { useBreakpointName } from "@/src/breakpoints";
 import { INTEREST_RATE_START, REDEMPTION_RISK } from "@/src/constants";
 import content from "@/src/content";
 import { jsonStringifyWithDnum } from "@/src/dnum-utils";
@@ -16,7 +17,7 @@ import { a } from "@react-spring/web";
 import { blo } from "blo";
 import * as dn from "dnum";
 import Image from "next/image";
-import { memo, useId, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { DelegateModal } from "./DelegateModal";
 import { IcStrategiesModal } from "./IcStrategiesModal";
@@ -24,7 +25,11 @@ import { MiniChart } from "./MiniChart";
 
 import icLogo from "./ic-logo.svg";
 
-const DELEGATE_MODES = ["manual", "delegate", "strategy"] as const;
+const DELEGATE_MODES = [
+  "manual",
+  "delegate",
+  "strategy",
+] as const;
 
 export type DelegateMode = typeof DELEGATE_MODES[number];
 
@@ -36,6 +41,7 @@ export const InterestRateField = memo(
     inputId: inputIdFromProps,
     interestRate,
     mode,
+    onAverageInterestRateLoad = noop,
     onChange,
     onDelegateChange,
     onModeChange = noop,
@@ -46,6 +52,7 @@ export const InterestRateField = memo(
     inputId?: string;
     interestRate: Dnum | null;
     mode: DelegateMode;
+    onAverageInterestRateLoad?: (averageInterestRate: Dnum) => void;
     onChange: (interestRate: Dnum) => void;
     onDelegateChange: (delegate: Address | null) => void;
     onModeChange?: (mode: DelegateMode) => void;
@@ -68,14 +75,24 @@ export const InterestRateField = memo(
       rateTouchedForBranch.current = null;
     }
 
-    if (rateTouchedForBranch.current === null && averageInterestRate.data) {
-      rateTouchedForBranch.current = branchId;
-      setTimeout(() => {
-        if (averageInterestRate.data) {
-          onChange(averageInterestRate.data);
-        }
-      }, 0);
-    }
+    useEffect(() => {
+      let cancelled = false;
+      if (rateTouchedForBranch.current === null && averageInterestRate.data) {
+        rateTouchedForBranch.current = branchId;
+        setTimeout(() => {
+          if (averageInterestRate.data && !cancelled) {
+            onAverageInterestRateLoad(averageInterestRate.data);
+          }
+        }, 0);
+        return () => {
+          cancelled = true;
+        };
+      }
+    }, [
+      averageInterestRate.data,
+      branchId,
+      onAverageInterestRateLoad,
+    ]);
 
     const fieldValue = useInputFieldValue((value) => `${fmtnum(value)}%`, {
       onFocusChange: ({ parsed, focused }) => {
@@ -118,6 +135,8 @@ export const InterestRateField = memo(
     const activeDelegateModes = DELEGATE_MODES.filter((mode) => mode !== "strategy" || hasStrategies);
 
     const boldInterestPerYear = interestRate && debt && dn.mul(interestRate, debt);
+
+    const breakpoint = useBreakpointName();
 
     return (
       <>
@@ -178,6 +197,7 @@ export const InterestRateField = memo(
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
+                        fontSize: 20,
                       })}
                     >
                       <Image
@@ -241,11 +261,9 @@ export const InterestRateField = memo(
             end: (
               <div>
                 <Dropdown
-                  items={activeDelegateModes.map((
-                    mode,
-                  ) => (
-                    content.interestRateField.delegateModes[mode]
-                  ))}
+                  items={activeDelegateModes.map(
+                    (mode) => content.interestRateField.delegateModes[mode],
+                  )}
                   menuWidth={300}
                   menuPlacement="end"
                   onSelect={(index) => {
@@ -270,11 +288,20 @@ export const InterestRateField = memo(
                   alignItems: "center",
                   gap: 4,
                   minWidth: 120,
+                  userSelect: "none",
                 })}
               >
-                <div>
+                <div
+                  className={css({
+                    minWidth: 0,
+                    flexShrink: 1,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  })}
+                >
                   {boldInterestPerYear && (mode === "manual" || delegate !== null)
-                    ? fmtnum(boldInterestPerYear)
+                    ? fmtnum(boldInterestPerYear, breakpoint === "small" ? "compact" : "2z")
                     : "−"} BOLD / year
                 </div>
                 <InfoTooltip {...infoTooltipProps(content.generalInfotooltips.interestRateBoldPerYear)} />
@@ -283,15 +310,21 @@ export const InterestRateField = memo(
             end: redeemableTransition((style, show) => (
               show && (
                 <a.div
+                  title={`Redeemable before you: ${
+                    (mode === "manual" || delegate !== null)
+                      ? fmtnum(bracket?.debtInFront, "compact")
+                      : "−"
+                  } BOLD`}
                   className={css({
                     overflow: "hidden",
                     whiteSpace: "nowrap",
                     textOverflow: "ellipsis",
+                    userSelect: "none",
                   })}
                   style={style}
                 >
                   <span>
-                    Redeemable before you:{" "}
+                    {breakpoint === "large" ? "Redeemable before you: " : "Red. before: "}
                     <span
                       className={css({
                         fontVariantNumeric: "tabular-nums",
@@ -301,7 +334,7 @@ export const InterestRateField = memo(
                         ? fmtnum(bracket?.debtInFront, "compact")
                         : "−"}
                     </span>
-                    <span>{" BOLD"}</span>
+                    {breakpoint === "large" && <span>{" BOLD"}</span>}
                   </span>
                 </a.div>
               )
@@ -327,7 +360,7 @@ export const InterestRateField = memo(
                     gap: 8,
                   }}
                 >
-                  {delegate !== null && <MiniChart size="medium" />}
+                  {delegate !== null && breakpoint === "large" && <MiniChart size="medium" />}
                   <span
                     style={{
                       fontVariantNumeric: "tabular-nums",
@@ -339,12 +372,15 @@ export const InterestRateField = memo(
                     )}
                   </span>
                   <span
-                    style={{
+                    className={css({
                       color: "#878AA4",
-                      fontSize: 24,
-                    }}
+                      fontSize: {
+                        base: 20,
+                        large: 24,
+                      },
+                    })}
                   >
-                    % per year
+                    %{breakpoint === "large" ? " per year" : ""}
                   </span>
                 </span>
               )
@@ -417,6 +453,8 @@ function ManualInterestRateSlider({
 
   const transition = useAppear(value !== -1);
 
+  const breakpoint = useBreakpointName();
+
   return transition((style, show) =>
     show && (
       <a.div
@@ -424,7 +462,7 @@ function ManualInterestRateSlider({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 260,
+          width: breakpoint === "large" ? 260 : 200,
           paddingTop: 16,
           ...style,
         }}

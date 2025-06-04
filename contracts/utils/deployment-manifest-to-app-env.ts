@@ -2,7 +2,7 @@ import { z } from "zod";
 import { echo, fs, minimist } from "zx";
 
 const HELP = `
-Converts the deployment manifest created by scripts/DeployLiquity2.s.sol into 
+Converts the deployment manifest created by scripts/DeployLiquity2.s.sol into
 environment variables meant to be used by the Next.js app located in frontend/app.
 
 Usage:
@@ -24,10 +24,7 @@ const argv = minimist(process.argv.slice(2), {
   alias: {
     h: "help",
   },
-  boolean: [
-    "help",
-    "append",
-  ],
+  boolean: ["help", "append"],
 });
 
 const ZERO_ADDRESS = "0x" + "0".repeat(40);
@@ -38,14 +35,6 @@ const ZDeploymentManifest = z.object({
   boldToken: ZAddress,
   hintHelpers: ZAddress,
   multiTroveGetter: ZAddress,
-  exchangeHelpers: ZAddress,
-
-  governance: z.object({
-    LUSDToken: ZAddress,
-    LQTYToken: ZAddress,
-    stakingV1: ZAddress,
-    governance: ZAddress,
-  }),
 
   branches: z.array(
     z.object({
@@ -63,7 +52,7 @@ const ZDeploymentManifest = z.object({
       stabilityPool: ZAddress,
       troveManager: ZAddress,
       troveNFT: ZAddress,
-    }),
+    })
   ),
 });
 
@@ -87,13 +76,9 @@ export function main() {
     process.exit(1);
   }
 
-  const manifest = parseDeploymentManifest(
-    fs.readFileSync(options.inputJsonPath, "utf-8"),
-  );
+  const manifest = parseDeploymentManifest(fs.readFileSync(options.inputJsonPath, "utf-8"));
 
-  const outputEnv = objectToEnvironmentVariables(
-    deployedContractsToAppEnvVariables(manifest),
-  );
+  const outputEnv = objectToEnvironmentVariables(deployedContractsToAppEnvVariables(manifest));
 
   if (!options.outputEnvPath) {
     console.log(outputEnv);
@@ -137,7 +122,7 @@ function deployedContractsToAppEnvVariables(manifest: DeploymentManifest) {
     NEXT_PUBLIC_CONTRACT_WETH: manifest.branches[0].collToken,
   };
 
-  const { branches, governance, ...protocol } = manifest;
+  const { branches, ...protocol } = manifest;
 
   // protocol contracts
   for (const [contractName, address] of Object.entries(protocol)) {
@@ -158,15 +143,15 @@ function deployedContractsToAppEnvVariables(manifest: DeploymentManifest) {
   }
 
   // governance contracts
-  for (const [contractName, address] of Object.entries(governance)) {
-    const envVarName = contractNameToAppEnvVariable(
-      contractName,
-      contractName.endsWith("Initiative") ? "INITIATIVE" : "CONTRACT",
-    );
-    if (envVarName) {
-      appEnvVariables[envVarName] = address;
-    }
-  }
+  // for (const [contractName, address] of Object.entries(governance)) {
+  //   const envVarName = contractNameToAppEnvVariable(
+  //     contractName,
+  //     contractName.endsWith("Initiative") ? "INITIATIVE" : "CONTRACT",
+  //   );
+  //   if (envVarName) {
+  //     appEnvVariables[envVarName] = address;
+  //   }
+  // }
 
   return appEnvVariables;
 }
@@ -183,8 +168,6 @@ function contractNameToAppEnvVariable(contractName: string, prefix: string = "")
       return `${prefix}_HINT_HELPERS`;
     case "multiTroveGetter":
       return `${prefix}_MULTI_TROVE_GETTER`;
-    case "exchangeHelpers":
-      return `${prefix}_EXCHANGE_HELPERS`;
 
     // collateral contracts
     case "activePool":
@@ -211,16 +194,6 @@ function contractNameToAppEnvVariable(contractName: string, prefix: string = "")
       return `${prefix}_TROVE_MANAGER`;
     case "troveNFT":
       return `${prefix}_TROVE_NFT`;
-
-    // governance contracts
-    case "LUSDToken":
-      return `${prefix}_LUSD_TOKEN`;
-    case "LQTYToken":
-      return `${prefix}_LQTY_TOKEN`;
-    case "stakingV1":
-      return `${prefix}_LQTY_STAKING`;
-    case "governance":
-      return `${prefix}_GOVERNANCE`;
   }
   return null;
 }
@@ -243,9 +216,11 @@ function parseDeploymentManifest(content: string) {
   if (!manifest.success) {
     console.error("\nInvalid deployment manifest provided.\n");
     console.error(
-      manifest.error.errors.map((error) => {
-        return `${error.path.join(".")}: ${error.message} (${error.code})`;
-      }).join("\n"),
+      manifest.error.errors
+        .map((error) => {
+          return `${error.path.join(".")}: ${error.message} (${error.code})`;
+        })
+        .join("\n")
     );
     console.error("");
     console.error("Received:");
