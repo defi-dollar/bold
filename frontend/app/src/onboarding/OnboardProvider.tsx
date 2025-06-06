@@ -13,11 +13,13 @@ const getLocalStorageKey = (address: string) =>
 
 type OnboardContextProviderProps = {
   showOnboardModal: ShowOnboardModalFunction;
+  closeOnboardModal: () => void;
   children: ReactNode;
 };
 
 export const OnboardProvider = ({
   showOnboardModal,
+  closeOnboardModal,
   children,
 }: OnboardContextProviderProps) => {
   const { address } = useAccount();
@@ -60,6 +62,11 @@ export const OnboardProvider = ({
 
     load();
   }, [latestSignMessageVersion]);
+
+  // Always close onboard modal when account changes
+  useEffect(() => {
+    closeOnboardModal();
+  }, [address]);
 
   // Check should sign from localstorage and API
   useEffect(() => {

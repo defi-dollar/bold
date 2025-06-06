@@ -6,16 +6,21 @@ import { ShowOnboardModalFunction } from "../onboarding/OnboardContext";
 import { OnboardProvider } from "../onboarding/OnboardProvider";
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
+  const [visible, setVisible] = useState(false);
+  const [onSigned, setOnSigned] = useState<VoidFunction | undefined>(undefined);
+
   const openOnboardModal = useCallback<ShowOnboardModalFunction>((props) => {
     setVisible(true);
     setOnSigned(props?.onSigned);
   }, []);
 
-  const [visible, setVisible] = useState(false);
-  const [onSigned, setOnSigned] = useState<VoidFunction | undefined>(undefined);
+  const closeOnboardModal = useCallback(() => {
+    setVisible(false);
+    setOnSigned(undefined);
+  }, []);
 
   return (
-    <OnboardProvider showOnboardModal={openOnboardModal}>
+    <OnboardProvider showOnboardModal={openOnboardModal} closeOnboardModal={closeOnboardModal}>
       {children}
       <OnboardModal
         visible={visible}
