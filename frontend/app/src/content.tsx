@@ -97,7 +97,7 @@ export default {
         </>
       ),
       footerLink: {
-        href: "https://docs.liquity.org/v2-faq/redemptions-and-delegation",
+        href: "https://docs.defidollar.io/faq/redemptions-and-delegation",
         label: "Learn more",
       },
     },
@@ -128,7 +128,7 @@ export default {
     ],
     learnMore: {
       text: "Learn more about redemptions",
-      href: "https://docs.liquity.org/v2-faq/redemptions-and-delegation",
+      href: "https://docs.defidollar.io/faq/redemptions-and-delegation",
     },
   },
 
@@ -323,7 +323,7 @@ export default {
         be swapped to collateral in case the system needs to liquidate positions.
       </>
     ),
-    learnMore: ["https://docs.liquity.org/v2-faq/bold-and-earn", "Learn more"],
+    learnMore: ["https://docs.defidollar.io/faq/dusd-and-earn", "Learn more"],
     poolsColumns: {
       pool: "Pool",
       apr: "APR",

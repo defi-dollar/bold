@@ -228,7 +228,7 @@ export function RedeemScreen() {
             You will be charged a dynamic redemption fee (the more redemptions, the higher the fee). Trading {BOLD_TOKEN_SYMBOL} on an
             exchange could be more favorable.{" "}
             <Link
-              href="https://docs.liquity.org/v2-faq/redemptions-and-delegation"
+              href="https://docs.defidollar.io/faq/redemptions-and-delegation"
               target="_blank"
               rel="noopener noreferrer"
             >

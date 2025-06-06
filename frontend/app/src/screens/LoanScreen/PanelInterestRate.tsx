@@ -161,7 +161,7 @@ export function PanelInterestRate({
                         </div>
                       ),
                       footerLink: {
-                        href: "https://docs.liquity.org/v2-faq/borrowing-and-liquidations#can-i-adjust-the-rate",
+                        href: "https://docs.defidollar.io/faq/borrowing-and-liquidation#can-i-adjust-the-rate",
                         label: "Learn more",
                       },
                     }}
