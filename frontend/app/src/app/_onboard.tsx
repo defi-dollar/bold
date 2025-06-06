@@ -24,7 +24,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <OnboardModal
         visible={visible}
-        onClose={() => setVisible(false)}
+        onClose={closeOnboardModal}
         onSigned={onSigned}
       />
     </OnboardProvider>
