@@ -6,6 +6,7 @@ import type {
   Dnum,
   PositionEarn,
   PositionLoanCommitted,
+  PositionPool1,
   PositionStake,
   PrefixedTroveId,
   TokenSymbol,
@@ -176,12 +177,51 @@ export function useEarnPool(branchId: BranchId) {
   });
 }
 
+// TODO: contract
+export function usePool1EarnPool(poolId: string) {
+  const stats = useLiquityStats();
+
+  return useQuery({
+    queryKey: [
+      "pool1EarnPool",
+      poolId,
+    ],
+    queryFn: async () => {
+      if (poolId === "DUSD-BOLD") {
+        return {
+          apr: [10000000000000000000n, 18] as Dnum,
+          apr7d: [10000000000000000000n, 18] as Dnum,
+          totalDeposited: [20000000000000000000000n, 18] as Dnum,
+        };
+      }
+      if (poolId === "DUSD-frxUSD") {
+        return {
+          apr: [10000000000000000000n, 18] as Dnum,
+          apr7d: [10000000000000000000n, 18] as Dnum,
+          totalDeposited: [20000000000000000000000n, 18] as Dnum,
+        };
+      }
+      throw new Error(`Unknown pool ID: ${poolId}`);
+    },
+    enabled: stats.isSuccess,
+  });
+}
+
 export function isEarnPositionActive(position: PositionEarn | null) {
   return Boolean(
     position && (
       dn.gt(position.deposit, 0)
       || dn.gt(position.rewards.bold, 0)
       || dn.gt(position.rewards.coll, 0)
+    ),
+  );
+}
+
+export function isPool1EarnPositionActive(position: PositionPool1 | null) {
+  return Boolean(
+    position && (
+      dn.gt(position.deposit, 0)
+      || dn.gt(position.rewards.defi, 0)
     ),
   );
 }
@@ -250,6 +290,46 @@ export function useEarnPosition(
       enabled: Boolean(account),
       select: setup.select,
     },
+  });
+}
+
+export function usePool1EarnPosition(
+  poolId: string,
+  account: null | Address,
+): UseQueryResult<PositionPool1 | null> {
+  // TODO: contract
+  return useQuery({
+    queryKey: [
+      "pool1EarnPosition",
+      poolId,
+      account,
+    ],
+    queryFn: async () => {
+      if (poolId === "DUSD-BOLD") {
+        return {
+          type: "pool1",
+          owner: account,
+          poolId,
+          deposit: [10000000000000000000n, 18] as Dnum,
+          rewards: {
+            defi: [10000000000000000000n, 18] as Dnum,
+          }
+        }
+      }
+      if (poolId === "DUSD-frxUSD") {
+        return {
+          type: "pool1",
+          owner: account,
+          poolId,
+          deposit: [0n, 18] as Dnum,
+          rewards: {
+            defi: [0n, 18] as Dnum,
+          }
+        }
+      }
+      throw new Error(`Unknown pool ID: ${poolId}`);
+      
+    }
   });
 }
 

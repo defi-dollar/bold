@@ -1,100 +1,58 @@
 "use client";
 
-import type { BranchId, TokenSymbol } from "@/src/types";
-
-import { EarnPositionSummary } from "@/src/comps/EarnPositionSummary/EarnPositionSummary";
-import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
-import { Screen } from "@/src/comps/Screen/Screen";
-import content from "@/src/content";
-import { getBranches, useEarnPosition } from "@/src/liquity-utils";
-import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
-import { a, useTransition } from "@react-spring/web";
-import { sortAlphabetically, sortBranches } from "@/src/utils";
+import { Tabs } from "@liquity2/uikit";
+import { useRouter } from "next/navigation";
+import { StabilityPools } from "./StabilityPools";
+import { Pool1Pools } from "./Pool1Pools";
+import { Pool2Pools } from "./Pool2Pools";
 
-export function EarnPoolsListScreen() {
-  const branches = getBranches();
-  const collSymbols = branches.map((b) => b.symbol);
+const TABS = [
+  { label: "Stability Pool", id: "stability" },
+  { label: "Pool1", id: "pool1" },
+  { label: "Pool2", id: "pool2" },
+];
 
-  const poolsTransition = useTransition(branches.sort(sortBranches).map((c) => c.branchId), {
-    from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
-    enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
-    leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
-    trail: 80,
-    config: {
-      mass: 1,
-      tension: 1800,
-      friction: 140,
-    },
-  });
+export function EarnPoolsListScreen({
+  pool: pool = "stability",
+}: {
+  pool?: string;
+}) {
+  const router = useRouter();
 
   return (
-    <Screen
-      heading={{
-        title: (
-          <div
-            className={css({
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexFlow: "wrap",
-              gap: "0 8px",
-            })}
-          >
-            {content.earnHome.headline(
-              <TokenIcon.Group>
-                {[BOLD_TOKEN_SYMBOL, ...collSymbols.sort(sortAlphabetically)].map((symbol) => (
-                  <TokenIcon
-                    key={symbol}
-                    symbol={symbol as TokenSymbol}
-                  />
-                ))}
-              </TokenIcon.Group>,
-              <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />,
-            )}
-          </div>
-        ),
-        subtitle: (
-          <>
-            {content.earnHome.subheading}{" "}
-            <LinkTextButton
-              label={content.earnHome.learnMore[1]}
-              href={content.earnHome.learnMore[0]}
-              external
-            />
-          </>
-        ),
-      }}
-    >
+    <div className={css({
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 24,
+    })}>
       <div
         className={css({
-          display: "grid",
-          gap: 16,
+          width: "100%",
+          maxWidth: 540,
+          margin: "0 auto",
         })}
       >
-        {poolsTransition((style, branchId) => (
-          <a.div style={style}>
-            <EarnPool branchId={branchId} />
-          </a.div>
-        ))}
+        <Tabs
+          items={TABS.map(({ label, id }) => ({
+            label,
+            panelId: `p-${id}`,
+            tabId: `t-${id}`,
+          }))}
+          selected={TABS.findIndex(({ id }) => id === pool)}
+          onSelect={(index) => {
+            const tab = TABS[index];
+            if (!tab) {
+              throw new Error("Invalid tab index");
+            }
+            router.push(`/earn/${tab.id}`, { scroll: false });
+          }}
+        />
       </div>
-    </Screen>
-  );
-}
-
-function EarnPool({
-  branchId,
-}: {
-  branchId: BranchId;
-}) {
-  const account = useAccount();
-  const earnPosition = useEarnPosition(branchId, account.address ?? null);
-  return (
-    <EarnPositionSummary
-      branchId={branchId}
-      earnPosition={earnPosition.data ?? null}
-      linkToScreen
-    />
+      {pool === "stability" && <StabilityPools />}
+      {pool === "pool1" && <Pool1Pools />}
+      {pool === "pool2" && <Pool2Pools />}
+    </div>
   );
 }

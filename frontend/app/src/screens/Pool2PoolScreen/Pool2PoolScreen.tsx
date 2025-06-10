@@ -1,7 +1,6 @@
 "use client";
 
 import { useBreakpointName } from "@/src/breakpoints";
-import { EarnPositionSummary } from "@/src/comps/EarnPositionSummary/EarnPositionSummary";
 import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
@@ -11,18 +10,20 @@ import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, isCollateralSymbol, Tabs } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
-import * as dn from "dnum";
 import { useParams, useRouter } from "next/navigation";
 import { match } from "ts-pattern";
+import { PanelDeposit } from "./PanelDeposit";
 import { PanelClaimRewards } from "./PanelClaimRewards";
-import { PanelUpdateDeposit } from "./PanelUpdateDeposit";
+import { PanelWithdraw } from "./PanelWithdraw";
+import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 
 const TABS = [
   { action: "deposit", label: content.earnScreen.tabs.deposit },
-  { action: "claim", label: content.earnScreen.tabs.claim },
+  { action: "withdraw", label: "Withdraw" },
+  { action: "claim", label: "Rewards" },
 ] as const;
 
-export function EarnPoolScreen() {
+export function Pool2PoolScreen() {
   const params = useParams();
 
   const collateralSymbol = String(params.pool).toUpperCase();
@@ -62,7 +63,7 @@ export function EarnPoolScreen() {
     <Screen
       ready={loadingState === "success"}
       back={{
-        href: "/earn/stability",
+        href: "/earn/pool2",
         label: content.earnScreen.backButton,
       }}
       heading={
@@ -76,7 +77,7 @@ export function EarnPoolScreen() {
         >
           {loadingState === "success"
             ? (
-              <EarnPositionSummary
+              <Pool2PositionSummary
                 earnPosition={earnPosition.data ?? null}
                 branchId={branch.id}
               />
@@ -136,7 +137,7 @@ export function EarnPoolScreen() {
                 if (!tab) {
                   throw new Error("Invalid tab index");
                 }
-                router.push(`/earn/${collateralSymbol.toLowerCase()}/${tab.action}`, {
+                router.push(`/earn/pool2/${collateralSymbol.toLowerCase()}/${tab.action}`, {
                   scroll: false,
                 });
               }}
@@ -147,11 +148,10 @@ export function EarnPoolScreen() {
               }))}
             />
             {tab.action === "deposit" && (
-              <PanelUpdateDeposit
-                branchId={branch.id}
-                deposited={earnPool.data?.totalDeposited ?? dn.from(0, 18)}
-                position={earnPosition.data ?? undefined}
-              />
+              <PanelDeposit />
+            )}
+            {tab.action === "withdraw" && (
+              <PanelWithdraw />
             )}
             {tab.action === "claim" && (
               <PanelClaimRewards

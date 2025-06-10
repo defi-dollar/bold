@@ -8,7 +8,7 @@ import { PRICE_REFRESH_INTERVAL } from "@/src/constants";
 import { getBranchContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
 import { COINGECKO_API_KEY } from "@/src/env";
-import { isCollateralSymbol } from "@liquity2/uikit";
+import { DEFI, isCollateralSymbol } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
 import * as v from "valibot";
@@ -83,7 +83,7 @@ async function fetchCoinGeckoPrice(symbol: CoinGeckoSymbol): Promise<Dnum> {
   return dn.from(result[tokenId]?.usd ?? 0, 18);
 }
 
-export function usePrice(symbol: PriceToken | null): UseQueryResult<Dnum> {
+export function usePrice(symbol: string | null): UseQueryResult<Dnum> {
   const config = useWagmiConfig();
   return useQuery({
     queryKey: ["usePrice", symbol],
@@ -94,6 +94,11 @@ export function usePrice(symbol: PriceToken | null): UseQueryResult<Dnum> {
 
       // BOLD = $1
       if (symbol === BOLD_TOKEN_SYMBOL) {
+        return dn.from(1, 18);
+      }
+
+      // TODO: DEFI Price
+      if (symbol === DEFI.symbol) {
         return dn.from(1, 18);
       }
 

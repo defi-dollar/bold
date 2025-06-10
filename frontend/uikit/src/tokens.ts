@@ -13,6 +13,7 @@ import tokenFXS from './token-icons/FXS.png';
 import tokenSKY from './token-icons/SKY.png';
 import tokenLQTY from './token-icons/lqty.svg';
 import tokenYFI from './token-icons/YFI.png';
+import tokenDEFI from './token-icons/DEFI.svg';
 
 export const BOLD_TOKEN_SYMBOL = 'DUSD';
 
@@ -152,6 +153,12 @@ export const BOLD: Token = {
   symbol: BOLD_TOKEN_SYMBOL,
 } as const;
 
+export const DEFI: Token = {
+  icon: tokenDEFI,
+  name: "DEFI",
+  symbol: "DEFI" as const,
+} as const;
+
 export const COLLATERALS: CollateralToken[] = [
   WBTC,
   LINK,
@@ -179,4 +186,5 @@ export const TOKENS_BY_SYMBOL = {
   SKY,
   LQTY,
   ETH,
+  DEFI,
 } as const;

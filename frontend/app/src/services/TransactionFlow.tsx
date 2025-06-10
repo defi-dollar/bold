@@ -38,6 +38,8 @@ import { unstakeDeposit, type UnstakeDepositRequest } from "@/src/tx-flows/unsta
 import { updateBorrowPosition, type UpdateBorrowPositionRequest } from "@/src/tx-flows/updateBorrowPosition";
 import { updateLeveragePosition, type UpdateLeveragePositionRequest } from "@/src/tx-flows/updateLeveragePosition";
 import { updateLoanInterestRate, type UpdateLoanInterestRateRequest } from "@/src/tx-flows/updateLoanInterestRate";
+import { pool1Update, Pool1UpdateRequest } from "../tx-flows/pool1Update";
+import { pool1ClaimRewards, Pool1ClaimRewardsRequest } from "../tx-flows/pool1ClaimRewards";
 
 export type FlowRequestMap = {
   "allocateVotingPower": AllocateVotingPowerRequest;
@@ -45,6 +47,8 @@ export type FlowRequestMap = {
   "closeLoanPosition": CloseLoanPositionRequest;
   "earnClaimRewards": EarnClaimRewardsRequest;
   "earnUpdate": EarnUpdateRequest;
+  "pool1ClaimRewards": Pool1ClaimRewardsRequest;
+  "pool1Update": Pool1UpdateRequest;
   "openBorrowPosition": OpenBorrowPositionRequest;
   "openLeveragePosition": OpenLeveragePositionRequest;
   "stakeClaimRewards": StakeClaimRewardsRequest;
@@ -62,6 +66,8 @@ const FlowIdSchema = v.union([
   v.literal("closeLoanPosition"),
   v.literal("earnClaimRewards"),
   v.literal("earnUpdate"),
+  v.literal("pool1ClaimRewards"),
+  v.literal("pool1Update"),
   v.literal("openBorrowPosition"),
   v.literal("openLeveragePosition"),
   v.literal("stakeClaimRewards"),
@@ -79,6 +85,8 @@ export const flows: FlowsMap = {
   closeLoanPosition,
   earnClaimRewards,
   earnUpdate,
+  pool1ClaimRewards,
+  pool1Update,
   openBorrowPosition,
   openLeveragePosition,
   stakeClaimRewards,

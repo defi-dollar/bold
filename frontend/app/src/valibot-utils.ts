@@ -233,6 +233,18 @@ export function vPositionEarn() {
   });
 }
 
+export function vPositionPool1() {
+  return v.object({
+    type: v.literal("pool1"),
+    owner: vAddress(),
+    poolId: v.string(),
+    deposit: vDnum(),
+    rewards: v.object({
+      defi: vDnum(),
+    }),
+  });
+}
+
 export function vVote() {
   return v.union([
     v.literal("for"),

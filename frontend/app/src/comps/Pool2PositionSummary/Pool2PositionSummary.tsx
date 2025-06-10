@@ -7,16 +7,15 @@ import { fmtnum } from "@/src/formatting";
 import { getCollToken, isEarnPositionActive, useEarnPool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
-import * as dn from "dnum";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
-export function EarnPositionSummary({
+
+export function Pool2PositionSummary({
   branchId,
   earnPosition,
   linkToScreen,
   poolDeposit,
   prevEarnPosition = null,
-  prevPoolDeposit,
   title,
   txPreviewMode,
 }:
@@ -41,16 +40,6 @@ export function EarnPositionSummary({
   // not provided, we use the values from the earnPool data.
   if (!poolDeposit) {
     poolDeposit = earnPool.data?.totalDeposited ?? undefined;
-  }
-
-  let share = dn.from(0, 18);
-  if (earnPosition && poolDeposit && dn.gt(poolDeposit, 0)) {
-    share = dn.div(earnPosition.deposit, poolDeposit);
-  }
-
-  let prevShare = dn.from(0, 18);
-  if (prevEarnPosition && prevPoolDeposit && dn.gt(prevPoolDeposit, 0)) {
-    prevShare = dn.div(prevEarnPosition.deposit, prevPoolDeposit);
   }
 
   const active = txPreviewMode || isEarnPositionActive(earnPosition);
@@ -123,7 +112,7 @@ export function EarnPositionSummary({
             })}
           >
             <div>
-              {title ?? `${collToken.name} Stability Pool`}
+              {title ?? `${collToken.name} Pool`}
             </div>
             <div
               className={css({
@@ -338,56 +327,17 @@ export function EarnPositionSummary({
                           fontVariantNumeric: "tabular-nums",
                         })}
                       >
+                        {/* TODO: DEFI rewards */}
                         {fmtnum(earnPosition?.rewards.bold)}
-                        <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
-                      </HFlex>
-                      <HFlex gap={4}>
-                        <Amount value={earnPosition?.rewards.coll} />
-                        <TokenIcon symbol={collToken.symbol} size="mini" />
+                        <TokenIcon symbol="DEFI" size="mini" title={null} />
                       </HFlex>
                     </>
                   )
                   : (
                     <TokenIcon.Group size="mini">
-                      <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
-                      <TokenIcon symbol={collToken.symbol} />
+                      <TokenIcon symbol="DEFI" />
                     </TokenIcon.Group>
                   )}
-              </div>
-            </div>
-          )}
-          {active && (
-            <div>
-              <div
-                className={css({
-                  whiteSpace: "nowrap",
-                })}
-                style={{
-                  color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
-                }}
-              >
-                Pool share
-              </div>
-              <div
-                className={css({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  height: 24,
-                })}
-              >
-                <Amount percentage value={share} />
-                {prevEarnPosition && (
-                  <div
-                    className={css({
-                      display: "inline",
-                      color: "contentAlt",
-                      textDecoration: "line-through",
-                    })}
-                  >
-                    <Amount percentage value={prevShare} />
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -396,7 +346,7 @@ export function EarnPositionSummary({
         {linkToScreen && (
           <OpenLink
             active={active}
-            path={`/earn/stability/${collToken.symbol.toLowerCase()}`}
+            path={`/earn/pool2/${collToken.symbol.toLowerCase()}`}
             title={`${active ? "Manage" : "Deposit to"} ${collToken.name} pool`}
           />
         )}

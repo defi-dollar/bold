@@ -107,6 +107,16 @@ export type PositionEarn = {
   };
 };
 
+export type PositionPool1 = {
+  type: "pool1";
+  owner: Address;
+  poolId: string;
+  deposit: Dnum;
+  rewards: {
+    defi: Dnum;
+  };
+};
+
 export type PositionStake = {
   type: "stake";
   owner: Address;

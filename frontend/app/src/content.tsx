@@ -408,7 +408,24 @@ export default {
       ],
     },
   },
-
+  earnPool1Home: {
+    headline: (rewards: N, deposit: N) => (
+      <>
+        Deposit
+        <NoWrap>{deposit}</NoWrap>
+        to earn <NoWrap>rewards {rewards}</NoWrap>
+      </>
+    ),
+  },
+  earnPool2Home: {
+    headline: (rewards: N, deposit: N) => (
+      <>
+        Deposit
+        <NoWrap>{deposit}</NoWrap>
+        to earn <NoWrap>rewards {rewards}</NoWrap>
+      </>
+    ),
+  },
   // Stake screen
   stakeScreen: {
     headline: (lqtyIcon: N) => (
