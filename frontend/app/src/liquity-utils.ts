@@ -7,6 +7,7 @@ import type {
   PositionEarn,
   PositionLoanCommitted,
   PositionPool1,
+  PositionPool2,
   PositionStake,
   PrefixedTroveId,
   TokenSymbol,
@@ -178,12 +179,10 @@ export function useEarnPool(branchId: BranchId) {
 }
 
 // TODO: contract
-export function usePool1EarnPool(poolId: string) {
-  const stats = useLiquityStats();
-
+export function usePool1Pool(poolId: string) {
   return useQuery({
     queryKey: [
-      "pool1EarnPool",
+      "usePool1Pool",
       poolId,
     ],
     queryFn: async () => {
@@ -203,7 +202,27 @@ export function usePool1EarnPool(poolId: string) {
       }
       throw new Error(`Unknown pool ID: ${poolId}`);
     },
-    enabled: stats.isSuccess,
+  });
+}
+
+// TODO: contract
+export function usePool2Pool(poolId: string) {
+  return useQuery({
+    queryKey: [
+      "pool2Pool",
+      poolId,
+    ],
+    queryFn: async () => {
+      if (poolId === "DEFI-WETH") {
+        return {
+          apr: [10000000000000000000n, 18] as Dnum,
+          apr7d: [10000000000000000000n, 18] as Dnum,
+          totalDeposited: [20000000000000000000000n, 18] as Dnum,
+        };
+      }
+      
+      throw new Error(`Unknown pool ID: ${poolId}`);
+    },
   });
 }
 
@@ -217,7 +236,16 @@ export function isEarnPositionActive(position: PositionEarn | null) {
   );
 }
 
-export function isPool1EarnPositionActive(position: PositionPool1 | null) {
+export function isPool1PositionActive(position: PositionPool1 | null) {
+  return Boolean(
+    position && (
+      dn.gt(position.deposit, 0)
+      || dn.gt(position.rewards.defi, 0)
+    ),
+  );
+}
+
+export function isPool2PositionActive(position: PositionPool2 | null) {
   return Boolean(
     position && (
       dn.gt(position.deposit, 0)
@@ -293,14 +321,14 @@ export function useEarnPosition(
   });
 }
 
-export function usePool1EarnPosition(
+export function usePool1Position(
   poolId: string,
   account: null | Address,
 ): UseQueryResult<PositionPool1 | null> {
   // TODO: contract
   return useQuery({
     queryKey: [
-      "pool1EarnPosition",
+      "pool1Position",
       poolId,
       account,
     ],
@@ -324,6 +352,35 @@ export function usePool1EarnPosition(
           deposit: [0n, 18] as Dnum,
           rewards: {
             defi: [0n, 18] as Dnum,
+          }
+        }
+      }
+      throw new Error(`Unknown pool ID: ${poolId}`);
+      
+    }
+  });
+}
+
+export function usePool2Position(
+  poolId: string,
+  account: null | Address,
+): UseQueryResult<PositionPool2 | null> {
+  // TODO: contract
+  return useQuery({
+    queryKey: [
+      "pool2Position",
+      poolId,
+      account,
+    ],
+    queryFn: async () => {
+      if (poolId === "DEFI-WETH") {
+        return {
+          type: "pool2",
+          owner: account,
+          poolId,
+          deposit: [10000000000000000000n, 18] as Dnum,
+          rewards: {
+            defi: [10000000000000000000n, 18] as Dnum,
           }
         }
       }

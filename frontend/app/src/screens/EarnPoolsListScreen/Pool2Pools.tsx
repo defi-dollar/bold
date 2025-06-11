@@ -1,24 +1,22 @@
 "use client";
 
-import type { BranchId } from "@/src/types";
 
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
-import { getBranches, useEarnPosition } from "@/src/liquity-utils";
+import { usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { DEFI, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
-import { sortBranches } from "@/src/utils";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
+
+const poolIds = ['DEFI-WETH'];
 
 
 export function Pool2Pools() {
-  const branches = getBranches();
-
   const poolsTransition = useTransition(
-    branches.sort(sortBranches).map((c) => c.branchId),
+    poolIds,
     {
       from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
       enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
@@ -45,7 +43,7 @@ export function Pool2Pools() {
               gap: "0 8px",
             })}
           >
-            {content.earnHome.headline(
+            {content.earnPool2Home.headline(
               <TokenIcon symbol={DEFI.symbol} />,
               "DEFI LP"
             )}
@@ -69,9 +67,9 @@ export function Pool2Pools() {
           gap: 16,
         })}
       >
-        {poolsTransition((style, branchId) => (
+        {poolsTransition((style, poolId) => (
           <a.div style={style}>
-            <Pool1Pool branchId={branchId} />
+            <Pool1Pool poolId={poolId} />
           </a.div>
         ))}
       </div>
@@ -79,12 +77,12 @@ export function Pool2Pools() {
   );
 }
 
-function Pool1Pool({ branchId }: { branchId: BranchId }) {
+function Pool1Pool({ poolId }: { poolId: string }) {
   const account = useAccount();
-  const earnPosition = useEarnPosition(branchId, account.address ?? null);
+  const earnPosition = usePool2Position(poolId, account.address ?? null);
   return (
     <Pool2PositionSummary
-      branchId={branchId}
+      poolId={poolId}
       earnPosition={earnPosition.data ?? null}
       linkToScreen
     />

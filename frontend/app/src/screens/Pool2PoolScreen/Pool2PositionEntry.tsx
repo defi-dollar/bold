@@ -26,6 +26,7 @@ export function Pool2PositionEntry({
         userSelect: "none",
         alignItems: "center",
         gap: 24,
+        transition: "background 0.125s ease-in-out",
 
         "--fg-primary-active": "token(colors.positionContent)",
         "--fg-primary-inactive": "token(colors.content)",

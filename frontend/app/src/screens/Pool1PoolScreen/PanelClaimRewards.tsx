@@ -26,18 +26,13 @@ export function PanelClaimRewards({
 }) {
   const account = useAccount();
 
-  const defiPriceUsd = usePrice(DEFI.symbol);
   // TODO: Price
-  const ethPriceUsd = usePrice("ETH");
+  const defiPriceUsd = usePrice(DEFI.symbol);
 
   // TODO: DEFI Price
   const totalRewards =
     defiPriceUsd.data &&
     dn.mul(position?.rewards?.defi ?? DNUM_0, defiPriceUsd.data);
-
-  // TODO: Gas Fee?
-  const gasFeeUsd =
-    ethPriceUsd.data && dn.multiply(dn.from(0.0015, 18), ethPriceUsd.data);
 
   const allowSubmit =
     account.isConnected && totalRewards && dn.gt(totalRewards, 0);
@@ -64,10 +59,6 @@ export function PanelClaimRewards({
           <HFlex justifyContent="space-between" gap={24}>
             <div>{content.earnScreen.rewardsPanel.totalUsdLabel}</div>
             <Amount prefix="$" value={totalRewards} format={2} />
-          </HFlex>
-          <HFlex justifyContent="space-between" gap={24}>
-            <div>{content.earnScreen.rewardsPanel.expectedGasFeeLabel}</div>
-            <Amount prefix="~$" value={gasFeeUsd} format={2} />
           </HFlex>
         </div>
       </VFlex>

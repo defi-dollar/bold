@@ -1,17 +1,17 @@
-import type { BranchId, Dnum, PositionEarn } from "@/src/types";
+import type { Dnum, PositionPool2 } from "@/src/types";
 import type { ReactNode } from "react";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { fmtnum } from "@/src/formatting";
-import { getCollToken, isEarnPositionActive, useEarnPool } from "@/src/liquity-utils";
+import { isPool2PositionActive, usePool2Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, DEFI, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
 
 export function Pool2PositionSummary({
-  branchId,
+  poolId,
   earnPosition,
   linkToScreen,
   poolDeposit,
@@ -20,10 +20,10 @@ export function Pool2PositionSummary({
   txPreviewMode,
 }:
   & {
-    branchId: BranchId;
-    earnPosition: PositionEarn | null;
+    poolId: string;
+    earnPosition: PositionPool2 | null;
     linkToScreen?: boolean;
-    prevEarnPosition?: PositionEarn | null;
+    prevEarnPosition?: PositionPool2 | null;
     title?: ReactNode;
     txPreviewMode?: boolean;
   }
@@ -32,8 +32,8 @@ export function Pool2PositionSummary({
     | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
   ))
 {
-  const collToken = getCollToken(branchId);
-  const earnPool = useEarnPool(branchId);
+  const poolName = poolId.replace("-", "/");
+  const earnPool = usePool2Pool(poolId);
 
   // The earnUpdate tx flow provides static values
   // for poolDeposit and prevPoolDeposit. If these are
@@ -42,7 +42,7 @@ export function Pool2PositionSummary({
     poolDeposit = earnPool.data?.totalDeposited ?? undefined;
   }
 
-  const active = txPreviewMode || isEarnPositionActive(earnPosition);
+  const active = txPreviewMode || isPool2PositionActive(earnPosition);
 
   return (
     <div
@@ -93,8 +93,9 @@ export function Pool2PositionSummary({
             display: "flex",
           })}
         >
+          {/* TODO: Pool Icon */}
           <TokenIcon
-            symbol={collToken.symbol}
+            symbol="AAVE"
             size={34}
           />
         </div>
@@ -112,7 +113,7 @@ export function Pool2PositionSummary({
             })}
           >
             <div>
-              {title ?? `${collToken.name} Pool`}
+              {title ?? `${poolName} Pool`}
             </div>
             <div
               className={css({
@@ -322,20 +323,20 @@ export function Pool2PositionSummary({
                     <>
                       <HFlex
                         gap={4}
-                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
+                        title={`${fmtnum(earnPosition?.rewards.defi, "full")} ${DEFI.symbol}`}
                         className={css({
                           fontVariantNumeric: "tabular-nums",
                         })}
                       >
                         {/* TODO: DEFI rewards */}
-                        {fmtnum(earnPosition?.rewards.bold)}
-                        <TokenIcon symbol="DEFI" size="mini" title={null} />
+                        {fmtnum(earnPosition?.rewards.defi)}
+                        <TokenIcon symbol={DEFI.symbol} size="mini" title={null} />
                       </HFlex>
                     </>
                   )
                   : (
                     <TokenIcon.Group size="mini">
-                      <TokenIcon symbol="DEFI" />
+                      <TokenIcon symbol={DEFI.symbol} />
                     </TokenIcon.Group>
                   )}
               </div>
@@ -346,8 +347,8 @@ export function Pool2PositionSummary({
         {linkToScreen && (
           <OpenLink
             active={active}
-            path={`/earn/pool2/${collToken.symbol.toLowerCase()}`}
-            title={`${active ? "Manage" : "Deposit to"} ${collToken.name} pool`}
+            path={`/earn/pool2/${poolId}`}
+            title={`${active ? "Manage" : "Deposit to"} ${poolName} pool`}
           />
         )}
       </div>

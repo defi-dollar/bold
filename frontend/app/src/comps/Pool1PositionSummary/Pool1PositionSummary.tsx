@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { fmtnum } from "@/src/formatting";
-import { isPool1EarnPositionActive, usePool1EarnPool } from "@/src/liquity-utils";
+import { isPool1PositionActive, usePool1Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import { BOLD_TOKEN_SYMBOL, DEFI, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
@@ -35,7 +35,7 @@ export function Pool1PositionSummary({
   const poolName = poolId.replace("-", "/");
 
   // TODO: replace collToken with poolId
-  const earnPool = usePool1EarnPool(poolId);
+  const earnPool = usePool1Pool(poolId);
 
   // The earnUpdate tx flow provides static values
   // for poolDeposit and prevPoolDeposit. If these are
@@ -44,7 +44,7 @@ export function Pool1PositionSummary({
     poolDeposit = earnPool.data?.totalDeposited ?? undefined;
   }
 
-  const active = txPreviewMode || isPool1EarnPositionActive(earnPosition);
+  const active = txPreviewMode || isPool1PositionActive(earnPosition);
 
   return (
     <div

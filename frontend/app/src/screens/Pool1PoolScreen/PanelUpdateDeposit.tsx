@@ -10,8 +10,8 @@ import { DNUM_0, dnumMax } from "@/src/dnum-utils";
 import { parseInputFloat } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
 import {
-  isPool1EarnPositionActive,
-  usePool1EarnPool,
+  isPool1PositionActive,
+  usePool1Pool,
 } from "@/src/liquity-utils";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
@@ -50,7 +50,7 @@ export function PanelUpdateDeposit({
   const [claimRewards, setClaimRewards] = useState(true);
 
   const hasDeposit = dn.gt(position?.deposit ?? DNUM_0, 0);
-  const isActive = isPool1EarnPositionActive(position ?? null);
+  const isActive = isPool1PositionActive(position ?? null);
 
   const parsedValue = parseInputFloat(value, 18);
   const depositDifference = dn.mul(
@@ -66,7 +66,7 @@ export function PanelUpdateDeposit({
     DNUM_0
   );
 
-  const earnPool = usePool1EarnPool(poolId);
+  const earnPool = usePool1Pool(poolId);
   const poolDeposit = earnPool.data?.totalDeposited;
   const updatedPoolDeposit =
     poolDeposit && dn.add(poolDeposit, depositDifference);

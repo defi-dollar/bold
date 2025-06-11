@@ -3,15 +3,17 @@
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
-import { usePool1EarnPosition } from "@/src/liquity-utils";
+import { usePool1Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { DEFI, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";
 
+const poolIds = ["DUSD-BOLD", "DUSD-frxUSD"];
+
 export function Pool1Pools() {
-  const poolsTransition = useTransition(["DUSD-BOLD", "DUSD-frxUSD"], {
+  const poolsTransition = useTransition(poolIds, {
     from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
     enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
     leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
@@ -72,7 +74,7 @@ export function Pool1Pools() {
 
 function Pool1Pool({ poolId }: { poolId: string }) {
   const account = useAccount();
-  const earnPosition = usePool1EarnPosition(poolId, account.address ?? null);
+  const earnPosition = usePool1Position(poolId, account.address ?? null);
   return (
     <Pool1PositionSummary
       poolId={poolId}

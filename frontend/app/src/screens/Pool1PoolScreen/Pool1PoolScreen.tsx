@@ -6,8 +6,8 @@ import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
 import {
-  usePool1EarnPool,
-  usePool1EarnPosition,
+  usePool1Pool,
+  usePool1Position,
 } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
@@ -37,8 +37,8 @@ export function Pool1PoolScreen() {
   const router = useRouter();
   const account = useAccount();
 
-  const earnPosition = usePool1EarnPosition(poolId, account.address ?? null);
-  const earnPool = usePool1EarnPool(poolId);
+  const earnPosition = usePool1Position(poolId, account.address ?? null);
+  const earnPool = usePool1Pool(poolId);
 
   const loadingState =
     earnPool.isLoading || earnPosition.isLoading ? "loading" : "success";

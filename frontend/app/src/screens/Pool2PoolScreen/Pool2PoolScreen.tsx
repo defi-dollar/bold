@@ -5,7 +5,7 @@ import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import { getBranch, getCollToken, useEarnPool, useEarnPosition } from "@/src/liquity-utils";
+import { getBranch, getCollToken, useEarnPool, useEarnPosition, usePool2Pool, usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, isCollateralSymbol, Tabs } from "@liquity2/uikit";
@@ -26,10 +26,8 @@ const TABS = [
 export function Pool2PoolScreen() {
   const params = useParams();
 
-  const collateralSymbol = String(params.pool).toUpperCase();
-  if (!isCollateralSymbol(collateralSymbol)) {
-    throw new Error("Invalid collateral symbol");
-  }
+  const poolId = params.pool as string;
+  const poolName = poolId.replace("-", "/");
 
   const tab = TABS.find((tab) => tab.action === params.action) ?? TABS[0];
   if (!tab) {
@@ -39,10 +37,8 @@ export function Pool2PoolScreen() {
   const router = useRouter();
   const account = useAccount();
 
-  const branch = getBranch(collateralSymbol);
-  const collToken = getCollToken(branch.id);
-  const earnPosition = useEarnPosition(branch.id, account.address ?? null);
-  const earnPool = useEarnPool(branch.id);
+  const earnPosition = usePool2Position(poolId, account.address ?? null);
+  const earnPool = usePool2Pool(poolId);
 
   const loadingState = earnPool.isLoading || earnPosition.isLoading ? "loading" : "success";
 
@@ -79,7 +75,7 @@ export function Pool2PoolScreen() {
             ? (
               <Pool2PositionSummary
                 earnPosition={earnPosition.data ?? null}
-                branchId={branch.id}
+                poolId={poolId}
               />
             )
             : (
@@ -105,7 +101,7 @@ export function Pool2PoolScreen() {
                     <IconEarn size={16} />
                   </div>
                   <HFlex gap={8}>
-                    Fetching {collToken.name} Stability Pool…
+                    Fetching {poolName} Stability Pool…
                     <Spinner size={18} />
                   </HFlex>
                 </div>
@@ -137,7 +133,7 @@ export function Pool2PoolScreen() {
                 if (!tab) {
                   throw new Error("Invalid tab index");
                 }
-                router.push(`/earn/pool2/${collateralSymbol.toLowerCase()}/${tab.action}`, {
+                router.push(`/earn/pool2/${poolId}/${tab.action}`, {
                   scroll: false,
                 });
               }}
@@ -155,7 +151,7 @@ export function Pool2PoolScreen() {
             )}
             {tab.action === "claim" && (
               <PanelClaimRewards
-                branchId={branch.id}
+                poolId={poolId}
                 position={earnPosition.data ?? undefined}
               />
             )}

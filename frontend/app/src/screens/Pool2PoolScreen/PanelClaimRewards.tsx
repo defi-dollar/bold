@@ -1,4 +1,4 @@
-import type { BranchId, PositionEarn, TokenSymbol } from "@/src/types";
+import type { PositionPool2, TokenSymbol } from "@/src/types";
 import type { Dnum } from "dnum";
 import { ReactNode } from "react";
 
@@ -6,36 +6,28 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
 import { DNUM_0 } from "@/src/dnum-utils";
-import { getCollToken } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, DEFI, HFlex, TokenIcon, VFlex } from "@liquity2/uikit";
+import { DEFI, HFlex, TokenIcon, VFlex } from "@liquity2/uikit";
 import * as dn from "dnum";
 
 export function PanelClaimRewards({
-  branchId,
+  poolId,
   position,
 }: {
-  branchId: null | BranchId;
-  position?: PositionEarn;
+  poolId: string;
+  position?: PositionPool2;
 }) {
   const account = useAccount();
 
-  const collateral = getCollToken(branchId);
-  if (!collateral) {
-    throw new Error(`Invalid branch: ${branchId}`);
-  }
+  // TODO: Price
+  const defiPriceUsd = usePrice(DEFI.symbol);
 
-  const boldPriceUsd = usePrice(BOLD_TOKEN_SYMBOL);
-  const collPriceUsd = usePrice(collateral.symbol);
-
-  const totalRewards = collPriceUsd.data && boldPriceUsd.data && dn.add(
-    dn.mul(position?.rewards?.bold ?? DNUM_0, boldPriceUsd.data),
-    dn.mul(position?.rewards?.coll ?? DNUM_0, collPriceUsd.data),
-  );
-
-  const gasFeeUsd = collPriceUsd.data && dn.multiply(dn.from(0.0015, 18), collPriceUsd.data);
+  // TODO: DEFI Price
+  const totalRewards =
+    defiPriceUsd.data &&
+    dn.mul(position?.rewards?.defi ?? DNUM_0, defiPriceUsd.data);
 
   const allowSubmit = account.isConnected && totalRewards && dn.gt(totalRewards, 0);
 
@@ -44,7 +36,7 @@ export function PanelClaimRewards({
       <VFlex gap={0}>
         {/* TODO: DEFI Rewards */}
         <Rewards
-          amount={position?.rewards?.bold ?? DNUM_0}
+          amount={position?.rewards?.defi ?? DNUM_0}
           label="Your earnings from protocol distributions to this pool"
           symbol={DEFI.symbol}
         />
@@ -66,29 +58,11 @@ export function PanelClaimRewards({
               format={2}
             />
           </HFlex>
-          <HFlex justifyContent="space-between" gap={24}>
-            <div>{content.earnScreen.rewardsPanel.expectedGasFeeLabel}</div>
-            <Amount
-              prefix="~$"
-              value={gasFeeUsd}
-              format={2}
-            />
-          </HFlex>
         </div>
       </VFlex>
 
       <FlowButton
         disabled={!allowSubmit}
-        request={position && {
-          flowId: "earnClaimRewards",
-          backLink: [
-            `/earn/${collateral.name.toLowerCase()}`,
-            "Back to earn position",
-          ],
-          successLink: ["/", "Go to the Dashboard"],
-          successMessage: "The rewards have been claimed successfully.",
-          earnPosition: position,
-        }}
       />
     </VFlex>
   );
