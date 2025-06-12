@@ -136,7 +136,7 @@ export function EarnPoolScreen() {
                 if (!tab) {
                   throw new Error("Invalid tab index");
                 }
-                router.push(`/earn/${collateralSymbol.toLowerCase()}/${tab.action}`, {
+                router.push(`/earn/stability/${collateralSymbol.toLowerCase()}/${tab.action}`, {
                   scroll: false,
                 });
               }}
