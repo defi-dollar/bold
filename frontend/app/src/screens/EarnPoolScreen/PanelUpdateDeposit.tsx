@@ -278,7 +278,7 @@ export function PanelUpdateDeposit({
             return {
               flowId: "earnUpdate",
               backLink: [
-                `/earn/${collateral.name.toLowerCase()}`,
+                `/earn/stability/${collateral.name.toLowerCase()}`,
                 "Back to editing",
               ],
               successLink: ["/", "Go to the Dashboard"],

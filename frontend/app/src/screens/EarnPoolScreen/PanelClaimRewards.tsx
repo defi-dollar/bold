@@ -86,7 +86,7 @@ export function PanelClaimRewards({
         request={position && {
           flowId: "earnClaimRewards",
           backLink: [
-            `/earn/${collateral.name.toLowerCase()}`,
+            `/earn/stability/${collateral.name.toLowerCase()}`,
             "Back to earn position",
           ],
           successLink: ["/", "Go to the Dashboard"],
