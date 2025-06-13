@@ -1,9 +1,14 @@
 import type { Contracts } from "@/src/contracts";
 import type {
+  DefiDollarAPIPool2Positions,
   Branch,
   BranchId,
   Delegate,
   Dnum,
+  MerklAPIOpportunity,
+  MerklAPIUserRewards,
+  Pool2ClaimData,
+  Pool2Position,
   PositionEarn,
   PositionLoanCommitted,
   PositionPool1,
@@ -22,12 +27,14 @@ import { Governance } from "@/src/abi/Governance";
 import { StabilityPool } from "@/src/abi/StabilityPool";
 import { TroveManager } from "@/src/abi/TroveManager";
 import {
+  DEFI_DOLLAR_API_URL,
   INTEREST_RATE_ADJ_COOLDOWN,
   INTEREST_RATE_END,
   INTEREST_RATE_INCREMENT_NORMAL,
   INTEREST_RATE_INCREMENT_PRECISE,
   INTEREST_RATE_PRECISE_UNTIL,
   INTEREST_RATE_START,
+  MERKL_API_URL,
 } from "@/src/constants";
 import { CONTRACTS, getBranchContract, getPool1Contracts, getProtocolContract } from "@/src/contracts";
 import { ACCOUNT_POSITIONS } from "@/src/demo-mode";
@@ -49,9 +56,10 @@ import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
 import { useMemo } from "react";
 import * as v from "valibot";
-import { encodeAbiParameters, erc20Abi, keccak256, parseAbiParameters } from "viem";
+import { encodeAbiParameters, erc20Abi, Hex, isAddressEqual, keccak256, parseAbiParameters, parseUnits } from "viem";
 import { useBalance, useConfig as useWagmiConfig, useReadContract, useReadContracts } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
+import axios from "axios";
 
 export function shortenTroveId(troveId: TroveId, chars = 8) {
   return troveId.length < chars * 2 + 2
@@ -210,10 +218,10 @@ export function usePool1Pool(poolId: string) {
       const apr =
         rewardRate * 365n * 24n * 60n * 60n * 1000000000000000000n * rewardTokenPrice / lpTokenPrice / totalSupply;
 
-        return {
+      return {
         apr: dnum18(apr),
         totalDeposited: dnum18(totalSupply),
-        };
+      };
     },
   });
 }
@@ -224,16 +232,15 @@ const getUniswapPool = (poolId: string) => {
     const uniswapPoolId = '0x21c67e77068de97969ba93d4aab21826d33ca12bb9f565d8496e8fda8a82ca27';
     const rewardToken = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
 
-        return {
+    return {
       opportunityId,
       uniswapPoolId,
       rewardToken,
     }
-      }
-      throw new Error(`Unknown pool ID: ${poolId}`);
+  }
+  throw new Error(`Unknown pool ID: ${poolId}`);
 }
 
-// TODO: contract
 export function usePool2Pool(poolId: string) {
   return useQuery({
     queryKey: [
@@ -241,15 +248,16 @@ export function usePool2Pool(poolId: string) {
       poolId,
     ],
     queryFn: async () => {
-      if (poolId === "DEFI-WETH") {
-        return {
-          apr: [10000000000000000000n, 18] as Dnum,
-          apr7d: [10000000000000000000n, 18] as Dnum,
-          totalDeposited: [20000000000000000000000n, 18] as Dnum,
-        };
-      }
-      
-      throw new Error(`Unknown pool ID: ${poolId}`);
+      const { opportunityId } = getUniswapPool(poolId);
+      const {
+        data: { apr, tvl },
+      } = await axios.get<MerklAPIOpportunity>(
+        `${MERKL_API_URL}/opportunities/${opportunityId}`
+      );
+      return {
+        apr: dnum18(parseUnits(String(apr / 100), 18)),
+        totalDeposited: dnum18(parseUnits(String(tvl), 18)),
+      };
     },
   });
 }
@@ -354,7 +362,7 @@ export function usePool1Position(
   account: null | Address,
 ): UseQueryResult<PositionPool1 | null> {
   const wagmiConfig = useWagmiConfig();
-  return useQuery({
+  return useQuery<PositionPool1>({
     queryKey: [
       "pool1Position",
       poolId,
@@ -375,12 +383,12 @@ export function usePool1Position(
         functionName: 'claimable_reward',
         args: [account, pool1Contracts.rewardToken.address],
       });
-        return {
-          type: "pool1",
-          owner: account,
-          poolId,
+      return {
+        type: "pool1",
+        owner: account,
+        poolId,
         deposit: dnum18(balance),
-          rewards: {
+        rewards: {
           defi: dnum18(defiRewards),
         }
       }
@@ -389,33 +397,93 @@ export function usePool1Position(
   });
 }
 
-
 export function usePool2Position(
   poolId: string,
   account: null | Address,
 ): UseQueryResult<PositionPool2 | null> {
-  // TODO: contract
-  return useQuery({
-    queryKey: [
-      "pool2Position",
-      poolId,
-      account,
-    ],
+  return useQuery<PositionPool2>({
+    queryKey: ["pool2Position", poolId, account],
     queryFn: async () => {
-      if (poolId === "DEFI-WETH") {
+      if (!account) {
+        throw new Error("Account is required");
+      }
+      const { uniswapPoolId, rewardToken } = getUniswapPool(poolId);
+      const { data: positionsData } = await axios.get<DefiDollarAPIPool2Positions>(
+        `${DEFI_DOLLAR_API_URL}/positions?account=${account}&chainId=1&poolId=${uniswapPoolId}`
+      );
+      const { data: rewardsData } = await axios.get<MerklAPIUserRewards>(
+        `${MERKL_API_URL}/users/${account}/rewards?chainId=1&claimableOnly=true&breakdownPage=0`
+      );
+
+      const activePositions = positionsData.filter(
+        (position) => position.status !== "closed"
+      );
+
+      let deposit = 0n;
+
+      for (const position of activePositions) {
+        deposit += parseUnits(position.amountUSD, 18);
+      }
+
+      const pool2Positions: Pool2Position[] = activePositions.map(
+        (position) => {
+          return {
+            type: "v4",
+            feeTier: position.feeTier,
+            amountUSD: dnum18(parseUnits(position.amountUSD, 18)),
+            tokenId: position.tokenId,
+            lpToken: {
+              symbol: `${position.token0.symbol}/${position.token1.symbol}`,
+            },
+          };
+        }
+      );
+
+      let totalRewardsAmount = 0n;
+      const claimData: Pool2ClaimData = {
+        users: [],
+        tokens: [],
+        amounts: [],
+        proofs: [],
+      };
+
+      for (const rewardData of rewardsData) {
+        for (const reward of rewardData.rewards) {
+          if (reward.token.address !== rewardToken) {
+            continue;
+          }
+          // TODO: should we even do this calculation? should check from contract source code.
+          const claimableAmount =
+            BigInt(reward.amount) - BigInt(reward.claimed);
+          if (claimableAmount === 0n) {
+            continue;
+          }
+          if (!isAddressEqual(reward.recipient, account)) {
+            continue;
+          }
+          totalRewardsAmount += claimableAmount;
+          // TODO: should we filter poolId?
+          claimData.users.push(reward.recipient);
+          claimData.tokens.push(reward.token.address);
+          claimData.amounts.push(claimableAmount);
+          claimData.proofs.push(reward.proofs);
+        }
+
         return {
           type: "pool2",
           owner: account,
           poolId,
-          deposit: [10000000000000000000n, 18] as Dnum,
+          deposit: dnum18(deposit),
           rewards: {
-            defi: [10000000000000000000n, 18] as Dnum,
-          }
-        }
+            defi: dnum18(totalRewardsAmount),
+          },
+          positions: pool2Positions,
+          claimData,
+        };
       }
       throw new Error(`Unknown pool ID: ${poolId}`);
-      
-    }
+    },
+    enabled: Boolean(account),
   });
 }
 

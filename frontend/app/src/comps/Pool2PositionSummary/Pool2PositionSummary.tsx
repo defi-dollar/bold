@@ -6,7 +6,15 @@ import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { fmtnum } from "@/src/formatting";
 import { isPool2PositionActive, usePool2Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, DEFI, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import {
+  BOLD_TOKEN_SYMBOL,
+  DEFI,
+  HFlex,
+  IconArrowRight,
+  IconPlus,
+  InfoTooltip,
+  TokenIcon,
+} from "@liquity2/uikit";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
 
@@ -18,20 +26,17 @@ export function Pool2PositionSummary({
   prevEarnPosition = null,
   title,
   txPreviewMode,
-}:
-  & {
-    poolId: string;
-    earnPosition: PositionPool2 | null;
-    linkToScreen?: boolean;
-    prevEarnPosition?: PositionPool2 | null;
-    title?: ReactNode;
-    txPreviewMode?: boolean;
-  }
-  & (
-    | { poolDeposit: Dnum; prevPoolDeposit: Dnum }
-    | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
-  ))
-{
+}: {
+  poolId: string;
+  earnPosition: PositionPool2 | null;
+  linkToScreen?: boolean;
+  prevEarnPosition?: PositionPool2 | null;
+  title?: ReactNode;
+  txPreviewMode?: boolean;
+} & (
+  | { poolDeposit: Dnum; prevPoolDeposit: Dnum }
+  | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
+)) {
   const poolName = poolId.replace("-", "/");
   const earnPool = usePool2Pool(poolId);
 
@@ -63,7 +68,8 @@ export function Pool2PositionSummary({
         "--fg-secondary-active": "token(colors.positionContentAlt)",
         "--fg-secondary-inactive": "token(colors.contentAlt)",
 
-        "--border-active": "color-mix(in srgb, token(colors.secondary) 15%, transparent)",
+        "--border-active":
+          "color-mix(in srgb, token(colors.secondary) 15%, transparent)",
         "--border-inactive": "token(colors.infoSurfaceBorder)",
 
         "--bg-active": "token(colors.position)",
@@ -94,10 +100,7 @@ export function Pool2PositionSummary({
           })}
         >
           {/* TODO: Pool Icon */}
-          <TokenIcon
-            symbol="AAVE"
-            size={34}
-          />
+          <TokenIcon symbol="AAVE" size={34} />
         </div>
         <div
           className={css({
@@ -112,9 +115,7 @@ export function Pool2PositionSummary({
               flexDirection: "column",
             })}
           >
-            <div>
-              {title ?? `${poolName} Pool`}
-            </div>
+            <div>{title ?? `${poolName} Pool`}</div>
             <div
               className={css({
                 display: "flex",
@@ -135,7 +136,8 @@ export function Pool2PositionSummary({
                 />
               </div>
               <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability pool.
+                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability
+                pool.
               </InfoTooltip>
             </div>
           </div>
@@ -146,7 +148,9 @@ export function Pool2PositionSummary({
               alignItems: "flex-end",
             })}
           >
-            {txPreviewMode ? <TagPreview /> : (
+            {txPreviewMode ? (
+              <TagPreview />
+            ) : (
               <>
                 <div
                   className={css({
@@ -172,41 +176,9 @@ export function Pool2PositionSummary({
                   <InfoTooltip
                     content={{
                       heading: "Current APR",
-                      body: "The annualized rate this stability pool’s "
-                        + "deposits earned over the last 24 hours.",
-                      footerLink: {
-                        label: "Check Dune for more details",
-                        href: DUNE_URL,
-                      },
-                    }}
-                  />
-                </div>
-                <div
-                  className={css({
-                    display: "flex",
-                    gap: 4,
-                    fontSize: 14,
-                  })}
-                >
-                  <div
-                    className={css({
-                      whiteSpace: "nowrap",
-                      color: "contentAlt2",
-                    })}
-                  >
-                    7d APR
-                  </div>
-                  <Amount
-                    fallback="-%"
-                    format="1z"
-                    percentage
-                    value={earnPool.data?.apr7d}
-                  />
-                  <InfoTooltip
-                    content={{
-                      heading: "APR (last 7 days)",
-                      body: "The annualized percentage rate this stability pool’s "
-                        + "deposits earned over the past 7 days.",
+                      body:
+                        "The annualized rate this stability pool’s " +
+                        "deposits earned over the last 24 hours.",
                       footerLink: {
                         label: "Check Dune for more details",
                         href: DUNE_URL,
@@ -261,9 +233,11 @@ export function Pool2PositionSummary({
               })}
             >
               <div
-                title={active
-                  ? `${fmtnum(earnPosition?.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`
-                  : undefined}
+                title={
+                  active
+                    ? `$${fmtnum(earnPosition?.deposit, "full")}`
+                    : undefined
+                }
                 className={css({
                   display: "flex",
                   justifyContent: "flex-start",
@@ -272,12 +246,18 @@ export function Pool2PositionSummary({
                   height: 24,
                 })}
               >
-                {active && fmtnum(earnPosition?.deposit)}
-                <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
+                {active && (
+                  <Amount
+                    fallback="-"
+                    format="compact"
+                    prefix="$"
+                    value={earnPosition?.deposit}
+                  />
+                )}
               </div>
               {prevEarnPosition && (
                 <div
-                  title={`${fmtnum(prevEarnPosition.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`}
+                  title={`$${fmtnum(prevEarnPosition.deposit, "full")}`}
                   className={css({
                     display: "flex",
                     justifyContent: "flex-start",
@@ -288,8 +268,12 @@ export function Pool2PositionSummary({
                     textDecoration: "line-through",
                   })}
                 >
-                  {fmtnum(prevEarnPosition.deposit)}
-                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
+                  <Amount
+                    fallback="-"
+                    format="compact"
+                    prefix="$"
+                    value={prevEarnPosition.deposit}
+                  />
                 </div>
               )}
             </div>
@@ -318,27 +302,29 @@ export function Pool2PositionSummary({
                   height: 24,
                 })}
               >
-                {active
-                  ? (
-                    <>
-                      <HFlex
-                        gap={4}
-                        title={`${fmtnum(earnPosition?.rewards.defi, "full")} ${DEFI.symbol}`}
-                        className={css({
-                          fontVariantNumeric: "tabular-nums",
-                        })}
-                      >
-                        {/* TODO: DEFI rewards */}
-                        {fmtnum(earnPosition?.rewards.defi)}
-                        <TokenIcon symbol={DEFI.symbol} size="mini" title={null} />
-                      </HFlex>
-                    </>
-                  )
-                  : (
-                    <TokenIcon.Group size="mini">
-                      <TokenIcon symbol={DEFI.symbol} />
-                    </TokenIcon.Group>
-                  )}
+                {active ? (
+                  <>
+                    <HFlex
+                      gap={4}
+                      title={`${fmtnum(earnPosition?.rewards.defi, "full")} ${DEFI.symbol}`}
+                      className={css({
+                        fontVariantNumeric: "tabular-nums",
+                      })}
+                    >
+                      {/* TODO: DEFI rewards */}
+                      {fmtnum(earnPosition?.rewards.defi)}
+                      <TokenIcon
+                        symbol={DEFI.symbol}
+                        size="mini"
+                        title={null}
+                      />
+                    </HFlex>
+                  </>
+                ) : (
+                  <TokenIcon.Group size="mini">
+                    <TokenIcon symbol={DEFI.symbol} />
+                  </TokenIcon.Group>
+                )}
               </div>
             </div>
           )}
@@ -412,9 +398,7 @@ function OpenLink({
           borderRadius: "50%",
         })}
       >
-        {active
-          ? <IconArrowRight size={24} />
-          : <IconPlus size={24} />}
+        {active ? <IconArrowRight size={24} /> : <IconPlus size={24} />}
       </div>
     </Link>
   );

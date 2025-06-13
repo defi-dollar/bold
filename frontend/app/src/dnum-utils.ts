@@ -32,8 +32,16 @@ export const jsonStringifyWithDnum: typeof JSON.stringify = (data, replacer, spa
   return JSON.stringify(
     data,
     (key, value) => {
-      const value_ = dn.isDnum(value) ? `dn${dn.toJSON(value)}` : value;
-      return typeof replacer === "function" ? replacer(key, value_) : value_;
+      value = (() => {
+        if (typeof value === "bigint") {
+          return `BigInt(${String(value)})`;
+        }
+        if (dn.isDnum(value)) {
+          return `dn${dn.toJSON(value)}`;
+        }
+        return value;
+      })();
+      return typeof replacer === "function" ? replacer(key, value) : value;
     },
     space,
   );
@@ -43,8 +51,13 @@ export const jsonParseWithDnum: typeof JSON.parse = (data, reviver) => {
   return JSON.parse(
     data,
     (key, value) => {
-      if (typeof value === "string" && value.startsWith("dn[\"")) {
-        return dn.fromJSON(value.slice(2));
+      if (typeof value === "string") {
+        if(value.startsWith("dn[\"")) {
+          return dn.fromJSON(value.slice(2));
+        }
+        if(value.startsWith("BigInt(")) {
+          return BigInt(value.slice(7, -1));
+        }
       }
       return typeof reviver === "function" ? reviver(key, value) : value;
     },

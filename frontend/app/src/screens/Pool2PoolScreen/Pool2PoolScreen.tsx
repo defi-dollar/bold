@@ -5,21 +5,19 @@ import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import { getBranch, getCollToken, useEarnPool, useEarnPosition, usePool2Pool, usePool2Position } from "@/src/liquity-utils";
+import { usePool2Pool, usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { HFlex, IconEarn, isCollateralSymbol, Tabs } from "@liquity2/uikit";
+import { HFlex, IconEarn, Tabs } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { useParams, useRouter } from "next/navigation";
 import { match } from "ts-pattern";
-import { PanelDeposit } from "./PanelDeposit";
+import { PanelPositions } from "./PanelPositions";
 import { PanelClaimRewards } from "./PanelClaimRewards";
-import { PanelWithdraw } from "./PanelWithdraw";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 
 const TABS = [
-  { action: "deposit", label: content.earnScreen.tabs.deposit },
-  { action: "withdraw", label: "Withdraw" },
+  { action: "positions", label: "Positions" },
   { action: "claim", label: "Rewards" },
 ] as const;
 
@@ -143,11 +141,8 @@ export function Pool2PoolScreen() {
                 tabId: `tab-${tab.action}`,
               }))}
             />
-            {tab.action === "deposit" && (
-              <PanelDeposit />
-            )}
-            {tab.action === "withdraw" && (
-              <PanelWithdraw />
+            {tab.action === "positions" && (
+              <PanelPositions positions={earnPosition.data?.positions ?? []} />
             )}
             {tab.action === "claim" && (
               <PanelClaimRewards

@@ -2,6 +2,7 @@ import type { Address, CollateralSymbol, CollateralSymbols, Token, TokenSymbol }
 import type { Dnum } from "dnum";
 import type { ReactNode } from "react";
 import type { BranchContracts } from "./contracts";
+import { Hash, Hex } from "viem";
 
 export type { Address, CollateralSymbol, CollateralSymbols, Dnum, Token, TokenSymbol };
 
@@ -125,7 +126,26 @@ export type PositionPool2 = {
   rewards: {
     defi: Dnum;
   };
+  positions: Pool2Position[];
+  claimData: Pool2ClaimData;
 };
+
+export type Pool2Position = {
+  type: string;
+  feeTier: number;
+  amountUSD: Dnum;
+  tokenId: string;
+  lpToken: {
+    symbol: string;
+  }
+}
+
+export type Pool2ClaimData = {
+  users: Address[];
+  tokens: Address[];
+  amounts: bigint[];
+  proofs: Hash[][];
+}
 
 export type PositionStake = {
   type: "stake";
@@ -197,3 +217,159 @@ export type Initiative =
 export type Vote = "for" | "against";
 export type VoteAllocation = { vote: Vote | null; value: Dnum };
 export type VoteAllocations = Record<Address, VoteAllocation>;
+
+export type DefiDollarAPIPool2Positions = Array<{
+  poolId: string;
+  tokenId: string;
+  token0: {
+    address: string;
+    symbol: string;
+  };
+  token1: {
+    address: string;
+    symbol: string;
+  };
+  amount0: string;
+  amount1: string;
+  amountUSD: string;
+  feeTier: number;
+  status: string;
+}>
+
+export type MerklAPIOpportunity = {
+  chainId: number;
+  type: string;
+  identifier: string;
+  name: string;
+  description: string;
+  howToSteps: string[];
+  status: string;
+  action: string;
+  tvl: number;
+  apr: number;
+  dailyRewards: number;
+  tags: string[];
+  id: string;
+  depositUrl: string;
+  explorerAddress: string;
+  lastCampaignCreatedAt: number;
+  tokens: Array<{
+    id: string;
+    name: string;
+    chainId: number;
+    address: string;
+    decimals: number;
+    icon: string;
+    verified: boolean;
+    isTest: boolean;
+    isPoint: boolean;
+    isPreTGE: boolean;
+    isNative: boolean;
+    price: number;
+    symbol: string;
+  }>;
+  chain: {
+    id: number;
+    name: string;
+    icon: string;
+    Explorer: Array<{
+      id: string;
+      type: string;
+      url: string;
+      chainId: number;
+    }>;
+  };
+  protocol: {
+    id: string;
+    tags: string[];
+    name: string;
+    description: string;
+    url: string;
+    icon: string;
+  };
+  aprRecord: {
+    cumulated: number;
+    timestamp: string;
+    breakdowns: Array<{
+      distributionType: string;
+      identifier: string;
+      type: string;
+      value: number;
+    }>;
+  };
+  tvlRecord: {
+    id: string;
+    total: number;
+    timestamp: string;
+    breakdowns: Array<{
+      identifier: string;
+      type: string;
+      value: number;
+    }>;
+  };
+  rewardsRecord: {
+    id: string;
+    total: number;
+    timestamp: string;
+    breakdowns: Array<{
+      token: {
+        id: string;
+        name: string;
+        chainId: number;
+        address: string;
+        decimals: number;
+        symbol: string;
+        displaySymbol: string;
+        icon: string;
+        verified: boolean;
+        isTest: boolean;
+        isPoint: boolean;
+        isPreTGE: boolean;
+        isNative: boolean;
+        price: number;
+      };
+      amount: string;
+      value: number;
+      distributionType: string;
+      id: string;
+      campaignId: string;
+      dailyRewardsRecordId: string;
+    }>;
+  };
+};
+
+export type MerklAPIUserRewards = Array<{
+  chain: {
+    id: number;
+    name: string;
+    icon: string;
+    Explorer: Array<{
+      id: string;
+      type: string;
+      url: string;
+      chainId: number;
+    }>;
+  };
+  rewards: Array<{
+    root: string;
+    recipient: Address;
+    amount: string;
+    claimed: string;
+    pending: string;
+    proofs: Hex[];
+    token: {
+      address: Address;
+      chainId: number;
+      symbol: string;
+      decimals: number;
+      price: number;
+    };
+    breakdowns: Array<{
+      reason: string;
+      amount: string;
+      claimed: string;
+      pending: string;
+      campaignId: string;
+    }>;
+  }>;
+}>;

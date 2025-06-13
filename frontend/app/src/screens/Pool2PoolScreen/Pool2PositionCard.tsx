@@ -1,20 +1,17 @@
 import { Amount } from "@/src/comps/Amount/Amount";
+import { Pool2Position } from "@/src/types";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, Checkbox, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
 import { PropsWithChildren } from "react";
 
-export function Pool2PositionEntry({
-  selected,
-  onSelect,
+export function Pool2PositionCard({
+  position,
 }: {
-  selected: boolean;
-  onSelect: (selected: boolean) => void;
+  position: Pool2Position;
 }) {
-  const active = selected;
   return (
     <div
       className={css({
-        cursor: "pointer",
         position: "relative",
         display: "flex",
         flexDirection: "row",
@@ -42,13 +39,11 @@ export function Pool2PositionEntry({
         "--bg-inactive": "token(colors.infoSurface)",
       })}
       style={{
-        color: `var(--fg-primary-${active ? "active" : "inactive"})`,
-        background: `var(--bg-${active ? "active" : "inactive"})`,
-        borderColor: active ? "transparent" : "var(--border-inactive)",
+        color: `var(--fg-primary-inactive)`,
+        background: `var(--bg-inactive)`,
+        borderColor: "var(--border-inactive)",
       }}
-      onClick={() => onSelect(!selected)}
     >
-      <Checkbox checked={selected} onChange={onSelect} />
       <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size={34} />
       <div
         className={css({
@@ -64,20 +59,20 @@ export function Pool2PositionEntry({
             gap: 12,
           })}
         >
-          <div>DEFI/WETH</div>
+          <div>{position.lpToken.symbol}</div>
           <div className={css({
             display: "flex",
             gap: 4,
           })}>
-            <Badge>v3</Badge>
-            <Badge>1%</Badge>
+            <Badge>{position.type}</Badge>
+            <Badge>{position.feeTier / 10000}%</Badge>
           </div>
         </div>
         <Amount
           fallback="…"
-          format="compact"
+          format="2z"
           prefix="$"
-          value={[10000000000000000000000n, 18]}
+          value={position.amountUSD}
         />
       </div>
     </div>

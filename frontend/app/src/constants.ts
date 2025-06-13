@@ -1,6 +1,6 @@
 "use client";
 
-import type { CollateralSymbol, RiskLevel } from "@/src/types";
+import type { Address, CollateralSymbol, RiskLevel } from "@/src/types";
 
 import { norm } from "@liquity2/uikit";
 import * as dn from "dnum";
@@ -84,3 +84,33 @@ export const REDEMPTION_RISK: Record<Exclude<RiskLevel, "high">, number> = {
 
 export const DUNE_URL = "https://dune.com/defidollar/dashboard";
 export const DUNE_REDEMPTION_URL = 'https://dune.com/queries/4739167/7870054'
+
+export const POOL1_CONTRACT_ADDRESSES: Record<
+  string,
+  {
+    guage: Address;
+    lpToken: Address;
+    rewardToken: Address;
+  }
+> = {
+  "DUSD-BOLD": {
+    guage: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+    lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E",
+    rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+  },
+  "DUSD-frxUSD": {
+    guage: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
+    lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E",
+    rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+  },
+};
+
+export const POOL2_CONTRACT_ADDRESSES : {
+  distributor: Address;
+} = {
+  distributor: '0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae',
+}
+
+export const DEFI_DOLLAR_API_URL = 'https://api.defidollar.io/api/v1';
+
+export const MERKL_API_URL = 'https://api.merkl.xyz/v4';

@@ -62,7 +62,17 @@ export function PanelClaimRewards({
       </VFlex>
 
       <FlowButton
-        disabled={!allowSubmit}
+        disabled={!allowSubmit || !position}
+        request={position && {
+          flowId: "pool2ClaimRewards",
+          backLink: [
+            `/earn/pool2/${poolId}`,
+            "Back to pool position",
+          ],
+          successLink: ["/", "Go to the Dashboard"],
+          successMessage: "The rewards have been claimed successfully.",
+          earnPosition: position,
+        }}
       />
     </VFlex>
   );

@@ -245,6 +245,37 @@ export function vPositionPool1() {
   });
 }
 
+export function vPositionPool2Position() {
+  return v.object({
+    type: v.string(),
+    feeTier: v.number(),
+    amountUSD: vDnum(),
+    tokenId: v.string(),
+    lpToken: v.object({
+      symbol: v.string(),
+    }),
+  });
+}
+
+export function vPositionPool2() {
+  return v.object({
+    type: v.literal("pool2"),
+    owner: vAddress(),
+    poolId: v.string(),
+    deposit: vDnum(),
+    rewards: v.object({
+      defi: vDnum(),
+    }),
+    positions: v.array(vPositionPool2Position()),
+    claimData: v.object({
+      users: v.array(vAddress()),
+      tokens: v.array(vAddress()),
+      amounts: v.array(v.bigint()),
+      proofs: v.array(v.array(vHash())),
+    }),
+  });
+}
+
 export function vVote() {
   return v.union([
     v.literal("for"),

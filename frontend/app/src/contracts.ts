@@ -35,6 +35,11 @@ import {
 import { erc20Abi, zeroAddress } from "viem";
 import { LiquidityGaugeV6 } from "./abi/LiquidityGaugeV6";
 import { CurveStableSwapNG } from "./abi/CurveStableSwapNG";
+import { Distributor } from "./abi/Distributor";
+import {
+  POOL1_CONTRACT_ADDRESSES,
+  POOL2_CONTRACT_ADDRESSES,
+} from "./constants";
 
 const protocolAbis = {
   BoldToken: erc20Abi,
@@ -125,6 +130,13 @@ export type Pool1Contracts = {
   gauge: Pool1Contract<"LiquidityGaugeV6">;
   lpToken: Pool1Contract<"CurveStableSwapNG">;
   rewardToken: Pool1Contract<"ERC20">;
+}
+
+export type Pool2Contracts = {
+  distributor: {
+    abi: typeof Distributor;
+    address: Address;
+  };
 }
 
 export const CONTRACTS: Contracts = {
@@ -228,35 +240,33 @@ export function getBranchContract<CN extends CollateralContractName>(
 export function getPool1Contracts(
   poolId: string,
 ): Pool1Contracts {
-  let guageAddress : Address;
-  let lpTokenAddress : Address;
-  let rewardTokenAddress : Address;
-
-  // TODO: update addresses
-  if (poolId === "DUSD-BOLD") {
-    guageAddress = "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9";
-    lpTokenAddress = "0xEFc6516323FbD28e80B85A497B65A86243a54B3E";
-    rewardTokenAddress = '0x6440f144b7e50D6a8439336510312d2F54beB01D'
-  } else if (poolId === "DUSD-frxUSD") {
-    guageAddress = "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9";
-    lpTokenAddress = "0xEFc6516323FbD28e80B85A497B65A86243a54B3E";
-    rewardTokenAddress = '0x6440f144b7e50D6a8439336510312d2F54beB01D'
-  } else {
+  const contractAddresses = POOL1_CONTRACT_ADDRESSES[poolId];
+  if (!contractAddresses) {
     throw new Error(`Invalid pool id ${poolId}`);
   }
 
   return {
     gauge: {
       abi: LiquidityGaugeV6,
-      address: guageAddress,
+      address: contractAddresses.guage,
     },
     lpToken: {
       abi: CurveStableSwapNG,
-      address: lpTokenAddress,
+      address: contractAddresses.lpToken,
     },
     rewardToken: {
       abi: erc20Abi,
-      address: rewardTokenAddress,
+      address: contractAddresses.rewardToken,
+    },
+  }
+}
+
+export function getPool2Contracts(
+): Pool2Contracts {
+  return {
+    distributor: {
+      abi: Distributor,
+      address: POOL2_CONTRACT_ADDRESSES.distributor,
     },
   }
 }
