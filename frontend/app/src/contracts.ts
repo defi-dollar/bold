@@ -33,6 +33,8 @@ import {
   ENV_BRANCHES,
 } from "@/src/env";
 import { erc20Abi, zeroAddress } from "viem";
+import { LiquidityGaugeV6 } from "./abi/LiquidityGaugeV6";
+import { CurveStableSwapNG } from "./abi/CurveStableSwapNG";
 
 const protocolAbis = {
   BoldToken: erc20Abi,
@@ -110,6 +112,20 @@ export type Contracts = ProtocolContractMap & {
     symbol: CollateralSymbol;
   }>;
 };
+
+export type Pool1Contract<T extends "LiquidityGaugeV6" | "CurveStableSwapNG" | "ERC20"> = {
+  abi: T extends "LiquidityGaugeV6" ? typeof LiquidityGaugeV6
+    : T extends "CurveStableSwapNG" ? typeof CurveStableSwapNG
+    : T extends "ERC20" ? typeof erc20Abi
+    : never;
+  address: Address;
+}
+
+export type Pool1Contracts = {
+  gauge: Pool1Contract<"LiquidityGaugeV6">;
+  lpToken: Pool1Contract<"CurveStableSwapNG">;
+  rewardToken: Pool1Contract<"ERC20">;
+}
 
 export const CONTRACTS: Contracts = {
   BoldToken: { abi: abis.BoldToken, address: CONTRACT_BOLD_TOKEN },
@@ -207,4 +223,40 @@ export function getBranchContract<CN extends CollateralContractName>(
   }
 
   return contract;
+}
+
+export function getPool1Contracts(
+  poolId: string,
+): Pool1Contracts {
+  let guageAddress : Address;
+  let lpTokenAddress : Address;
+  let rewardTokenAddress : Address;
+
+  // TODO: update addresses
+  if (poolId === "DUSD-BOLD") {
+    guageAddress = "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9";
+    lpTokenAddress = "0xEFc6516323FbD28e80B85A497B65A86243a54B3E";
+    rewardTokenAddress = '0x6440f144b7e50D6a8439336510312d2F54beB01D'
+  } else if (poolId === "DUSD-frxUSD") {
+    guageAddress = "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9";
+    lpTokenAddress = "0xEFc6516323FbD28e80B85A497B65A86243a54B3E";
+    rewardTokenAddress = '0x6440f144b7e50D6a8439336510312d2F54beB01D'
+  } else {
+    throw new Error(`Invalid pool id ${poolId}`);
+  }
+
+  return {
+    gauge: {
+      abi: LiquidityGaugeV6,
+      address: guageAddress,
+    },
+    lpToken: {
+      abi: CurveStableSwapNG,
+      address: lpTokenAddress,
+    },
+    rewardToken: {
+      abi: erc20Abi,
+      address: rewardTokenAddress,
+    },
+  }
 }

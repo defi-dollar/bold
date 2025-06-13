@@ -8,6 +8,7 @@ import * as v from "valibot";
 import { DEFI } from "@liquity2/uikit";
 import { createRequestSchema, verifyTransaction } from "./shared";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
+import { getPool1Contracts } from "../contracts";
 
 const RequestSchema = createRequestSchema(
   "pool1ClaimRewards",
@@ -60,14 +61,12 @@ export const pool1ClaimRewards: FlowDeclaration<Pool1ClaimRewardsRequest> = {
       Status: TransactionStatus,
 
       async commit(ctx) {
-        // const { branchId } = ctx.request.earnPosition;
-        // const branch = getBranch(branchId);
-        // return ctx.writeContract({
-        //   ...branch.contracts.StabilityPool,
-        //   functionName: "withdrawFromSP",
-        //   args: [0n, true],
-        // });
-        return null;
+        const { earnPosition } = ctx.request;
+        const contracts = getPool1Contracts(earnPosition.poolId);
+        return ctx.writeContract({
+          ...contracts.gauge,
+          functionName: "claim_rewards",
+        });
       },
 
       async verify(ctx, hash) {

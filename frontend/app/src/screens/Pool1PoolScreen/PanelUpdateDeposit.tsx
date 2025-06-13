@@ -42,6 +42,7 @@ export function PanelUpdateDeposit({
   poolId: string;
   position?: PositionPool1;
 }) {
+  const poolName = poolId.replace("-", "/");
   const account = useAccount();
 
   const [mode, setMode] = useState<ValueUpdateMode>("add");
@@ -83,8 +84,6 @@ export function PanelUpdateDeposit({
     mode === "remove" &&
     parsedValue &&
     dn.gt(parsedValue, position?.deposit ?? DNUM_0);
-
-
   
   const allowSubmit =
     account.isConnected &&
@@ -126,7 +125,7 @@ export function PanelUpdateDeposit({
               <InputTokenBadge
                 background={false}
                 icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
-                label={BOLD_TOKEN_SYMBOL}
+                label={`${poolName} LP`}
               />
             }
             id="input-deposit-change"

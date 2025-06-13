@@ -10,6 +10,7 @@ import * as v from "valibot";
 import { createRequestSchema, verifyTransaction } from "./shared";
 import { DEFI } from "@liquity2/uikit";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
+import { getPool1Contracts } from "../contracts";
 
 const RequestSchema = createRequestSchema(
   "pool1Update",
@@ -109,16 +110,15 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
     provideToStabilityPool: {
       name: () => "Deposit",
       Status: TransactionStatus,
-      async commit({ request, writeContract }) {
-        // const { earnPosition, prevEarnPosition, claimRewards } = request;
-        // const branch = getBranch(request.branchId);
-        // const change = earnPosition.deposit[0] - prevEarnPosition.deposit[0];
-        // return writeContract({
-        //   ...branch.contracts.StabilityPool,
-        //   functionName: "provideToSP",
-        //   args: [change, claimRewards],
-        // });
-        return null;
+      async commit({request, writeContract }) {
+        const { earnPosition, prevEarnPosition, claimRewards } = request;
+        const contracts = getPool1Contracts(request.poolId);
+        const change = earnPosition.deposit[0] - prevEarnPosition.deposit[0];
+        return writeContract({
+          ...contracts.gauge,
+          functionName: "deposit",
+          args: [change, earnPosition.owner , claimRewards],
+        });
       },
       async verify(ctx, hash) {
         await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);
@@ -129,15 +129,14 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
       name: () => "Withdraw",
       Status: TransactionStatus,
       async commit({ request, writeContract }) {
-        // const { earnPosition, prevEarnPosition, claimRewards } = request;
-        // const change = earnPosition.deposit[0] - prevEarnPosition.deposit[0];
-        // const branch = getBranch(request.branchId);
-        // return writeContract({
-        //   ...branch.contracts.StabilityPool,
-        //   functionName: "withdrawFromSP",
-        //   args: [-change, claimRewards],
-        // });
-        return null;
+        const { earnPosition, prevEarnPosition, claimRewards } = request;
+        const change = earnPosition.deposit[0] - prevEarnPosition.deposit[0];
+        const contracts = getPool1Contracts(request.poolId);
+        return writeContract({
+          ...contracts.gauge,
+          functionName: "withdraw",
+          args: [-change, claimRewards],
+        });
       },
       async verify(ctx, hash) {
         await verifyTransaction(ctx.wagmiConfig, hash, ctx.isSafe);

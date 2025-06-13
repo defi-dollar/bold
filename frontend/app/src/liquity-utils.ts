@@ -29,7 +29,7 @@ import {
   INTEREST_RATE_PRECISE_UNTIL,
   INTEREST_RATE_START,
 } from "@/src/constants";
-import { CONTRACTS, getBranchContract, getProtocolContract } from "@/src/contracts";
+import { CONTRACTS, getBranchContract, getPool1Contracts, getProtocolContract } from "@/src/contracts";
 import { ACCOUNT_POSITIONS } from "@/src/demo-mode";
 import { dnum18, DNUM_0, dnumOrNull, jsonStringifyWithDnum } from "@/src/dnum-utils";
 import { CHAIN_BLOCK_EXPLORER, DEMO_MODE, ENV_BRANCHES, LEGACY_CHECK, LIQUITY_STATS_URL } from "@/src/env";
@@ -178,31 +178,59 @@ export function useEarnPool(branchId: BranchId) {
   });
 }
 
-// TODO: contract
 export function usePool1Pool(poolId: string) {
+  const wagmiConfig = useWagmiConfig();
+  
   return useQuery({
     queryKey: [
       "usePool1Pool",
       poolId,
     ],
     queryFn: async () => {
-      if (poolId === "DUSD-BOLD") {
+      const pool1Contracts = getPool1Contracts(poolId);
+
+      // TODO: Get rewardToken price
+      const rewardTokenPrice = 1000000000000000000n;
+      const lpTokenPrice = 1000000000000000000n;
+      // const lpTokenPrice = await readContract(wagmiConfig, {
+      //   ...pool1Contracts.lpToken,
+      //   functionName: 'last_price',
+      //   args: [0n]
+      // });
+
+      const totalSupply = await readContract(wagmiConfig, {
+        ...pool1Contracts.gauge,
+        functionName: "totalSupply",
+      });
+      const {rate: rewardRate} = await readContract(wagmiConfig, {
+        ...pool1Contracts.gauge,
+        functionName: 'reward_data',
+        args: [pool1Contracts.rewardToken.address],
+      });
+      const apr =
+        rewardRate * 365n * 24n * 60n * 60n * 1000000000000000000n * rewardTokenPrice / lpTokenPrice / totalSupply;
+
         return {
-          apr: [10000000000000000000n, 18] as Dnum,
-          apr7d: [10000000000000000000n, 18] as Dnum,
-          totalDeposited: [20000000000000000000000n, 18] as Dnum,
+        apr: dnum18(apr),
+        totalDeposited: dnum18(totalSupply),
         };
-      }
-      if (poolId === "DUSD-frxUSD") {
-        return {
-          apr: [10000000000000000000n, 18] as Dnum,
-          apr7d: [10000000000000000000n, 18] as Dnum,
-          totalDeposited: [20000000000000000000000n, 18] as Dnum,
-        };
-      }
-      throw new Error(`Unknown pool ID: ${poolId}`);
     },
   });
+}
+
+const getUniswapPool = (poolId: string) => {
+  if (poolId === "DEFI-WETH") {
+    const opportunityId = "2424465955469924989";
+    const uniswapPoolId = '0x21c67e77068de97969ba93d4aab21826d33ca12bb9f565d8496e8fda8a82ca27';
+    const rewardToken = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
+
+        return {
+      opportunityId,
+      uniswapPoolId,
+      rewardToken,
+    }
+      }
+      throw new Error(`Unknown pool ID: ${poolId}`);
 }
 
 // TODO: contract
@@ -325,7 +353,7 @@ export function usePool1Position(
   poolId: string,
   account: null | Address,
 ): UseQueryResult<PositionPool1 | null> {
-  // TODO: contract
+  const wagmiConfig = useWagmiConfig();
   return useQuery({
     queryKey: [
       "pool1Position",
@@ -333,33 +361,34 @@ export function usePool1Position(
       account,
     ],
     queryFn: async () => {
-      if (poolId === "DUSD-BOLD") {
+      if (!account) {
+        throw new Error("Account is required");
+      }
+      const pool1Contracts = getPool1Contracts(poolId);
+      const balance = await readContract(wagmiConfig, {
+        ...pool1Contracts.gauge,
+        functionName: "balanceOf",
+        args: [account],
+      });
+      const defiRewards = await readContract(wagmiConfig, {
+        ...pool1Contracts.gauge,
+        functionName: 'claimable_reward',
+        args: [account, pool1Contracts.rewardToken.address],
+      });
         return {
           type: "pool1",
           owner: account,
           poolId,
-          deposit: [10000000000000000000n, 18] as Dnum,
+        deposit: dnum18(balance),
           rewards: {
-            defi: [10000000000000000000n, 18] as Dnum,
-          }
+          defi: dnum18(defiRewards),
         }
       }
-      if (poolId === "DUSD-frxUSD") {
-        return {
-          type: "pool1",
-          owner: account,
-          poolId,
-          deposit: [0n, 18] as Dnum,
-          rewards: {
-            defi: [0n, 18] as Dnum,
-          }
-        }
-      }
-      throw new Error(`Unknown pool ID: ${poolId}`);
-      
-    }
+    },
+    enabled: Boolean(account),
   });
 }
+
 
 export function usePool2Position(
   poolId: string,
