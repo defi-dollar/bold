@@ -5,7 +5,7 @@ import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import { usePool2Pool, usePool2Position } from "@/src/liquity-utils";
+import { usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, Tabs } from "@liquity2/uikit";
@@ -15,6 +15,7 @@ import { match } from "ts-pattern";
 import { PanelPositions } from "./PanelPositions";
 import { PanelClaimRewards } from "./PanelClaimRewards";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
+import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 
 const TABS = [
   { action: "positions", label: "Positions" },
@@ -36,9 +37,8 @@ export function Pool2PoolScreen() {
   const account = useAccount();
 
   const earnPosition = usePool2Position(poolId, account.address ?? null);
-  const earnPool = usePool2Pool(poolId);
 
-  const loadingState = earnPool.isLoading || earnPosition.isLoading ? "loading" : "success";
+  const loadingState = earnPosition.isLoading ? "loading" : "success";
 
   const tabsTransition = useTransition(loadingState, {
     from: { opacity: 0 },
@@ -111,48 +111,54 @@ export function Pool2PoolScreen() {
         position: "relative",
       })}
     >
-      {tabsTransition((style, item) => (
-        item === "success" && (
-          <a.div
-            className={css({
-              display: "flex",
-              flexDirection: "column",
-              gap: 24,
-              width: "100%",
-            })}
-            style={{
-              opacity: style.opacity,
-            }}
-          >
-            <Tabs
-              selected={TABS.indexOf(tab)}
-              onSelect={(index) => {
-                const tab = TABS[index];
-                if (!tab) {
-                  throw new Error("Invalid tab index");
-                }
-                router.push(`/earn/pool2/${poolId}/${tab.action}`, {
-                  scroll: false,
-                });
-              }}
-              items={TABS.map((tab) => ({
-                label: tab.label,
-                panelId: `panel-${tab.action}`,
-                tabId: `tab-${tab.action}`,
-              }))}
-            />
-            {tab.action === "positions" && (
-              <PanelPositions positions={earnPosition.data?.positions ?? []} />
-            )}
-            {tab.action === "claim" && (
-              <PanelClaimRewards
-                poolId={poolId}
-                position={earnPosition.data ?? undefined}
-              />
-            )}
-          </a.div>
+      {
+        account.isConnected ? (
+          tabsTransition((style, item) => (
+            item === "success" && (
+              <a.div
+                className={css({
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 24,
+                  width: "100%",
+                })}
+                style={{
+                  opacity: style.opacity,
+                }}
+              >
+                <Tabs
+                  selected={TABS.indexOf(tab)}
+                  onSelect={(index) => {
+                    const tab = TABS[index];
+                    if (!tab) {
+                      throw new Error("Invalid tab index");
+                    }
+                    router.push(`/earn/pool2/${poolId}/${tab.action}`, {
+                      scroll: false,
+                    });
+                  }}
+                  items={TABS.map((tab) => ({
+                    label: tab.label,
+                    panelId: `panel-${tab.action}`,
+                    tabId: `tab-${tab.action}`,
+                  }))}
+                />
+                {tab.action === "positions" && (
+                  <PanelPositions positions={earnPosition.data?.positions ?? []} />
+                )}
+                {tab.action === "claim" && (
+                  <PanelClaimRewards
+                    poolId={poolId}
+                    position={earnPosition.data ?? undefined}
+                  />
+                )}
+              </a.div>
+            )
+          ))
+        ) : (
+          <ConnectWarningBox />
         )
-      ))}
+      }
     </Screen>
   );
 }
