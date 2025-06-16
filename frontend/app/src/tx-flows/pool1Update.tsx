@@ -35,11 +35,7 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
         poolId={request.poolId}
         earnPosition={{
           ...request.earnPosition,
-
-          // compound BOLD rewards if not claiming
-          deposit: request.earnPosition.deposit,
           rewards: {
-            // BOLD rewards are claimed or compounded
             defi: request.claimRewards
               ? DNUM_0
               : request.earnPosition.rewards.defi,
@@ -78,6 +74,7 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
               suffix={` ${poolName} LP`}
               value={dn.abs(depositChange)}
             />,
+            // TODO: add USD value
             // <Amount
             //   key="end"
             //   prefix="$"
@@ -85,15 +82,16 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
             // />,
           ]}
         />
-        {dn.gt(rewards.defi, 0) && (
+        {claimRewards && dn.gt(rewards.defi, 0) && (
           <TransactionDetailsRow
-            label={claimRewards ? `Claim ${DEFI.name} rewards` : `Compound ${DEFI.name} rewards`}
+            label={`Claim ${DEFI.name} rewards`}
             value={[
               <Amount
                 key="start"
                 value={rewards.defi}
                 suffix={` ${DEFI.name}`}
               />,
+              // TODO: add USD value
               // <Amount
               //   key="end"
               //   value={boldPrice.data && dn.mul(rewards.bold, boldPrice.data)}

@@ -1,14 +1,15 @@
 import type { Dnum, PositionPool1 } from "@/src/types";
 import type { ReactNode } from "react";
+import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
-import { fmtnum } from "@/src/formatting";
 import { isPool1PositionActive, usePool1Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, DEFI, HFlex, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { BOLD, BOLD_TOKEN_SYMBOL, DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
+import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 
 export function Pool1PositionSummary({
   poolId,
@@ -33,8 +34,6 @@ export function Pool1PositionSummary({
   ))
 {
   const poolName = poolId.replace("-", "/");
-
-  // TODO: replace collToken with poolId
   const earnPool = usePool1Pool(poolId);
 
   // The earnUpdate tx flow provides static values
@@ -65,7 +64,8 @@ export function Pool1PositionSummary({
         "--fg-secondary-active": "token(colors.positionContentAlt)",
         "--fg-secondary-inactive": "token(colors.contentAlt)",
 
-        "--border-active": "color-mix(in srgb, token(colors.secondary) 15%, transparent)",
+        "--border-active":
+          "color-mix(in srgb, token(colors.secondary) 15%, transparent)",
         "--border-inactive": "token(colors.infoSurfaceBorder)",
 
         "--bg-active": "token(colors.position)",
@@ -95,10 +95,7 @@ export function Pool1PositionSummary({
             display: "flex",
           })}
         >
-          <TokenIcon
-            symbol="CRV"
-            size={34}
-          />
+          <TokenIcon symbol="CRV" size={34} />
         </div>
         <div
           className={css({
@@ -113,9 +110,7 @@ export function Pool1PositionSummary({
               flexDirection: "column",
             })}
           >
-            <div>
-              {title ?? `${poolName} Pool`}
-            </div>
+            <div>{title ?? `${poolName} Pool`}</div>
             <div
               className={css({
                 display: "flex",
@@ -136,7 +131,8 @@ export function Pool1PositionSummary({
                 />
               </div>
               <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability pool.
+                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability
+                pool.
               </InfoTooltip>
             </div>
           </div>
@@ -147,7 +143,9 @@ export function Pool1PositionSummary({
               alignItems: "flex-end",
             })}
           >
-            {txPreviewMode ? <TagPreview /> : (
+            {txPreviewMode ? (
+              <TagPreview />
+            ) : (
               <>
                 <div
                   className={css({
@@ -173,8 +171,9 @@ export function Pool1PositionSummary({
                   <InfoTooltip
                     content={{
                       heading: "Current APR",
-                      body: "The annualized rate this stability pool’s "
-                        + "deposits earned over the last 24 hours.",
+                      body:
+                        "The annualized rate this stability pool’s " +
+                        "deposits earned over the last 24 hours.",
                       footerLink: {
                         label: "Check Dune for more details",
                         href: DUNE_URL,
@@ -228,41 +227,24 @@ export function Pool1PositionSummary({
                 gap: 8,
               })}
             >
-              <div
-                title={active
-                  ? `${fmtnum(earnPosition?.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`
-                  : undefined}
-                className={css({
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: 4,
-                  height: 24,
-                })}
-              >
-                {active && fmtnum(earnPosition?.deposit)}
-                <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
-              </div>
-              {prevEarnPosition && (
-                <div
-                  title={`${fmtnum(prevEarnPosition.deposit, "full")} ${BOLD_TOKEN_SYMBOL}`}
-                  className={css({
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                    gap: 4,
-                    height: 24,
-                    color: "contentAlt",
-                    textDecoration: "line-through",
-                  })}
-                >
-                  {fmtnum(prevEarnPosition.deposit)}
-                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
-                </div>
+              {earnPosition && (
+                <PoolPositionAmount
+                  amount={active ? earnPosition?.deposit : undefined}
+                  token={BOLD}
+                />
               )}
+              {prevEarnPosition &&
+                earnPosition &&
+                !dn.eq(prevEarnPosition.deposit, earnPosition.deposit) && (
+                  <PoolPositionAmount
+                    amount={prevEarnPosition.deposit}
+                    token={BOLD}
+                    lineThrough
+                  />
+                )}
             </div>
           </div>
-          {!txPreviewMode && (
+          {earnPosition && (
             <div
               className={css({
                 display: "flex",
@@ -286,26 +268,20 @@ export function Pool1PositionSummary({
                   height: 24,
                 })}
               >
-                {active
-                  ? (
-                    <>
-                      <HFlex
-                        gap={4}
-                        title={`${fmtnum(earnPosition?.rewards.defi, "full")} ${DEFI.name}`}
-                        className={css({
-                          fontVariantNumeric: "tabular-nums",
-                        })}
-                      >
-                        {/* TODO: DEFI rewards */}
-                        {fmtnum(earnPosition?.rewards.defi)}
-                        <TokenIcon symbol={DEFI.symbol} size="mini" title={null} />
-                      </HFlex>
-                    </>
-                  )
-                  : (
-                    <TokenIcon.Group size="mini">
-                      <TokenIcon symbol={DEFI.symbol} />
-                    </TokenIcon.Group>
+                <PoolPositionAmount
+                  amount={active ? earnPosition.rewards.defi : undefined}
+                  token={DEFI}
+                />
+                {prevEarnPosition &&
+                  !dn.eq(
+                    prevEarnPosition.rewards.defi,
+                    earnPosition.rewards.defi
+                  ) && (
+                    <PoolPositionAmount
+                      amount={prevEarnPosition.rewards.defi}
+                      token={DEFI}
+                      lineThrough
+                    />
                   )}
               </div>
             </div>

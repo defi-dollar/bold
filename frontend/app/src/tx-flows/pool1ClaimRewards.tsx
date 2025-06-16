@@ -9,6 +9,7 @@ import { DEFI } from "@liquity2/uikit";
 import { createRequestSchema, verifyTransaction } from "./shared";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
 import { getPool1Contracts } from "../contracts";
+import { DNUM_0 } from "../dnum-utils";
 
 const RequestSchema = createRequestSchema(
   "pool1ClaimRewards",
@@ -26,7 +27,13 @@ export const pool1ClaimRewards: FlowDeclaration<Pool1ClaimRewardsRequest> = {
     return (
       <Pool1PositionSummary
         poolId={request.earnPosition.poolId}
-        earnPosition={request.earnPosition}
+        prevEarnPosition={request.earnPosition}
+        earnPosition={{
+          ...request.earnPosition,
+          rewards: {
+            defi: DNUM_0,
+          },
+        }}
         txPreviewMode
       />
     );
