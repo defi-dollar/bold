@@ -394,6 +394,9 @@ export function usePool1Position(
       }
     },
     enabled: Boolean(account),
+    placeholderData: (previousData) => {
+      return previousData;
+    }
   });
 }
 
@@ -468,20 +471,18 @@ export function usePool2Position(
           claimData.amounts.push(claimableAmount);
           claimData.proofs.push(reward.proofs);
         }
-
-        return {
-          type: "pool2",
-          owner: account,
-          poolId,
-          deposit: dnum18(deposit),
-          rewards: {
-            defi: dnum18(totalRewardsAmount),
-          },
-          positions: pool2Positions,
-          claimData,
-        };
       }
-      throw new Error(`Unknown pool ID: ${poolId}`);
+      return {
+        type: "pool2",
+        owner: account,
+        poolId,
+        deposit: dnum18(deposit),
+        rewards: {
+          defi: dnum18(totalRewardsAmount),
+        },
+        positions: pool2Positions,
+        claimData,
+      };
     },
     enabled: Boolean(account),
   });
