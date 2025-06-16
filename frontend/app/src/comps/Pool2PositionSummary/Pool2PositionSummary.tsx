@@ -1,5 +1,6 @@
 import type { Dnum, PositionPool2 } from "@/src/types";
 import type { ReactNode } from "react";
+import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
@@ -17,6 +18,7 @@ import {
 } from "@liquity2/uikit";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
+import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 
 export function Pool2PositionSummary({
   poolId,
@@ -232,102 +234,62 @@ export function Pool2PositionSummary({
                 gap: 8,
               })}
             >
-              <div
-                title={
-                  active
-                    ? `$${fmtnum(earnPosition?.deposit, "full")}`
-                    : undefined
-                }
-                className={css({
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: 4,
-                  height: 24,
-                })}
-              >
-                {active && (
-                  <Amount
-                    fallback="-"
-                    format="compact"
+              <PoolPositionAmount
+                amount={active ? earnPosition?.deposit : undefined}
+                prefix="$"
+              />
+              {prevEarnPosition &&
+                earnPosition &&
+                !dn.eq(prevEarnPosition.deposit, earnPosition.deposit) && (
+                  <PoolPositionAmount
+                    amount={prevEarnPosition.deposit}
                     prefix="$"
-                    value={earnPosition?.deposit}
+                    lineThrough
                   />
                 )}
-              </div>
-              {prevEarnPosition && (
-                <div
-                  title={`$${fmtnum(prevEarnPosition.deposit, "full")}`}
-                  className={css({
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                    gap: 4,
-                    height: 24,
-                    color: "contentAlt",
-                    textDecoration: "line-through",
-                  })}
-                >
-                  <Amount
-                    fallback="-"
-                    format="compact"
-                    prefix="$"
-                    value={prevEarnPosition.deposit}
-                  />
-                </div>
-              )}
             </div>
           </div>
-          {!txPreviewMode && (
+          <div
+            className={css({
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            })}
+          >
+            <div
+              style={{
+                color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
+              }}
+            >
+              Rewards
+            </div>
             <div
               className={css({
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
+                justifyContent: "flex-start",
+                alignItems: "center",
+                gap: 8,
+                height: 24,
               })}
             >
-              <div
-                style={{
-                  color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
-                }}
-              >
-                Rewards
-              </div>
-              <div
-                className={css({
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: 8,
-                  height: 24,
-                })}
-              >
-                {active ? (
-                  <>
-                    <HFlex
-                      gap={4}
-                      title={`${fmtnum(earnPosition?.rewards.defi, "full")} ${DEFI.symbol}`}
-                      className={css({
-                        fontVariantNumeric: "tabular-nums",
-                      })}
-                    >
-                      {/* TODO: DEFI rewards */}
-                      {fmtnum(earnPosition?.rewards.defi)}
-                      <TokenIcon
-                        symbol={DEFI.symbol}
-                        size="mini"
-                        title={null}
-                      />
-                    </HFlex>
-                  </>
-                ) : (
-                  <TokenIcon.Group size="mini">
-                    <TokenIcon symbol={DEFI.symbol} />
-                  </TokenIcon.Group>
+              <PoolPositionAmount
+                amount={active ? earnPosition?.rewards.defi : undefined}
+                token={DEFI}
+              />
+              {prevEarnPosition &&
+                earnPosition &&
+                !dn.eq(
+                  prevEarnPosition.rewards.defi,
+                  earnPosition.rewards.defi
+                ) && (
+                  <PoolPositionAmount
+                    amount={prevEarnPosition.rewards.defi}
+                    token={DEFI}
+                    lineThrough
+                  />
                 )}
-              </div>
             </div>
-          )}
+          </div>
         </div>
 
         {linkToScreen && (

@@ -6,17 +6,35 @@ import { HFlex, Token, TokenIcon } from "@liquity2/uikit";
 type PoolPositionAmountProps = {
   lineThrough?: boolean;
   amount?: Dnum;
-  token: Token;
+  token?: Token;
+  prefix?: string;
 };
 
 export const PoolPositionAmount = ({
+  prefix = "",
   amount,
   token,
   lineThrough = false,
 }: PoolPositionAmountProps) => {
+  if (!token && !amount) {
+    return null;
+  }
+
+  const title = (() => {
+    if (token && amount) {
+      return `${fmtnum(amount, "full")} ${token.name}`;
+    }
+
+    if (amount) {
+      return fmtnum(amount, "full");
+    }
+
+    return token?.name;
+  })();
+
   return (
     <HFlex
-      title={`${fmtnum(amount, "full")} ${token.name}`}
+      title={title}
       gap={4}
       className={css({
         height: 24,
@@ -25,7 +43,7 @@ export const PoolPositionAmount = ({
         textDecoration: lineThrough ? "line-through" : undefined,
       })}
     >
-      {amount && fmtnum(amount)}
+      {amount && `${prefix}${fmtnum(amount)}`}
       {token && <TokenIcon symbol={token.symbol} size="mini" title={null} />}
     </HFlex>
   );

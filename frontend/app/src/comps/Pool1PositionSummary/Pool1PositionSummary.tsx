@@ -227,12 +227,10 @@ export function Pool1PositionSummary({
                 gap: 8,
               })}
             >
-              {earnPosition && (
-                <PoolPositionAmount
-                  amount={active ? earnPosition?.deposit : undefined}
-                  token={BOLD}
-                />
-              )}
+              <PoolPositionAmount
+                amount={active ? earnPosition?.deposit : undefined}
+                token={BOLD}
+              />
               {prevEarnPosition &&
                 earnPosition &&
                 !dn.eq(prevEarnPosition.deposit, earnPosition.deposit) && (
@@ -244,48 +242,47 @@ export function Pool1PositionSummary({
                 )}
             </div>
           </div>
-          {earnPosition && (
+          <div
+            className={css({
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            })}
+          >
+            <div
+              style={{
+                color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
+              }}
+            >
+              Rewards
+            </div>
             <div
               className={css({
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
+                justifyContent: "flex-start",
+                alignItems: "center",
+                gap: 8,
+                height: 24,
               })}
             >
-              <div
-                style={{
-                  color: `var(--fg-secondary-${active ? "active" : "inactive"})`,
-                }}
-              >
-                Rewards
-              </div>
-              <div
-                className={css({
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: 8,
-                  height: 24,
-                })}
-              >
-                <PoolPositionAmount
-                  amount={active ? earnPosition.rewards.defi : undefined}
-                  token={DEFI}
-                />
-                {prevEarnPosition &&
-                  !dn.eq(
-                    prevEarnPosition.rewards.defi,
-                    earnPosition.rewards.defi
-                  ) && (
-                    <PoolPositionAmount
-                      amount={prevEarnPosition.rewards.defi}
-                      token={DEFI}
-                      lineThrough
-                    />
-                  )}
-              </div>
+              <PoolPositionAmount
+                amount={active ? earnPosition?.rewards.defi : undefined}
+                token={DEFI}
+              />
+              {prevEarnPosition &&
+                earnPosition &&
+                !dn.eq(
+                  prevEarnPosition.rewards.defi,
+                  earnPosition.rewards.defi
+                ) && (
+                  <PoolPositionAmount
+                    amount={prevEarnPosition.rewards.defi}
+                    token={DEFI}
+                    lineThrough
+                  />
+                )}
             </div>
-          )}
+          </div>
         </div>
 
         {linkToScreen && (
