@@ -7,7 +7,6 @@ import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { isPool2PositionActive, usePool2Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import {
-  BOLD_TOKEN_SYMBOL,
   DEFI,
   IconArrowRight,
   IconPlus,
@@ -15,7 +14,6 @@ import {
   TokenIcon,
 } from "@liquity2/uikit";
 import Link from "next/link";
-import { DUNE_URL } from "@/src/constants";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 
 export function Pool2PositionSummary({
@@ -173,13 +171,7 @@ export function Pool2PositionSummary({
                   <InfoTooltip
                     content={{
                       heading: "Current APR",
-                      body:
-                        "The annualized rate this stability pool’s " +
-                        "deposits earned over the last 24 hours.",
-                      footerLink: {
-                        label: "Check Dune for more details",
-                        href: DUNE_URL,
-                      },
+                      body: "The annualized rate of this pool’s deposits current earning rate.",
                     }}
                   />
                 </div>

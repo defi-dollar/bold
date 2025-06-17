@@ -170,13 +170,7 @@ export function Pool1PositionSummary({
                   <InfoTooltip
                     content={{
                       heading: "Current APR",
-                      body:
-                        "The annualized rate this stability pool’s " +
-                        "deposits earned over the last 24 hours.",
-                      footerLink: {
-                        label: "Check Dune for more details",
-                        href: DUNE_URL,
-                      },
+                      body: "The annualized rate of this pool’s deposits current earning rate.",
                     }}
                   />
                 </div>

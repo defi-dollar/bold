@@ -7,7 +7,6 @@ import content from "@/src/content";
 import { usePool1Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { DEFI, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";
 
@@ -37,10 +36,7 @@ export function Pool1Pools() {
               gap: "0 8px",
             })}
           >
-            {content.earnPool1Home.headline(
-              <TokenIcon symbol={DEFI.symbol} />,
-              "DUSD LP"
-            )}
+            {content.pool1Pools.headline}
           </div>
         ),
         subtitle: (

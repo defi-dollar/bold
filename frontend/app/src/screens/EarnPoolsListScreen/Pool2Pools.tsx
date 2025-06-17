@@ -7,7 +7,7 @@ import content from "@/src/content";
 import { usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { DEFI, TokenIcon } from "@liquity2/uikit";
+import { HFlex, IconInfo, VFlex } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 
@@ -40,21 +40,33 @@ export function Pool2Pools() {
               gap: "0 8px",
             })}
           >
-            {content.earnPool2Home.headline(
-              <TokenIcon symbol={DEFI.symbol} />,
-              "DEFI LP"
-            )}
+            {content.pool2Pools.headline}
           </div>
         ),
         subtitle: (
-          <>
-            {content.earnHome.subheading}{" "}
-            <LinkTextButton
-              label={content.earnHome.learnMore[1]}
-              href={content.earnHome.learnMore[0]}
-              external
-            />
-          </>
+          <VFlex gap={16}>
+            <div>
+              {content.pool2Pools.subheading}{" "}
+              <LinkTextButton
+                label={content.earnHome.learnMore[1]}
+                href={content.earnHome.learnMore[0]}
+                external
+              />
+            </div>
+            <HFlex
+              justifyContent="start"
+              className={css({
+                color: "content",
+                padding: "12px 20px",
+                background: "secondary",
+                borderRadius: 8,
+                textAlign: "left",
+              })}
+            >
+              <IconInfo size={24} />
+              The more the LP concentrates, the more it rewards
+            </HFlex>
+          </VFlex>
         ),
       }}
     >

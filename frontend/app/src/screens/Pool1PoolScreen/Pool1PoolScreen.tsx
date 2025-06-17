@@ -149,7 +149,6 @@ export function Pool1PoolScreen() {
               {tab.action === "deposit" && (
                 <PanelUpdateDeposit
                   poolId={poolId}
-                  deposited={earnPool.data?.totalDeposited ?? dn.from(0, 18)}
                   position={earnPosition.data ?? undefined}
                 />
               )}

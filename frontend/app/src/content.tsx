@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable import/no-anonymous-default-export */
 
-import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, DEFI, TokenIcon } from "@liquity2/uikit";
 import type { ReactNode as N } from "react";
 
 import { css } from "@/styled-system/css";
@@ -335,7 +335,7 @@ export default {
       ],
     },
   },
-
+  
   // Earn screen
   earnScreen: {
     backButton: "See all pools",
@@ -408,23 +408,31 @@ export default {
       ],
     },
   },
-  earnPool1Home: {
-    headline: (rewards: N, deposit: N) => (
+  pool1Pools: {
+    headline: (
       <>
         Deposit
-        <NoWrap>{deposit}</NoWrap>
-        to earn <NoWrap>rewards {rewards}</NoWrap>
+        <NoWrap>DUSD LP</NoWrap>
+        to earn{" "}
+        <NoWrap>
+          rewards <TokenIcon symbol={DEFI.symbol} />
+        </NoWrap>
       </>
     ),
+    subheading:
+      "A Curve LP staked in Pool1 earns rewards from the protocol incentive program. Deposit DUSD liquidity in Curve and stake the LP for the rewards.",
   },
-  earnPool2Home: {
-    headline: (rewards: N, deposit: N) => (
+  pool2Pools: {
+    headline: (
       <>
-        Deposit
-        <NoWrap>{deposit}</NoWrap>
-        to earn <NoWrap>rewards {rewards}</NoWrap>
+        Deposit <NoWrap>DEFI LP</NoWrap> to earn{" "}
+        <NoWrap>
+          rewards <TokenIcon symbol={DEFI.symbol} />
+        </NoWrap>
       </>
     ),
+    subheading:
+      "A Uniswap v4 position earns Pool2 rewards automatically. Deposit DEFI liquidity in Uniswap v4 to earn the rewards.",
   },
   // Stake screen
   stakeScreen: {

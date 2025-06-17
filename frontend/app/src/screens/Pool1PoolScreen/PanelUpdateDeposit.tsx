@@ -34,11 +34,9 @@ import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 type ValueUpdateMode = "add" | "remove";
 
 export function PanelUpdateDeposit({
-  deposited,
   poolId,
   position,
 }: {
-  deposited: Dnum;
   poolId: string;
   position?: PositionPool1;
 }) {
