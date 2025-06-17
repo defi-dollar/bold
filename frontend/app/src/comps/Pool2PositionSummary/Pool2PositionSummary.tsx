@@ -232,6 +232,7 @@ export function Pool2PositionSummary({
               <PoolPositionAmount
                 amount={earnPosition?.deposit}
                 prefix="$"
+                fallback="-"
               />
               {prevEarnPosition &&
                 earnPosition &&

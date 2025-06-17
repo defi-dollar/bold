@@ -2,34 +2,32 @@ import type { Dnum } from "@/src/types";
 import { fmtnum } from "@/src/formatting";
 import { css } from "@/styled-system/css";
 import { HFlex, Token, TokenIcon } from "@liquity2/uikit";
+import { Amount } from "../Amount/Amount";
 
 type PoolPositionAmountProps = {
   lineThrough?: boolean;
   amount?: Dnum;
   token?: Token;
   prefix?: string;
+  fallback?: string;
 };
 
 export const PoolPositionAmount = ({
   prefix = "",
+  fallback,
   amount,
   token,
   lineThrough = false,
 }: PoolPositionAmountProps) => {
-  if (!token && !amount) {
-    return null;
-  }
-
   const title = (() => {
     if (token && amount) {
       return `${fmtnum(amount, "full")} ${token.name}`;
-    }
-
-    if (amount) {
+    } else if (amount) {
       return fmtnum(amount, "full");
+    } else if (token) {
+      return token.name;
     }
-
-    return token?.name;
+    return undefined
   })();
 
   return (
@@ -43,7 +41,7 @@ export const PoolPositionAmount = ({
         textDecoration: lineThrough ? "line-through" : undefined,
       })}
     >
-      {amount && `${prefix}${fmtnum(amount)}`}
+      {(amount || fallback) && <Amount value={amount} prefix={prefix} fallback={fallback}/>}
       {token && <TokenIcon symbol={token.symbol} size="mini" title={null} />}
     </HFlex>
   );

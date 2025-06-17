@@ -232,6 +232,7 @@ export function Pool1PositionSummary({
                     ? dn.multiply(earnPosition.deposit, lpTokenPrice)
                     : undefined
                 }
+                fallback="-"
                 prefix="$"
               />
               {prevEarnPosition &&
