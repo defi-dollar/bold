@@ -373,3 +373,64 @@ export type MerklAPIUserRewards = Array<{
     }>;
   }>;
 }>;
+
+export type CurveAPIPoolsResponse = {
+  success: boolean;
+  data: {
+    poolData: Array<{
+      id: string;
+      address: string;
+      coinsAddresses: string[];
+      decimals: string[];
+      virtualPrice: string;
+      amplificationCoefficient: string;
+      totalSupply: string;
+      name: string;
+      implementationAddress: string;
+      symbol: string;
+      implementation: string;
+      assetTypeName: string;
+      coins: Array<{
+        address: string;
+        usdPrice: number;
+        decimals: string;
+        isBasePoolLpToken: boolean;
+        symbol: string;
+        name: string;
+        poolBalance: string;
+      }>;
+      poolUrls: {
+        swap: string[];
+        deposit: string[];
+        withdraw: string[];
+      };
+      lpTokenAddress: string;
+      usdTotal: number;
+      isMetaPool: boolean;
+      usdTotalExcludingBasePool: number;
+      usesRateOracle: boolean;
+      isBroken: boolean;
+      hasMethods: {
+        exchange_received: boolean;
+        exchange_extended: boolean;
+      };
+      creationTs: number;
+      creationBlockNumber: number;
+      zapAddress?: string;
+      basePoolAddress?: string;
+      underlyingDecimals?: string[];
+      underlyingCoins?: Array<{
+        address: string;
+        usdPrice: number;
+        decimals: string;
+        isBasePoolLpToken: boolean;
+        symbol: string;
+        name: string;
+        poolBalance: string;
+      }>;
+    }>;
+    tvlAll: number;
+    tvl: number;
+  };
+  generatedTimeMs: number;
+};

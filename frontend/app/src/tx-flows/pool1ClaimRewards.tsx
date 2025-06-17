@@ -1,4 +1,5 @@
 import type { FlowDeclaration } from "@/src/services/TransactionFlow";
+import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
@@ -10,6 +11,7 @@ import { createRequestSchema, verifyTransaction } from "./shared";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
 import { getPool1Contracts } from "../contracts";
 import { DNUM_0 } from "../dnum-utils";
+import { usePrice } from "../services/Prices";
 
 const RequestSchema = createRequestSchema(
   "pool1ClaimRewards",
@@ -40,23 +42,30 @@ export const pool1ClaimRewards: FlowDeclaration<Pool1ClaimRewardsRequest> = {
   },
 
   Details({ request }) {
+    const {data: defiPrice} = usePrice(DEFI.symbol);
     return (
       <>
         <TransactionDetailsRow
           label={`Claim ${DEFI.name} rewards`}
-          value={[
-            <Amount
-              key="start"
-              value={request.earnPosition.rewards.defi}
-              suffix={` ${DEFI.name}`}
-            />,
-            // TODO: price
-            // <Amount
-            //   key="end"
-            //   value={rewardsCollUsd}
-            //   prefix="$"
-            // />,
-          ]}
+          value={
+            [
+              <Amount
+                key="start"
+                value={request.earnPosition.rewards.defi}
+                suffix={` ${DEFI.name}`}
+              />,
+              defiPrice && (
+                <Amount
+                  key="end"
+                  value={dn.multiply(
+                    request.earnPosition.rewards.defi,
+                    defiPrice
+                  )}
+                  prefix="$"
+                />
+              ),
+            ].filter(Boolean)
+          }
         />
       </>
     );

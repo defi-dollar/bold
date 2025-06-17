@@ -52,7 +52,7 @@ import {
 import { isBranchId, isPositionLoanCommitted, isPrefixedtroveId, isTroveId } from "@/src/types";
 import { bigIntAbs, jsonStringifyWithBigInt, sleep } from "@/src/utils";
 import { vAddress, vPrefixedTroveId } from "@/src/valibot-utils";
-import { addressesEqual, COLLATERALS, isAddress, shortenAddress } from "@liquity2/uikit";
+import { addressesEqual, COLLATERALS, DEFI, isAddress, shortenAddress } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
 import { useMemo } from "react";
@@ -61,6 +61,7 @@ import { encodeAbiParameters, erc20Abi, Hex, isAddressEqual, keccak256, parseAbi
 import { useBalance, useConfig as useWagmiConfig, useReadContract, useReadContracts } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
 import axios from "axios";
+import { fetchPrice, usePrice } from "./services/Prices";
 
 export function shortenTroveId(troveId: TroveId, chars = 8) {
   return troveId.length < chars * 2 + 2
@@ -189,6 +190,7 @@ export function useEarnPool(branchId: BranchId) {
 
 export function usePool1Pool(poolId: string) {
   const wagmiConfig = useWagmiConfig();
+  const {data: lpTokenPrice} = usePrice(poolId);
   
   return useQuery({
     queryKey: [
@@ -198,14 +200,8 @@ export function usePool1Pool(poolId: string) {
     queryFn: async () => {
       const pool1Contracts = getPool1Contracts(poolId);
 
-      // TODO: Get rewardToken price
-      const rewardTokenPrice = 1000000000000000000n;
-      const lpTokenPrice = 1000000000000000000n;
-      // const lpTokenPrice = await readContract(wagmiConfig, {
-      //   ...pool1Contracts.lpToken,
-      //   functionName: 'last_price',
-      //   args: [0n]
-      // });
+      const rewardTokenPrice = await fetchPrice(DEFI.symbol, wagmiConfig);
+      const lpTokenPrice = await fetchPrice(poolId, wagmiConfig);
 
       const totalSupply = await readContract(wagmiConfig, {
         ...pool1Contracts.gauge,
@@ -217,20 +213,26 @@ export function usePool1Pool(poolId: string) {
         args: [pool1Contracts.rewardToken.address],
       });
       const apr =
-        rewardRate * 365n * 24n * 60n * 60n * 1000000000000000000n * rewardTokenPrice / lpTokenPrice / totalSupply;
+        rewardRate * 365n * 24n * 60n * 60n * 1000000000000000000n * rewardTokenPrice[0] / lpTokenPrice[0] / totalSupply;
 
       return {
         apr: dnum18(apr),
-        totalDeposited: dnum18(totalSupply),
+        totalSupply: dnum18(totalSupply),
       };
     },
+    select: (data) => {
+      return {
+        ...data,
+        totalDeposited: lpTokenPrice ? dn.multiply(data.totalSupply, lpTokenPrice) : undefined,
+      }
+    }
   });
 }
 
 const getUniswapPool = (poolId: string) => {
   const config = POOL2_CONFIGS[poolId];
   if (!config) {
-  throw new Error(`Unknown pool ID: ${poolId}`);
+    throw new Error(`Unknown pool ID: ${poolId}`);
   }
   return config;
 }

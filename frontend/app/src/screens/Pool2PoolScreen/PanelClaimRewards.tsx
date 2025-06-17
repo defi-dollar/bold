@@ -20,27 +20,23 @@ export function PanelClaimRewards({
   position?: PositionPool2;
 }) {
   const account = useAccount();
-
-  // TODO: Price
   const defiPriceUsd = usePrice(DEFI.symbol);
 
-  // TODO: DEFI Price
-  const totalRewards =
+  const totalUsd =
+    position?.rewards?.defi &&
     defiPriceUsd.data &&
-    dn.mul(position?.rewards?.defi ?? DNUM_0, defiPriceUsd.data);
+    dn.multiply(position.rewards.defi, defiPriceUsd.data);
 
-  const allowSubmit = account.isConnected && totalRewards && dn.gt(totalRewards, 0);
+  const allowSubmit = account.isConnected && position?.rewards?.defi && dn.gt(position.rewards.defi, 0);
 
   return (
     <VFlex gap={48}>
       <VFlex gap={0}>
-        {/* TODO: DEFI Rewards */}
         <Rewards
           amount={position?.rewards?.defi ?? DNUM_0}
           label="Your earnings from protocol distributions to this pool"
           symbol={DEFI.symbol}
         />
-
         <div
           className={css({
             display: "flex",
@@ -54,7 +50,7 @@ export function PanelClaimRewards({
             <div>{content.earnScreen.rewardsPanel.totalUsdLabel}</div>
             <Amount
               prefix="$"
-              value={totalRewards}
+              value={totalUsd}
               format={2}
             />
           </HFlex>

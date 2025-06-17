@@ -135,10 +135,7 @@ export function Pool2PositionSummary({
                   value={poolDeposit}
                 />
               </div>
-              <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability
-                pool.
-              </InfoTooltip>
+              <InfoTooltip>Total Value Locked (TVL)</InfoTooltip>
             </div>
           </div>
           <div
@@ -233,7 +230,7 @@ export function Pool2PositionSummary({
               })}
             >
               <PoolPositionAmount
-                amount={active ? earnPosition?.deposit : undefined}
+                amount={earnPosition?.deposit}
                 prefix="$"
               />
               {prevEarnPosition &&

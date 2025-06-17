@@ -11,6 +11,7 @@ import { createRequestSchema, verifyTransaction } from "./shared";
 import { DEFI } from "@liquity2/uikit";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
 import { getPool1Contracts } from "../contracts";
+import { usePrice } from "../services/Prices";
 
 const RequestSchema = createRequestSchema(
   "pool1Update",
@@ -57,12 +58,10 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
 
     const poolName = poolId.replace("-", "/");
 
-    // const boldPrice = usePrice(BOLD_TOKEN_SYMBOL);
-
     const depositChange = dn.sub(earnPosition.deposit, prevEarnPosition.deposit);
 
-    // const boldAmount = dn.abs(depositChange);
-    // const usdAmount = boldPrice.data && dn.mul(boldAmount, boldPrice.data);
+    const {data: lpTokenPrice} = usePrice(poolId);
+    const {data: defiPrice} = usePrice(DEFI.symbol);
 
     return (
       <>
@@ -74,13 +73,14 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
               suffix={` ${poolName} LP`}
               value={dn.abs(depositChange)}
             />,
-            // TODO: add USD value
-            // <Amount
-            //   key="end"
-            //   prefix="$"
-            //   value={usdAmount}
-            // />,
-          ]}
+            lpTokenPrice && (
+              <Amount
+                key="end"
+                prefix="$"
+                value={dn.multiply(dn.abs(depositChange), lpTokenPrice)}
+              />
+            ),
+          ].filter(Boolean)}
         />
         {claimRewards && dn.gt(rewards.defi, 0) && (
           <TransactionDetailsRow
@@ -91,13 +91,14 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
                 value={rewards.defi}
                 suffix={` ${DEFI.name}`}
               />,
-              // TODO: add USD value
-              // <Amount
-              //   key="end"
-              //   value={boldPrice.data && dn.mul(rewards.bold, boldPrice.data)}
-              //   prefix="$"
-              // />,
-            ]}
+              defiPrice && (
+                <Amount
+                  key="end"
+                  value={dn.multiply(rewards.defi, defiPrice)}
+                  prefix="$"
+                />
+              ),
+            ].filter(Boolean)}
           />
         )}
       </>

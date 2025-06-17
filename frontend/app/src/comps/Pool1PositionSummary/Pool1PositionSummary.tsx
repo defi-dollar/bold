@@ -6,10 +6,11 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
 import { isPool1PositionActive, usePool1Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
-import { BOLD, BOLD_TOKEN_SYMBOL, DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
 import { DUNE_URL } from "@/src/constants";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
+import { usePrice } from "@/src/services/Prices";
 
 export function Pool1PositionSummary({
   poolId,
@@ -35,6 +36,7 @@ export function Pool1PositionSummary({
 {
   const poolName = poolId.replace("-", "/");
   const earnPool = usePool1Pool(poolId);
+  const {data: lpTokenPrice} = usePrice(poolId);
 
   // The earnUpdate tx flow provides static values
   // for poolDeposit and prevPoolDeposit. If these are
@@ -130,10 +132,7 @@ export function Pool1PositionSummary({
                   value={poolDeposit}
                 />
               </div>
-              <InfoTooltip heading="Total Value Locked (TVL)">
-                Total amount of {BOLD_TOKEN_SYMBOL} deposited in this stability
-                pool.
-              </InfoTooltip>
+              <InfoTooltip>Total Value Locked (TVL)</InfoTooltip>
             </div>
           </div>
           <div
@@ -228,15 +227,23 @@ export function Pool1PositionSummary({
               })}
             >
               <PoolPositionAmount
-                amount={active ? earnPosition?.deposit : undefined}
-                token={BOLD}
+                amount={
+                  earnPosition && lpTokenPrice
+                    ? dn.multiply(earnPosition.deposit, lpTokenPrice)
+                    : undefined
+                }
+                prefix="$"
               />
               {prevEarnPosition &&
                 earnPosition &&
                 !dn.eq(prevEarnPosition.deposit, earnPosition.deposit) && (
                   <PoolPositionAmount
-                    amount={prevEarnPosition.deposit}
-                    token={BOLD}
+                    amount={
+                      lpTokenPrice
+                        ? dn.multiply(prevEarnPosition.deposit, lpTokenPrice)
+                        : undefined
+                    }
+                    prefix="$"
                     lineThrough
                   />
                 )}

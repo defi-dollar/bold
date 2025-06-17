@@ -1,4 +1,5 @@
 import type { FlowDeclaration } from "@/src/services/TransactionFlow";
+import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
@@ -10,6 +11,7 @@ import { createRequestSchema, verifyTransaction } from "./shared";
 import { getPool2Contracts } from "../contracts";
 import { Pool2PositionSummary } from "../comps/Pool2PositionSummary/Pool2PositionSummary";
 import { DNUM_0 } from "../dnum-utils";
+import { usePrice } from "../services/Prices";
 
 const RequestSchema = createRequestSchema(
   "pool2ClaimRewards",
@@ -40,6 +42,8 @@ export const pool2ClaimRewards: FlowDeclaration<Pool2ClaimRewardsRequest> = {
   },
 
   Details({ request }) {
+    const {data: defiPrice} = usePrice(DEFI.symbol);
+
     return (
       <>
         <TransactionDetailsRow
@@ -50,13 +54,17 @@ export const pool2ClaimRewards: FlowDeclaration<Pool2ClaimRewardsRequest> = {
               value={request.earnPosition.rewards.defi}
               suffix={` ${DEFI.name}`}
             />,
-            // TODO: price
-            // <Amount
-            //   key="end"
-            //   value={rewardsCollUsd}
-            //   prefix="$"
-            // />,
-          ]}
+            defiPrice && (
+              <Amount
+                key="end"
+                value={dn.multiply(
+                  request.earnPosition.rewards.defi,
+                  defiPrice
+                )}
+                prefix="$"
+              />
+            ),
+          ].filter(Boolean)}
         />
       </>
     );

@@ -89,8 +89,7 @@ export function PanelUpdateDeposit({
     account.isConnected &&
     parsedValue &&
     dn.gt(parsedValue, 0) &&
-    // TODO: uncomment
-    // !insufficientBalance &&
+    !insufficientBalance &&
     !withdrawAboveDeposit;
 
   return (
@@ -251,7 +250,6 @@ export function PanelUpdateDeposit({
             </div>
             {position && (
               <div>
-                {/* TODO: DEFI Rewards */}
                 <Amount value={position.rewards.defi} />{" "}
                 <span
                   className={css({

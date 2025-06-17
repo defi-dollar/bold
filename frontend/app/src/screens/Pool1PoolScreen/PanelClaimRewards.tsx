@@ -9,12 +9,7 @@ import { DNUM_0 } from "@/src/dnum-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import {
-  DEFI,
-  HFlex,
-  TokenIcon,
-  VFlex,
-} from "@liquity2/uikit";
+import { DEFI, HFlex, TokenIcon, VFlex } from "@liquity2/uikit";
 import * as dn from "dnum";
 
 export function PanelClaimRewards({
@@ -26,21 +21,18 @@ export function PanelClaimRewards({
 }) {
   const account = useAccount();
 
-  // TODO: Price
   const defiPriceUsd = usePrice(DEFI.symbol);
-
-  // TODO: DEFI Price
-  const totalRewards =
+  const totalUsd =
+    position?.rewards?.defi &&
     defiPriceUsd.data &&
-    dn.mul(position?.rewards?.defi ?? DNUM_0, defiPriceUsd.data);
+    dn.mul(position.rewards.defi, defiPriceUsd.data);
 
   const allowSubmit =
-    account.isConnected && totalRewards && dn.gt(totalRewards, 0);
+    account.isConnected && position?.rewards?.defi && dn.gt(position.rewards.defi, 0);
 
   return (
     <VFlex gap={48}>
       <VFlex gap={0}>
-        {/* TODO: DEFI Rewards */}
         <Rewards
           amount={position?.rewards?.defi ?? DNUM_0}
           label="Your earnings from protocol distributions to this pool"
@@ -58,23 +50,22 @@ export function PanelClaimRewards({
         >
           <HFlex justifyContent="space-between" gap={24}>
             <div>{content.earnScreen.rewardsPanel.totalUsdLabel}</div>
-            <Amount prefix="$" value={totalRewards} format={2} />
+            <Amount prefix="$" value={totalUsd} format={2} />
           </HFlex>
         </div>
       </VFlex>
 
       <FlowButton
         disabled={!allowSubmit}
-        request={position && {
-          flowId: "pool1ClaimRewards",
-          backLink: [
-            `/earn/pool1/${poolId}`,
-            "Back to pool position",
-          ],
-          successLink: ["/", "Go to the Dashboard"],
-          successMessage: "The rewards have been claimed successfully.",
-          earnPosition: position,
-        }}
+        request={
+          position && {
+            flowId: "pool1ClaimRewards",
+            backLink: [`/earn/pool1/${poolId}`, "Back to pool position"],
+            successLink: ["/", "Go to the Dashboard"],
+            successMessage: "The rewards have been claimed successfully.",
+            earnPosition: position,
+          }
+        }
       />
     </VFlex>
   );
