@@ -4,9 +4,6 @@ export const COLL_SYMBOLS = Array.from({
   length: COLL_NUM,
 }).map((_, i) => process.env[`NEXT_PUBLIC_COLL_${i}_TOKEN_ID`] ?? "");
 
-export const POOL1_POOL_IDS = [
-  "DUSD-BOLD",
-  // "DUSD-frxUSD"
-] as const;
+export const POOL1_POOL_IDS = ["DUSD-BOLD", "DUSD-FRAXBP"] as const;
 
 export const POOL2_POOL_IDS = ["DEFI-WETH"] as const;

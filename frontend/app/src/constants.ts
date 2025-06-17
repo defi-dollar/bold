@@ -100,7 +100,7 @@ export const POOL1_CONFIGS: Record<
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
     curvePoolId: "factory-stable-ng-491",
   },
-  "DUSD-frxUSD": {
+  "DUSD-FRAXBP": {
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
     lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
