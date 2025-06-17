@@ -37,12 +37,12 @@ import * as dn from "dnum";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { maxUint256 } from "viem";
-import { sortCollaterals } from "@/src/utils";
+import { sortBranches } from "@/src/utils";
 
 const KNOWN_COLLATERAL_SYMBOLS = KNOWN_COLLATERALS.map(({ symbol }) => symbol);
 
 export function BorrowScreen() {
-  const branches = getBranches();
+  const branches = getBranches().sort(sortBranches);
   // useParams() can return an array but not with the current
   // routing setup, so we can safely cast it to a string
   const collSymbol = `${useParams().collateral ?? branches[0]?.symbol}`.toUpperCase();
@@ -50,10 +50,14 @@ export function BorrowScreen() {
     throw new Error(`Invalid collateral symbol: ${collSymbol}`);
   }
 
+  console.log("collSymbol", collSymbol);
+
   const router = useRouter();
   const account = useAccount();
 
   const branch = getBranch(collSymbol);
+
+  console.log("branch", branch);
   const collateral = getCollToken(branch.id);
   const collaterals = branches.map((b) => getCollToken(b.branchId));
 
@@ -172,7 +176,7 @@ export function BorrowScreen() {
                 })}
               >
                 <TokenIcon.Group>
-                  {collaterals.sort(sortCollaterals).map(({ symbol }) => (
+                  {collaterals.map(({ symbol }) => (
                     <TokenIcon
                       key={symbol}
                       symbol={symbol}
@@ -201,7 +205,7 @@ export function BorrowScreen() {
             id="input-deposit"
             contextual={
               <Dropdown
-                items={collaterals.sort(sortCollaterals).map(({ symbol, name }) => ({
+                items={collaterals.map(({ symbol, name }) => ({
                   icon: <TokenIcon symbol={symbol} />,
                   label: name,
                   value: account.isConnected
@@ -222,7 +226,7 @@ export function BorrowScreen() {
                     { scroll: false },
                   );
                 }}
-                selected={branch.id}
+                selected={collaterals.findIndex(coll => coll.symbol === collSymbol)}
               />
             }
             label={content.borrowScreen.depositField.label}
