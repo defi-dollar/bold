@@ -1,6 +1,6 @@
 "use client";
 
-
+import { POOL2_POOL_IDS } from "@/src/app/_constants";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
@@ -11,12 +11,9 @@ import { DEFI, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 
-const poolIds = ['DEFI-WETH'];
-
-
 export function Pool2Pools() {
   const poolsTransition = useTransition(
-    poolIds,
+    POOL2_POOL_IDS,
     {
       from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
       enter: { opacity: 1, transform: "scale(1) translateY(0px)" },

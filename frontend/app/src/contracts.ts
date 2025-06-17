@@ -37,7 +37,7 @@ import { LiquidityGaugeV6 } from "./abi/LiquidityGaugeV6";
 import { CurveStableSwapNG } from "./abi/CurveStableSwapNG";
 import { Distributor } from "./abi/Distributor";
 import {
-  POOL1_CONTRACT_ADDRESSES,
+  POOL1_CONFIGS,
   POOL2_CONTRACT_ADDRESSES,
 } from "./constants";
 
@@ -240,23 +240,23 @@ export function getBranchContract<CN extends CollateralContractName>(
 export function getPool1Contracts(
   poolId: string,
 ): Pool1Contracts {
-  const contractAddresses = POOL1_CONTRACT_ADDRESSES[poolId];
-  if (!contractAddresses) {
+  const config = POOL1_CONFIGS[poolId];
+  if (!config) {
     throw new Error(`Invalid pool id ${poolId}`);
   }
 
   return {
     gauge: {
       abi: LiquidityGaugeV6,
-      address: contractAddresses.guage,
+      address: config.gauge,
     },
     lpToken: {
       abi: CurveStableSwapNG,
-      address: contractAddresses.lpToken,
+      address: config.lpToken,
     },
     rewardToken: {
       abi: erc20Abi,
-      address: contractAddresses.rewardToken,
+      address: config.rewardToken,
     },
   }
 }

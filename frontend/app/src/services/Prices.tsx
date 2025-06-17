@@ -4,7 +4,7 @@ import type { CollateralSymbol, CurveAPIPoolsResponse, TokenSymbol } from "@/src
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { Dnum } from "dnum";
 
-import { PRICE_REFRESH_INTERVAL } from "@/src/constants";
+import { POOL1_CONFIGS, PRICE_REFRESH_INTERVAL } from "@/src/constants";
 import { getBranchContract } from "@/src/contracts";
 import { dnum18 } from "@/src/dnum-utils";
 import { COINGECKO_API_KEY } from "@/src/env";
@@ -83,17 +83,15 @@ async function fetchCoinGeckoPrice(symbol: CoinGeckoSymbol): Promise<Dnum> {
 }
 
 const isPool1Symbol = (symbol: string) => {
-  return symbol === "DUSD-BOLD" || symbol === "DUSD-frxUSD";
+  return symbol in POOL1_CONFIGS;
 }
 
 const getCurvePoolId = (symbol: string) => {
-  if (symbol === "DUSD-BOLD") {
-    return "factory-stable-ng-491";
+  const config = POOL1_CONFIGS[symbol];
+  if (!config) {
+    throw new Error(`Unknown pool: ${symbol}`);
   }
-  if (symbol === "DUSD-frxUSD") {
-    return "factory-stable-ng-492";
-  }
-  throw new Error(`Unknown curve pool: ${symbol}`);
+  return config.curvePoolId;
 }
 
 const fetchCurveLPPrice = async (curvePoolId: string) => {

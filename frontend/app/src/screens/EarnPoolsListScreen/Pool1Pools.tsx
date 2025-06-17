@@ -1,5 +1,6 @@
 "use client";
 
+import { POOL1_POOL_IDS } from "@/src/app/_constants";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
@@ -10,10 +11,8 @@ import { DEFI, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";
 
-const poolIds = ["DUSD-BOLD", "DUSD-frxUSD"];
-
 export function Pool1Pools() {
-  const poolsTransition = useTransition(poolIds, {
+  const poolsTransition = useTransition(POOL1_POOL_IDS, {
     from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
     enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
     leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
