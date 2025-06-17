@@ -111,6 +111,18 @@ export const POOL2_CONTRACT_ADDRESSES : {
   distributor: '0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae',
 }
 
+export const POOL2_CONFIGS: Record<string, {
+  opportunityId: string;
+  uniswapPoolId: string;
+  rewardToken: string;
+}> = {
+  'DEFI-WETH': {
+    opportunityId: "2424465955469924989",
+    uniswapPoolId: '0x21c67e77068de97969ba93d4aab21826d33ca12bb9f565d8496e8fda8a82ca27',
+    rewardToken: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+  }
+}
+
 export const DEFI_DOLLAR_API_URL = 'https://api.defidollar.io/api/v1';
 
 export const MERKL_API_URL = 'https://api.merkl.xyz/v4';

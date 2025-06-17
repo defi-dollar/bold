@@ -1,5 +1,7 @@
+import { POOL1_POOL_IDS } from "@/src/app/_constants";
+
 export function generateStaticParams() {
-  return ["DUSD-BOLD", "DUSD-frxUSD"].map(poolId => ({ pool: poolId}));
+  return POOL1_POOL_IDS.map(poolId => ({ pool: poolId}));
 }
 
 export default function Pool1PoolPage() {

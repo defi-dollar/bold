@@ -35,6 +35,7 @@ import {
   INTEREST_RATE_PRECISE_UNTIL,
   INTEREST_RATE_START,
   MERKL_API_URL,
+  POOL2_CONFIGS,
 } from "@/src/constants";
 import { CONTRACTS, getBranchContract, getPool1Contracts, getProtocolContract } from "@/src/contracts";
 import { ACCOUNT_POSITIONS } from "@/src/demo-mode";
@@ -227,18 +228,11 @@ export function usePool1Pool(poolId: string) {
 }
 
 const getUniswapPool = (poolId: string) => {
-  if (poolId === "DEFI-WETH") {
-    const opportunityId = "2424465955469924989";
-    const uniswapPoolId = '0x21c67e77068de97969ba93d4aab21826d33ca12bb9f565d8496e8fda8a82ca27';
-    const rewardToken = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
-
-    return {
-      opportunityId,
-      uniswapPoolId,
-      rewardToken,
-    }
-  }
+  const config = POOL2_CONFIGS[poolId];
+  if (!config) {
   throw new Error(`Unknown pool ID: ${poolId}`);
+  }
+  return config;
 }
 
 export function usePool2Pool(poolId: string) {

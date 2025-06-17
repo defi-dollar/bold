@@ -1,7 +1,8 @@
+import { POOL2_POOL_IDS } from "@/src/app/_constants";
 import { Pool2PoolScreen } from "@/src/screens/Pool2PoolScreen/Pool2PoolScreen";
 
 export function generateStaticParams() {
-  return ['DEFI-WETH'].map(poolId => ({ pool: poolId}));
+  return POOL2_POOL_IDS.map(poolId => ({ pool: poolId}));
 }
 
 export default function Layout() {
