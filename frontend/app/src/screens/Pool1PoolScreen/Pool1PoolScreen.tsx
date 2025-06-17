@@ -13,7 +13,6 @@ import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, Tabs } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
-import * as dn from "dnum";
 import { useParams, useRouter } from "next/navigation";
 import { match } from "ts-pattern";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";

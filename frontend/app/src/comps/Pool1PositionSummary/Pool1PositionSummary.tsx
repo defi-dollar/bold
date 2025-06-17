@@ -8,7 +8,6 @@ import { isPool1PositionActive, usePool1Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import { DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
-import { DUNE_URL } from "@/src/constants";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 import { usePrice } from "@/src/services/Prices";
 

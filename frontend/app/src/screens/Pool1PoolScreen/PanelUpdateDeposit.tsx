@@ -1,5 +1,4 @@
 import type { PositionPool1 } from "@/src/types";
-import type { Dnum } from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { Field } from "@/src/comps/Field/Field";

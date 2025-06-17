@@ -57,7 +57,7 @@ import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
 import { useMemo } from "react";
 import * as v from "valibot";
-import { encodeAbiParameters, erc20Abi, Hex, isAddressEqual, keccak256, parseAbiParameters, parseUnits } from "viem";
+import { encodeAbiParameters, erc20Abi, isAddressEqual, keccak256, parseAbiParameters, parseUnits } from "viem";
 import { useBalance, useConfig as useWagmiConfig, useReadContract, useReadContracts } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
 import axios from "axios";
