@@ -1,6 +1,5 @@
 import axios from "axios";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { useAccount } from "wagmi";
 import { ONBOARD_API_ENDPOINT } from "./constants";
 import { OnboardContext, ShowOnboardModalFunction } from "./OnboardContext";
 import {
@@ -12,17 +11,18 @@ const getLocalStorageKey = (address: string) =>
   `onboard_signedVersion_${address}`;
 
 type OnboardContextProviderProps = {
+  address: string | undefined;
   showOnboardModal: ShowOnboardModalFunction;
   closeOnboardModal: () => void;
   children: ReactNode;
 };
 
 export const OnboardProvider = ({
+  address,
   showOnboardModal,
   closeOnboardModal,
   children,
 }: OnboardContextProviderProps) => {
-  const { address } = useAccount();
   const [isOnboarded, setIsOnboarded] = useState<boolean | undefined>(
     undefined,
   );

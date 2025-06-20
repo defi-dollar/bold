@@ -4,8 +4,10 @@ import { ReactNode, useCallback, useState } from "react";
 import { OnboardModal } from "../comps/OnboardModal/OnboardModal";
 import { ShowOnboardModalFunction } from "../onboarding/OnboardContext";
 import { OnboardProvider } from "../onboarding/OnboardProvider";
+import { useAccount } from "wagmi";
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
+  const { address } = useAccount();
   const [visible, setVisible] = useState(false);
   const [onSigned, setOnSigned] = useState<VoidFunction | undefined>(undefined);
 
@@ -20,7 +22,11 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <OnboardProvider showOnboardModal={openOnboardModal} closeOnboardModal={closeOnboardModal}>
+    <OnboardProvider
+      address={address}
+      showOnboardModal={openOnboardModal}
+      closeOnboardModal={closeOnboardModal}
+    >
       {children}
       <OnboardModal
         visible={visible}
