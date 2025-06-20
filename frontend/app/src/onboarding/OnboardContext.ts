@@ -6,12 +6,12 @@ export type ShowOnboardModalFunction = (props?: {
 
 type OnboardContextType = {
   showOnboardModal: ShowOnboardModalFunction;
-  setIsOnboarded: (version: number) => void;
+  updateOnboardedVersion: (version: number) => void;
   isOnboarded: boolean | undefined;
 };
 
 export const OnboardContext = createContext<OnboardContextType>({
   showOnboardModal: () => {},
   isOnboarded: undefined,
-  setIsOnboarded: () => {},
+  updateOnboardedVersion: () => {},
 });

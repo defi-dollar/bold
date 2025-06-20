@@ -28,7 +28,7 @@ export const useSignOnboardMessage = (props?: { onSigned?: VoidFunction }) => {
   const [isFetching, setIsFetching] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { signMessageAsync, isPending } = useSignMessage();
-  const { setIsOnboarded } = useContext(OnboardContext);
+  const { updateOnboardedVersion } = useContext(OnboardContext);
 
   const sign = async () => {
     if (!address) {
@@ -57,7 +57,7 @@ export const useSignOnboardMessage = (props?: { onSigned?: VoidFunction }) => {
       setIsSuccess(success);
 
       if (success) {
-        setIsOnboarded(version);
+        updateOnboardedVersion(version);
         props?.onSigned?.();
       }
     } finally {
