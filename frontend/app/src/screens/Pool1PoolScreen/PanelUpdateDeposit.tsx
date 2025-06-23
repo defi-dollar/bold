@@ -29,6 +29,7 @@ import {
 import * as dn from "dnum";
 import { useState } from "react";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
+import { POOL1_CONFIGS } from "@/src/constants";
 
 type ValueUpdateMode = "add" | "remove";
 
@@ -39,7 +40,7 @@ export function PanelUpdateDeposit({
   poolId: string;
   position?: PositionPool1;
 }) {
-  const poolName = poolId.replace("-", "/");
+  const {poolName, lpTokenSymbol, curvePoolUrl} = POOL1_CONFIGS[poolId]!;
   const account = useAccount();
 
   const [mode, setMode] = useState<ValueUpdateMode>("add");
@@ -120,7 +121,7 @@ export function PanelUpdateDeposit({
             contextual={
               <InputTokenBadge
                 background={false}
-                icon={<TokenIcon symbol={BOLD_TOKEN_SYMBOL} />}
+                icon={<TokenIcon symbol={lpTokenSymbol} />}
                 label={`${poolName} LP`}
               />
             }
@@ -165,11 +166,10 @@ export function PanelUpdateDeposit({
             placeholder="0.00"
             secondary={{
               start: (
-                // TODO: link
                 <LinkTextButton
                   external
-                  href="https://google.com"
-                  label={`Create ${poolId} LP token`}
+                  href={curvePoolUrl}
+                  label={`Create ${poolName} LP token`}
                 />
               ),
               end:

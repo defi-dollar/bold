@@ -16,6 +16,7 @@ import { PanelPositions } from "./PanelPositions";
 import { PanelClaimRewards } from "./PanelClaimRewards";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
+import { POOL2_CONFIGS } from "@/src/constants";
 
 const TABS = [
   { action: "positions", label: "Positions" },
@@ -26,7 +27,7 @@ export function Pool2PoolScreen() {
   const params = useParams();
 
   const poolId = params.pool as string;
-  const poolName = poolId.replace("-", "/");
+  const {poolName} = POOL2_CONFIGS[poolId]!;
 
   const tab = TABS.find((tab) => tab.action === params.action) ?? TABS[0];
   if (!tab) {

@@ -15,6 +15,7 @@ import {
 } from "@liquity2/uikit";
 import Link from "next/link";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
+import { POOL2_CONFIGS } from "@/src/constants";
 
 export function Pool2PositionSummary({
   poolId,
@@ -35,7 +36,7 @@ export function Pool2PositionSummary({
   | { poolDeposit: Dnum; prevPoolDeposit: Dnum }
   | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
 )) {
-  const poolName = poolId.replace("-", "/");
+  const {poolName, lpTokenSymbol} = POOL2_CONFIGS[poolId]!;
   const earnPool = usePool2Pool(poolId);
 
   // The earnUpdate tx flow provides static values
@@ -97,8 +98,7 @@ export function Pool2PositionSummary({
             display: "flex",
           })}
         >
-          {/* TODO: Pool Icon */}
-          <TokenIcon symbol="AAVE" size={34} />
+          <TokenIcon symbol={lpTokenSymbol} size={34} />
         </div>
         <div
           className={css({

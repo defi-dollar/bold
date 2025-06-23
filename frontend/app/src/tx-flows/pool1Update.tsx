@@ -12,6 +12,7 @@ import { DEFI } from "@liquity2/uikit";
 import { Pool1PositionSummary } from "../comps/Pool1PositionSummary/Pool1PositionSummary";
 import { getPool1Contracts } from "../contracts";
 import { usePrice } from "../services/Prices";
+import { POOL1_CONFIGS } from "../constants";
 
 const RequestSchema = createRequestSchema(
   "pool1Update",
@@ -56,7 +57,7 @@ export const pool1Update: FlowDeclaration<Pool1UpdateRequest> = {
     const { earnPosition, prevEarnPosition, claimRewards, poolId } = request;
     const { rewards } = earnPosition;
 
-    const poolName = poolId.replace("-", "/");
+    const {poolName} = POOL1_CONFIGS[poolId]!;
 
     const depositChange = dn.sub(earnPosition.deposit, prevEarnPosition.deposit);
 

@@ -12,6 +12,9 @@ export type TokenSymbol =
   | "LUSD"
   | "ETH"
   | "DEFI"
+  | "DUSDBOLD"
+  | "DUSDFRAXBP"
+  | "DEFIWETH"
   | CollateralSymbol;
 
 export type Token = {

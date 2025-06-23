@@ -1,6 +1,6 @@
 "use client";
 
-import type { Address, CollateralSymbol, RiskLevel } from "@/src/types";
+import type { Address, CollateralSymbol, RiskLevel, TokenSymbol } from "@/src/types";
 
 import { norm } from "@liquity2/uikit";
 import * as dn from "dnum";
@@ -85,26 +85,36 @@ export const REDEMPTION_RISK: Record<Exclude<RiskLevel, "high">, number> = {
 export const DUNE_URL = "https://dune.com/defidollar/dashboard";
 export const DUNE_REDEMPTION_URL = 'https://dune.com/queries/4739167/7870054'
 
+// TODO: Update to actual data
 export const POOL1_CONFIGS: Record<
   string,
   {
-    gauge: Address;
+    poolName: string;
     lpToken: Address;
+    lpTokenSymbol: TokenSymbol;
+    gauge: Address;
     rewardToken: Address;
     curvePoolId: string;
+    curvePoolUrl: string;
   }
 > = {
   "DUSD-BOLD": {
+    poolName: "DUSD/BOLD",
+    lpTokenSymbol: "DUSDBOLD",
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
     lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
     curvePoolId: "factory-stable-ng-491",
+    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-491/deposit/"
   },
   "DUSD-FRAXBP": {
+    poolName: "DUSD/FRAXBP",
+    lpTokenSymbol: "DUSDFRAXBP",
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9",
     lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D",
     curvePoolId: "factory-stable-ng-492",
+    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-492/deposit/"
   },
 };
 
@@ -114,15 +124,22 @@ export const POOL2_CONTRACT_ADDRESSES : {
   distributor: '0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae',
 }
 
+// TODO: Update to actual data
 export const POOL2_CONFIGS: Record<string, {
+  poolName: string;
+  lpTokenSymbol: TokenSymbol;
   opportunityId: string;
   uniswapPoolId: string;
   rewardToken: string;
+  uniswapPoolUrl: string;
 }> = {
   'DEFI-WETH': {
+    poolName: "DEFI/WETH",
+    lpTokenSymbol: "DEFIWETH",
     opportunityId: "2424465955469924989",
     uniswapPoolId: '0x21c67e77068de97969ba93d4aab21826d33ca12bb9f565d8496e8fda8a82ca27',
     rewardToken: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+    uniswapPoolUrl: 'https://app.uniswap.org/explore/pools/unichain/0x3258f413c7a88cda2fa8709a589d221a80f6574f63df5a5b6774485d8acc39d9',
   }
 }
 

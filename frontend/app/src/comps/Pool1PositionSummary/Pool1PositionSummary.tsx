@@ -10,6 +10,7 @@ import { DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity
 import Link from "next/link";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 import { usePrice } from "@/src/services/Prices";
+import { POOL1_CONFIGS } from "@/src/constants";
 
 export function Pool1PositionSummary({
   poolId,
@@ -33,7 +34,7 @@ export function Pool1PositionSummary({
     | { poolDeposit?: undefined; prevPoolDeposit?: undefined }
   ))
 {
-  const poolName = poolId.replace("-", "/");
+  const {poolName, lpTokenSymbol} = POOL1_CONFIGS[poolId]!;
   const earnPool = usePool1Pool(poolId);
   const {data: lpTokenPrice} = usePrice(poolId);
 
@@ -96,7 +97,7 @@ export function Pool1PositionSummary({
             display: "flex",
           })}
         >
-          <TokenIcon symbol="CRV" size={34} />
+          <TokenIcon symbol={lpTokenSymbol} size={34} />
         </div>
         <div
           className={css({

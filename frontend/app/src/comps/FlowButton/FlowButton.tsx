@@ -20,7 +20,6 @@ export function FlowButton({
   label?: string;
 }) {
   const txFlow = useTransactionFlow();
-  const breakpointName = useBreakpointName();
   return (
     <div
       className={css({
@@ -30,18 +29,9 @@ export function FlowButton({
       })}
     >
       <ConnectWarningBox />
-      <Button
-        className="flow-button"
+      <FlowButtonView
         disabled={disabled || !request}
         label={label ?? "Next: Summary"}
-        mode="primary"
-        size={breakpointName === "small" ? "medium" : "large"}
-        wide
-        style={{
-          height: breakpointName === "small" ? 56 : 72,
-          fontSize: breakpointName === "small" ? 20 : 24,
-          borderRadius: breakpointName === "small" ? 56 : 120,
-        }}
         onClick={() => {
           if (typeof request === "function") {
             request = request();
@@ -53,4 +43,32 @@ export function FlowButton({
       />
     </div>
   );
+}
+
+export function FlowButtonView({
+  disabled,
+  label,
+  onClick,
+}: {
+  disabled?: boolean;
+  label?: string;
+  onClick?: () => void;
+}) {
+  const breakpointName = useBreakpointName();
+  return (
+    <Button
+      className="flow-button"
+      disabled={disabled}
+      label={label}
+      mode="primary"
+      size={breakpointName === "small" ? "medium" : "large"}
+      wide
+      style={{
+        height: breakpointName === "small" ? 56 : 72,
+        fontSize: breakpointName === "small" ? 20 : 24,
+        borderRadius: breakpointName === "small" ? 56 : 120,
+      }}
+      onClick={onClick}
+    />
+  )
 }
