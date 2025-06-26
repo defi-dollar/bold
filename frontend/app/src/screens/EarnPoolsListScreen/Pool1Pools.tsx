@@ -4,11 +4,11 @@ import { POOL1_POOL_IDS } from "@/src/app/_constants";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
-import { usePool1Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { a, useTransition } from "@react-spring/web";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";
+import { usePool1Position } from "@/src/pool1-utils";
 
 export function Pool1Pools() {
   const poolsTransition = useTransition(POOL1_POOL_IDS, {

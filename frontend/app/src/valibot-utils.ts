@@ -273,6 +273,16 @@ export function vPositionPool2() {
       amounts: v.array(v.bigint()),
       proofs: v.array(v.array(vHash())),
     }),
+    breakdowns: v.array(v.object({
+      poolId: v.union([v.string(), v.undefined()]),
+      protocol: v.union([v.string(), v.undefined()]),
+      campaignId: v.string(),
+      amount: vDnum(),
+      token: v.object({
+        address: vAddress(),
+        symbol: v.string(),
+      }),
+    })),
   });
 }
 

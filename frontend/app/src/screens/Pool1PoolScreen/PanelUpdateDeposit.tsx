@@ -8,10 +8,6 @@ import content from "@/src/content";
 import { DNUM_0, dnumMax } from "@/src/dnum-utils";
 import { parseInputFloat } from "@/src/form-utils";
 import { fmtnum } from "@/src/formatting";
-import {
-  isPool1PositionActive,
-  usePool1Pool,
-} from "@/src/liquity-utils";
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
@@ -30,6 +26,7 @@ import * as dn from "dnum";
 import { useState } from "react";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { POOL1_CONFIGS } from "@/src/constants";
+import { isPool1PositionActive, usePool1Pool } from "@/src/pool1-utils";
 
 type ValueUpdateMode = "add" | "remove";
 

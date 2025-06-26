@@ -5,7 +5,6 @@ import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import { usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, Tabs } from "@liquity2/uikit";
@@ -17,6 +16,7 @@ import { PanelClaimRewards } from "./PanelClaimRewards";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
 import { ConnectWarningBox } from "@/src/comps/ConnectWarningBox/ConnectWarningBox";
 import { POOL2_CONFIGS } from "@/src/constants";
+import { usePool2Position } from "@/src/pool2-utils";
 
 const TABS = [
   { action: "positions", label: "Positions" },

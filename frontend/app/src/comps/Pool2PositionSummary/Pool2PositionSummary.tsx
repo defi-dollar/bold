@@ -4,7 +4,6 @@ import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
-import { isPool2PositionActive, usePool2Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import {
   DEFI,
@@ -16,6 +15,7 @@ import {
 import Link from "next/link";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 import { POOL2_CONFIGS } from "@/src/constants";
+import { usePool2Pool, isPool2PositionActive } from "@/src/pool2-utils";
 
 export function Pool2PositionSummary({
   poolId,

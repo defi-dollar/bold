@@ -4,13 +4,13 @@ import * as dn from "dnum";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TagPreview } from "@/src/comps/TagPreview/TagPreview";
-import { isPool1PositionActive, usePool1Pool } from "@/src/liquity-utils";
 import { css } from "@/styled-system/css";
 import { DEFI, IconArrowRight, IconPlus, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import Link from "next/link";
 import { PoolPositionAmount } from "../PoolPosition/PoolPositionAmount";
 import { usePrice } from "@/src/services/Prices";
 import { POOL1_CONFIGS } from "@/src/constants";
+import { usePool1Pool, isPool1PositionActive } from "@/src/pool1-utils";
 
 export function Pool1PositionSummary({
   poolId,

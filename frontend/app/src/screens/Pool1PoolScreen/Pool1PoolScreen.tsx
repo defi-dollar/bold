@@ -5,10 +5,6 @@ import { Screen } from "@/src/comps/Screen/Screen";
 import { ScreenCard } from "@/src/comps/Screen/ScreenCard";
 import { Spinner } from "@/src/comps/Spinner/Spinner";
 import content from "@/src/content";
-import {
-  usePool1Pool,
-  usePool1Position,
-} from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconEarn, Tabs } from "@liquity2/uikit";
@@ -18,6 +14,7 @@ import { match } from "ts-pattern";
 import { Pool1PositionSummary } from "@/src/comps/Pool1PositionSummary/Pool1PositionSummary";
 import { PanelUpdateDeposit } from "./PanelUpdateDeposit";
 import { PanelClaimRewards } from "./PanelClaimRewards";
+import { usePool1Position, usePool1Pool } from "@/src/pool1-utils";
 
 const TABS = [
   { action: "deposit", label: content.earnScreen.tabs.deposit },

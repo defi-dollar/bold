@@ -6,12 +6,14 @@ import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/Transact
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { vPositionPool2 } from "@/src/valibot-utils";
 import * as v from "valibot";
-import { DEFI } from "@liquity2/uikit";
+import { DEFI, VFlex } from "@liquity2/uikit";
 import { createRequestSchema, verifyTransaction } from "./shared";
 import { getPool2Contracts } from "../contracts";
 import { Pool2PositionSummary } from "../comps/Pool2PositionSummary/Pool2PositionSummary";
 import { DNUM_0 } from "../dnum-utils";
 import { usePrice } from "../services/Prices";
+import { POOL2_CONFIGS } from "../constants";
+import { css } from "@/styled-system/css";
 
 const RequestSchema = createRequestSchema(
   "pool2ClaimRewards",
@@ -66,6 +68,35 @@ export const pool2ClaimRewards: FlowDeclaration<Pool2ClaimRewardsRequest> = {
             ),
           ].filter(Boolean)}
         />
+        <VFlex gap={4} className={css({
+          ml: 16,
+        })}>
+          {
+            request.earnPosition.breakdowns.map((breakdown, index) => {
+              const poolConfig = Object.values(POOL2_CONFIGS).find(config => config.uniswapPoolId === breakdown.poolId);
+              const poolName = poolConfig?.poolName ?? 'Unknown';
+              return (
+                <TransactionDetailsRow
+                  key={index}
+                  label={`${poolName} rewards`}
+                  value={[<Amount
+                    key="start"
+                    value={breakdown.amount}
+                    suffix={` ${breakdown.token.symbol}`} />,
+                  defiPrice && (
+                    <Amount
+                      key="end"
+                      value={dn.multiply(
+                        breakdown.amount,
+                        defiPrice
+                      )}
+                      prefix="$" />
+                  )
+                  ]} />
+              );
+            })
+          }
+        </VFlex>
       </>
     );
   },

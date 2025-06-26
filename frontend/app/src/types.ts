@@ -128,6 +128,7 @@ export type PositionPool2 = {
   };
   positions: Pool2Position[];
   claimData: Pool2ClaimData;
+  breakdowns: Pool2Breakdown[];
 };
 
 export type Pool2Position = {
@@ -145,6 +146,17 @@ export type Pool2ClaimData = {
   tokens: Address[];
   amounts: bigint[];
   proofs: Hash[][];
+}
+
+export type Pool2Breakdown = {
+  poolId: string | undefined;
+  protocol: string | undefined;
+  campaignId: string;
+  amount: Dnum;
+  token: {
+    address: Address;
+    symbol: string;
+  };
 }
 
 export type PositionStake = {

@@ -53,7 +53,7 @@ export default function Layout({
                 <DemoMode>
                   <Ethereum>
                     <Blocking>
-                      <OnboardingProvider>
+                      {/* <OnboardingProvider> */}
                         <TransactionFlow>
                           <About>
                             <AppLayout>
@@ -61,7 +61,7 @@ export default function Layout({
                             </AppLayout>
                           </About>
                         </TransactionFlow>
-                      </OnboardingProvider>
+                      {/* </OnboardingProvider> */}
                     </Blocking>
                   </Ethereum>
                 </DemoMode>

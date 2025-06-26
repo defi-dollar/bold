@@ -4,12 +4,12 @@ import { POOL2_POOL_IDS } from "@/src/app/_constants";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
-import { usePool2Position } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import { HFlex, IconInfo, VFlex } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import { Pool2PositionSummary } from "@/src/comps/Pool2PositionSummary/Pool2PositionSummary";
+import { usePool2Position } from "@/src/pool2-utils";
 
 export function Pool2Pools() {
   const poolsTransition = useTransition(
