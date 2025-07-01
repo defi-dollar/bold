@@ -39,7 +39,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sharp": "^0.34.1",
-    "tos-onboard-provider": "github:pigeon-240514/tos-onboard-provider#v1.0.1",
+    "tos-onboard-provider": "github:pigeon-240514/tos-onboard-provider#v1.0.4",
     "ts-pattern": "^5.7.0",
     "valibot": "^1.1.0",
     "viem": "^2.29.0",
