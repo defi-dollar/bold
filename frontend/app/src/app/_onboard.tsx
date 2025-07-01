@@ -2,7 +2,11 @@
 
 import { ReactNode, useCallback, useState } from "react";
 import { OnboardModal } from "../comps/OnboardModal/OnboardModal";
-import { OpenOnboardModalFunction, OnboardProvider } from 'tos-onboard-provider';
+import {
+  OpenOnboardModalFunction,
+  OnboardCoreProvider,
+  OnboardModalProvider,
+} from "tos-onboard-provider";
 import { useAccount, useSignMessage } from "wagmi";
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
@@ -22,19 +26,22 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <OnboardProvider
+    <OnboardCoreProvider
       address={address}
-      apiEndpoint={process.env.NEXT_PUBLIC_TOS_ONBOARD_API_URL ?? ''}
-      openOnboardModal={openOnboardModal}
-      closeOnboardModal={closeOnboardModal}
+      apiEndpoint={process.env.NEXT_PUBLIC_TOS_ONBOARD_API_URL ?? ""}
       signMessage={signMessageAsync}
     >
-      {children}
-      <OnboardModal
-        visible={visible}
-        onClose={closeOnboardModal}
-        onSigned={onSigned}
-      />
-    </OnboardProvider>
+      <OnboardModalProvider
+        openOnboardModal={openOnboardModal}
+        closeOnboardModal={closeOnboardModal}
+      >
+        {children}
+        <OnboardModal
+          visible={visible}
+          onClose={closeOnboardModal}
+          onSigned={onSigned}
+        />
+      </OnboardModalProvider>
+    </OnboardCoreProvider>
   );
 };

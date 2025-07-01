@@ -156,8 +156,8 @@ importers:
         specifier: ^0.34.1
         version: 0.34.1
       tos-onboard-provider:
-        specifier: github:pigeon-240514/tos-onboard-provider#v1.0.1
-        version: github.com/pigeon-240514/tos-onboard-provider/57ffd07880814af56af2206730d8d9e857d40c1c(@tanstack/react-query@5.75.4)(react@19.1.0)
+        specifier: github:pigeon-240514/tos-onboard-provider#v1.0.4
+        version: github.com/pigeon-240514/tos-onboard-provider/20edfb7b1220802a34b98a8ac6b64a2e9543e0ed(@tanstack/react-query@5.75.4)(react@19.1.0)
       ts-pattern:
         specifier: ^5.7.0
         version: 5.7.0
@@ -8977,7 +8977,6 @@ packages:
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
-    dev: false
 
   /axios@1.9.0:
     resolution: {integrity: sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==}
@@ -8987,6 +8986,7 @@ packages:
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
+    dev: false
 
   /axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -11831,7 +11831,7 @@ packages:
         optional: true
     dependencies:
       '@solidity-parser/parser': 0.14.5
-      axios: 1.9.0
+      axios: 1.10.0
       cli-table3: 0.5.1
       colors: 1.4.0
       ethereum-cryptography: 1.2.0
@@ -21809,11 +21809,11 @@ packages:
     engines: {node: '>= 12.17.0'}
     hasBin: true
 
-  github.com/pigeon-240514/tos-onboard-provider/57ffd07880814af56af2206730d8d9e857d40c1c(@tanstack/react-query@5.75.4)(react@19.1.0):
-    resolution: {tarball: https://codeload.github.com/pigeon-240514/tos-onboard-provider/tar.gz/57ffd07880814af56af2206730d8d9e857d40c1c}
-    id: github.com/pigeon-240514/tos-onboard-provider/57ffd07880814af56af2206730d8d9e857d40c1c
+  github.com/pigeon-240514/tos-onboard-provider/20edfb7b1220802a34b98a8ac6b64a2e9543e0ed(@tanstack/react-query@5.75.4)(react@19.1.0):
+    resolution: {tarball: https://codeload.github.com/pigeon-240514/tos-onboard-provider/tar.gz/20edfb7b1220802a34b98a8ac6b64a2e9543e0ed}
+    id: github.com/pigeon-240514/tos-onboard-provider/20edfb7b1220802a34b98a8ac6b64a2e9543e0ed
     name: tos-onboard-provider
-    version: 1.0.1
+    version: 1.0.4
     peerDependencies:
       '@tanstack/react-query': ^5.74.4
       react: ^18.2.0

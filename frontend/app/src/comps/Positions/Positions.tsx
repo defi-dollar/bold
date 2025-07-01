@@ -120,7 +120,7 @@ function PositionsGroup({
   title: (mode: Mode) => ReactNode;
   showNewPositionCard: boolean;
 }) {
-  columns ??= mode === "actions" ? actionCards.length : 3;
+  columns ??= 3;
 
   const title_ = title(mode);
 
