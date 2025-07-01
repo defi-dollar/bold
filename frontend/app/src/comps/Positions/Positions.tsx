@@ -266,7 +266,7 @@ function PositionsGroup({
             },
           })}
           style={{
-            gridTemplateColumns: `repeat(${4}, 1fr)`,
+            gridTemplateColumns: `repeat(${columns}, 1fr)`,
             gridAutoRows: cardHeight,
           }}
         >

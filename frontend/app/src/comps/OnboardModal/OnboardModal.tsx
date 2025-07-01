@@ -1,4 +1,3 @@
-import { useSignOnboardMessage } from "@/src/onboarding/useOnboard";
 import { Button, Modal } from "@liquity2/uikit";
 import { css } from "@/styled-system/css";
 import { useEffect } from "react";
@@ -6,6 +5,7 @@ import { useAccount } from "wagmi";
 import { Logo } from "../Logo/Logo";
 import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
 import content from "@/src/content";
+import { useSignOnboardMessage } from "tos-onboard-provider";
 
 export const OnboardModal = ({
   visible,

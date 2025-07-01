@@ -2,14 +2,16 @@
 
 import { ReactNode, useCallback, useState } from "react";
 import { OnboardModal } from "../comps/OnboardModal/OnboardModal";
-import { ShowOnboardModalFunction } from "../onboarding/OnboardContext";
-import { OnboardProvider } from "../onboarding/OnboardProvider";
+import { OpenOnboardModalFunction, OnboardProvider } from 'tos-onboard-provider';
+import { useAccount, useSignMessage } from "wagmi";
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
+  const { address } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const [visible, setVisible] = useState(false);
   const [onSigned, setOnSigned] = useState<VoidFunction | undefined>(undefined);
 
-  const openOnboardModal = useCallback<ShowOnboardModalFunction>((props) => {
+  const openOnboardModal = useCallback<OpenOnboardModalFunction>((props) => {
     setVisible(true);
     setOnSigned(props?.onSigned);
   }, []);
@@ -20,7 +22,13 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <OnboardProvider showOnboardModal={openOnboardModal} closeOnboardModal={closeOnboardModal}>
+    <OnboardProvider
+      address={address}
+      apiEndpoint={process.env.NEXT_PUBLIC_TOS_ONBOARD_API_URL ?? ''}
+      openOnboardModal={openOnboardModal}
+      closeOnboardModal={closeOnboardModal}
+      signMessage={signMessageAsync}
+    >
       {children}
       <OnboardModal
         visible={visible}

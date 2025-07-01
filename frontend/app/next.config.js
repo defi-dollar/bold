@@ -28,6 +28,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ["tos-onboard-provider"],
 };
 
 export default (process.env.ANALYZE === "true" ? bundleAnalyzer(nextConfig) : nextConfig);
