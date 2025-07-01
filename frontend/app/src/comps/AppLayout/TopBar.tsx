@@ -17,6 +17,11 @@ import Link from "next/link";
 import { AccountButton } from "./AccountButton";
 import { Menu } from "./Menu";
 import { MenuDrawerButton } from "./MenuDrawer";
+import { usePool0Rewards } from "@/src/pool0-utils";
+import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
+import { Amount } from "../Amount/Amount";
+import { useBreakpoint } from "@/src/breakpoints";
+import { useState } from "react";
 
 const menuItems: MenuItem[] = [
   [content.menu.dashboard, "/", IconDashboard],
@@ -26,6 +31,12 @@ const menuItems: MenuItem[] = [
 ];
 
 export function TopBar() {
+  const pool0Rewards = usePool0Rewards();
+  const [compact, setCompact] = useState(false);
+  useBreakpoint(({ medium }) => {
+    setCompact(!medium);
+  });
+
   return (
     <div
       className={css({
@@ -147,7 +158,7 @@ export function TopBar() {
         <div
           className={css({
             display: "grid",
-            gridTemplateColumns: "1fr min-content",
+            gridTemplateColumns: "min-content min-content min-content",
             justifyContent: "end",
             gap: {
               base: 8,
@@ -155,6 +166,20 @@ export function TopBar() {
             },
           })}
         >
+          {!compact && (
+            <LinkTextButton
+              href="/pool0"
+              label={
+                pool0Rewards.data ? (
+                  <>
+                    Rewards: <Amount percentage value={pool0Rewards.data} />
+                  </>
+                ) : (
+                  "Rewards"
+                )
+              }
+            />
+          )}
           <div
             className={css({
               display: "grid",

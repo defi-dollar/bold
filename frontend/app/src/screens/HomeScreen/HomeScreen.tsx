@@ -23,6 +23,7 @@ import * as dn from "dnum";
 import { useState } from "react";
 import { HomeTable } from "./HomeTable";
 import { sortBranches } from "@/src/utils";
+import { usePool0Rewards } from "@/src/pool0-utils";
 
 export function HomeScreen() {
   const account = useAccount();
@@ -71,8 +72,9 @@ function BorrowTable({
 }) {
   const columns: ReactNode[] = [
     "Collateral",
+    "Rewards", // TODO: Tooltip here
     <span title="Average interest rate, per annum">
-      {compact ? "Rate" : "Avg rate, p.a."}
+      {compact ? "Rate" : "Avg rate"}
     </span>,
     <span title="Maximum Loan-to-Value ratio">
       Max LTV
@@ -124,7 +126,7 @@ function EarnTable({
   return (
     <HomeTable
       title={`Earn rewards with ${BOLD_TOKEN_SYMBOL}`}
-      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & (staked) ETH rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
+      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & collateral token rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
       icon={<IconEarn />}
       columns={columns}
       rows={getBranches().sort(sortBranches).map(({ symbol }) => (
@@ -149,6 +151,7 @@ function BorrowingRow({
   const collateral = getCollToken(branch.id);
   const avgInterestRate = useAverageInterestRate(branch.id);
   const branchDebt = useBranchDebt(branch.id);
+  const pool0Rewards = usePool0Rewards();
 
   const maxLtv = collateral?.collateralRatio && dn.gt(collateral.collateralRatio, 0)
     ? dn.div(DNUM_1, collateral.collateralRatio)
@@ -167,6 +170,13 @@ function BorrowingRow({
           <TokenIcon symbol={symbol} size="mini" />
           <span>{collateral?.name}</span>
         </div>
+      </td>
+      <td>
+        <Amount
+          fallback="…"
+          percentage
+          value={pool0Rewards.data}
+        />
       </td>
       <td>
         <Amount
