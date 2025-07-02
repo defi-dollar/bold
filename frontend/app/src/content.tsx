@@ -3,8 +3,10 @@
 
 import { BOLD_TOKEN_SYMBOL, DEFI, TokenIcon } from "@liquity2/uikit";
 import type { ReactNode as N } from "react";
+import * as dn from "dnum";
 
 import { css } from "@/styled-system/css";
+import { pool0RedemptionPrice } from "./pool0-utils";
 
 export default {
   // Used in the top bar and other places
@@ -433,6 +435,12 @@ export default {
     ),
     subheading:
       "A Uniswap v4 position earns Pool2 rewards automatically. Deposit DEFI liquidity in Uniswap v4 to earn the rewards.",
+  },
+  pool0Pools: {
+    infoTooltips: {
+      rewardAPR: `calculated by on chain ${DEFI.name} price, while redemption fee ${dn.format(pool0RedemptionPrice)} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} is not included`,
+      redemptionCost: `Redemption cost at ${dn.format(pool0RedemptionPrice)} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} token to redeem`,
+    }
   },
   // Stake screen
   stakeScreen: {

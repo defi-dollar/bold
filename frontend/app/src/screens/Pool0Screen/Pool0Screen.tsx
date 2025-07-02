@@ -9,13 +9,16 @@ import {
   BOLD_TOKEN_SYMBOL,
   DEFI,
   HFlex,
+  InfoTooltip,
+  Tabs,
   TokenIcon,
   VFlex,
 } from "@liquity2/uikit";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { usePool0Rewards } from "@/src/pool0-utils";
-import { FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
+import { FlowButton, FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
+import content from "@/src/content";
 
 export function Pool0Screen() {
   return (
@@ -67,6 +70,7 @@ export function Pool0Screen() {
       <VFlex gap={24}>
         <RewardsCard />
         <RedeemCard />
+        {/* <RedeemReadonlyCard /> */}
       </VFlex>
     </div>
   );
@@ -147,7 +151,7 @@ const RewardsCard = () => {
   );
 };
 
-const RedeemCard = () => {
+const RedeemReadonlyCard = () => {
   const { data: rewardsRate } = usePool0Rewards();
   const deposits = dnum18(1000000000000000000n);
   const redemptionCost = dnum18(1000000000000000000n);
@@ -182,10 +186,16 @@ const RedeemCard = () => {
               <LinkTextButton label="Deposit to earn" href="/" />
             </VFlex>
           </RedeemRow>
-          <RedeemRow label="Rewards APR">
+          <RedeemRow
+            label="Rewards APR"
+            tooltip={content.pool0Pools.infoTooltips.rewardAPR}
+          >
             <Amount value={rewardsRate} percentage fallback="-" />
           </RedeemRow>
-          <RedeemRow label="Redemption cost">
+          <RedeemRow
+            label="Redemption cost"
+            tooltip={content.pool0Pools.infoTooltips.redemptionCost}
+          >
             <Amount
               value={redemptionCost}
               suffix={` ${BOLD_TOKEN_SYMBOL}`}
@@ -199,16 +209,117 @@ const RedeemCard = () => {
   );
 };
 
+const RedeemCard = () => {
+  const proportionOptions = [
+    { label: "25%", value: dnum18(250000000000000000n) },
+    { label: "50%", value: dnum18(500000000000000000n) },
+    { label: "75%", value: dnum18(750000000000000000n) },
+    { label: "All", value: dnum18(1000000000000000000n) },
+  ];
+  const [proportion, setProportion] = useState(proportionOptions[3]!.value);
+  const rewardsAmount = dnum18(87000000000000000000n);
+  const redemptionPrice = dnum18(1000000000000000000n);
+  const redemptionCost = dn.mul(
+    dn.mul(rewardsAmount, proportion),
+    redemptionPrice
+  );
+  return (
+    <VFlex gap={48}>
+      <VFlex
+        gap={24}
+        className={css({
+          padding: 24,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderStyle: "solid",
+          color: "content",
+          background: "infoSurface",
+          borderColor: "infoSurfaceBorder",
+          minHeight: 180,
+        })}
+      >
+        <h2
+          className={css({
+            fontSize: 16,
+            fontWeight: 700,
+            color: "content",
+          })}
+        >
+          Redeem
+        </h2>
+        <VFlex gap={24}>
+          <RedeemRow label="Redemption proportion">
+            <Tabs
+              compact
+              items={proportionOptions.map((option) => ({
+                label: option.label,
+                panelId: `panel-${option.value}`,
+                tabId: `tab-${option.value}`,
+              }))}
+              onSelect={(index) => {
+                setProportion(proportionOptions[index]!.value);
+              }}
+              selected={proportionOptions.findIndex((option) =>
+                dn.eq(option.value, proportion)
+              )}
+            />
+          </RedeemRow>
+          <RedeemRow label="Redemption DEFI amount">
+            <Amount
+              value={rewardsAmount}
+              suffix={` ${DEFI.symbol}`}
+              fallback="-"
+            />
+          </RedeemRow>
+          <RedeemRow label="Redemption DEFI amount">
+            <Amount
+              value={rewardsAmount}
+              suffix={` ${DEFI.symbol}`}
+              fallback="-"
+            />
+          </RedeemRow>
+          <RedeemRow
+            label="Redemption cost"
+            tooltip={content.pool0Pools.infoTooltips.redemptionCost}
+          >
+            <Amount
+              value={redemptionCost}
+              suffix={` ${BOLD_TOKEN_SYMBOL}`}
+              fallback="-"
+            />
+          </RedeemRow>
+        </VFlex>
+      </VFlex>
+      <FlowButton
+        label="Redeem"
+        request={{
+          flowId: "pool0ClaimRewards",
+          backLink: [`/pool0`, "Back to DEFI Rewards"],
+          successLink: ["/", "Go to the Dashboard"],
+          successMessage: "The rewards have been claimed successfully.",
+          totalRewardsAmount: rewardsAmount,
+          redemptionProportion: proportion,
+        }}
+      />
+    </VFlex>
+  );
+};
+
 const RedeemRow = ({
   label,
   children,
+  tooltip,
 }: {
   label: ReactNode;
   children: ReactNode;
+  tooltip?: string;
 }) => {
   return (
     <HFlex justifyContent="space-between" alignItems="start" gap={24}>
-      {label}
+      <HFlex gap={4}>
+        {label}
+        {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
+      </HFlex>
       {children}
     </HFlex>
   );

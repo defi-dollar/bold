@@ -38,9 +38,10 @@ import { unstakeDeposit, type UnstakeDepositRequest } from "@/src/tx-flows/unsta
 import { updateBorrowPosition, type UpdateBorrowPositionRequest } from "@/src/tx-flows/updateBorrowPosition";
 import { updateLeveragePosition, type UpdateLeveragePositionRequest } from "@/src/tx-flows/updateLeveragePosition";
 import { updateLoanInterestRate, type UpdateLoanInterestRateRequest } from "@/src/tx-flows/updateLoanInterestRate";
-import { pool1Update, Pool1UpdateRequest } from "../tx-flows/pool1Update";
-import { pool1ClaimRewards, Pool1ClaimRewardsRequest } from "../tx-flows/pool1ClaimRewards";
-import { pool2ClaimRewards, Pool2ClaimRewardsRequest } from "../tx-flows/pool2ClaimRewards";
+import { pool1Update, type Pool1UpdateRequest } from "../tx-flows/pool1Update";
+import { pool1ClaimRewards, type Pool1ClaimRewardsRequest } from "../tx-flows/pool1ClaimRewards";
+import { pool2ClaimRewards, type Pool2ClaimRewardsRequest } from "../tx-flows/pool2ClaimRewards";
+import { pool0ClaimRewards, type Pool0ClaimRewardsRequest } from "../tx-flows/pool0ClaimRewards";
 
 export type FlowRequestMap = {
   "allocateVotingPower": AllocateVotingPowerRequest;
@@ -51,6 +52,7 @@ export type FlowRequestMap = {
   "pool1ClaimRewards": Pool1ClaimRewardsRequest;
   "pool1Update": Pool1UpdateRequest;
   "pool2ClaimRewards": Pool2ClaimRewardsRequest;
+  "pool0ClaimRewards": Pool0ClaimRewardsRequest;
   "openBorrowPosition": OpenBorrowPositionRequest;
   "openLeveragePosition": OpenLeveragePositionRequest;
   "stakeClaimRewards": StakeClaimRewardsRequest;
@@ -91,6 +93,7 @@ export const flows: FlowsMap = {
   pool1ClaimRewards,
   pool1Update,
   pool2ClaimRewards,
+  pool0ClaimRewards,
   openBorrowPosition,
   openLeveragePosition,
   stakeClaimRewards,
