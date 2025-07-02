@@ -54,7 +54,7 @@ export function Pool0Screen() {
             },
           })}
         >
-          DEFI Rewards (Pool0)
+          {DEFI.name} Rewards (Pool0)
         </h1>
         <div
           className={css({
@@ -63,7 +63,7 @@ export function Pool0Screen() {
             color: "contentAlt",
           })}
         >
-          View, manage and claim your DEFI rewards earned from depositing asset
+          View, manage and claim your {DEFI.name} rewards earned from depositing asset
           as collateral.
         </div>
       </header>
@@ -103,7 +103,7 @@ const RewardsCard = () => {
           color: "content",
         })}
       >
-        DEFI Rewards
+        {DEFI.name} Rewards
       </h2>
       <HFlex alignItems="start" justifyContent="start">
         <HFlex
@@ -264,14 +264,7 @@ const RedeemCard = () => {
               )}
             />
           </RedeemRow>
-          <RedeemRow label="Redemption DEFI amount">
-            <Amount
-              value={rewardsAmount}
-              suffix={` ${DEFI.symbol}`}
-              fallback="-"
-            />
-          </RedeemRow>
-          <RedeemRow label="Redemption DEFI amount">
+          <RedeemRow label={`Redemption ${DEFI.name} amount`}>
             <Amount
               value={rewardsAmount}
               suffix={` ${DEFI.symbol}`}
@@ -294,7 +287,7 @@ const RedeemCard = () => {
         label="Redeem"
         request={{
           flowId: "pool0ClaimRewards",
-          backLink: [`/pool0`, "Back to DEFI Rewards"],
+          backLink: [`/pool0`, `Back to ${DEFI.name} Rewards`],
           successLink: ["/", "Go to the Dashboard"],
           successMessage: "The rewards have been claimed successfully.",
           totalRewardsAmount: rewardsAmount,
