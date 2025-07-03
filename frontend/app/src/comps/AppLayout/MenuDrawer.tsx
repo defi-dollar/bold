@@ -322,7 +322,7 @@ function Item({
         color: "content",
         cursor: "pointer",
         userSelect: "none",
-        overflow: "hidden",
+        overflow: "visible",
         textOverflow: "ellipsis",
       })}
       style={{

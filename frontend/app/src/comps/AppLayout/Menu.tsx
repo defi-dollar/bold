@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 import { css } from "@/styled-system/css";
 import { token } from "@/styled-system/tokens";
@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { MenuItem } from "./MenuItem";
 
 export type MenuItem = [
-  label: string,
+  label: ReactNode,
   url: string,
   Icon: ComponentType<{}>,
 ];

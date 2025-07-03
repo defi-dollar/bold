@@ -23,12 +23,15 @@ import { Amount } from "../Amount/Amount";
 import { useBreakpoint } from "@/src/breakpoints";
 import { useState } from "react";
 
-const menuItems: MenuItem[] = [
-  [content.menu.dashboard, "/", IconDashboard],
-  [content.menu.borrow, "/borrow", IconBorrow],
-  [content.menu.earn, "/earn", IconEarn],
-  // [content.menu.stake, "/stake", IconStake],
-];
+const IconRewards = () => {
+  return (
+    <div className={css({
+      transform: "rotate(45deg)",
+    })}>
+      <IconEarn size={24} />
+    </div>
+  );
+};
 
 export function TopBar() {
   const pool0Rewards = usePool0Rewards();
@@ -36,6 +39,18 @@ export function TopBar() {
   useBreakpoint(({ medium }) => {
     setCompact(!medium);
   });
+
+  const menuItems: MenuItem[] = [
+    [content.menu.dashboard, "/", IconDashboard],
+    [content.menu.borrow, "/borrow", IconBorrow],
+    [content.menu.earn, "/earn", IconEarn], // TODO: Add icon
+    // [content.menu.stake, "/stake", IconStake],
+    [
+      "Rewards",
+      "/pool0",
+      IconRewards,
+    ],
+  ];
 
   return (
     <div
