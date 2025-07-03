@@ -63,8 +63,8 @@ export function Pool0Screen() {
             color: "contentAlt",
           })}
         >
-          View, manage and claim your {DEFI.name} rewards earned from depositing asset
-          as collateral.
+          View, manage and claim your {DEFI.name} rewards earned from depositing
+          asset as collateral.
         </div>
       </header>
       <VFlex gap={24}>
@@ -249,20 +249,22 @@ const RedeemCard = () => {
         </h2>
         <VFlex gap={24}>
           <RedeemRow label="Redemption proportion">
-            <Tabs
-              compact
-              items={proportionOptions.map((option) => ({
-                label: option.label,
-                panelId: `panel-${option.value}`,
-                tabId: `tab-${option.value}`,
-              }))}
-              onSelect={(index) => {
-                setProportion(proportionOptions[index]!.value);
-              }}
-              selected={proportionOptions.findIndex((option) =>
-                dn.eq(option.value, proportion)
-              )}
-            />
+            <div>
+              <Tabs
+                compact
+                items={proportionOptions.map((option) => ({
+                  label: option.label,
+                  panelId: `panel-${option.value}`,
+                  tabId: `tab-${option.value}`,
+                }))}
+                onSelect={(index) => {
+                  setProportion(proportionOptions[index]!.value);
+                }}
+                selected={proportionOptions.findIndex((option) =>
+                  dn.eq(option.value, proportion)
+                )}
+              />
+            </div>
           </RedeemRow>
           <RedeemRow label={`Redemption ${DEFI.name} amount`}>
             <Amount
