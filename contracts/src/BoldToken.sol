@@ -18,7 +18,7 @@ import "./Interfaces/IBoldToken.sol";
 
 contract BoldToken is Ownable, IBoldToken, ERC20Permit {
     string internal constant _NAME = "DeFi Dollar";
-    string internal constant _SYMBOL = "DUSD";
+    string internal constant _SYMBOL = "USDFI";
 
     // --- Addresses ---
 

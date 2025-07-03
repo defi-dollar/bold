@@ -21,7 +21,7 @@ contract TroveNFT is ERC721, ITroveNFT {
     constructor(IAddressesRegistry _addressesRegistry)
         ERC721(
             string.concat("DeFi Dollar - ", _addressesRegistry.collToken().name()),
-            string.concat("Dusd_", _addressesRegistry.collToken().symbol())
+            string.concat("USDFI", _addressesRegistry.collToken().symbol())
         )
     {
         troveManager = _addressesRegistry.troveManager();

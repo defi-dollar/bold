@@ -43,8 +43,6 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     IWETH WETH;
     IERC20 USDC;
 
-    uint256 STALENESS_THRESHOLD = 24 hours;
-
     // Curve
     ICurveStableswapNGFactory curveStableswapFactory;
     // https://docs.curve.fi/deployments/amm/#stableswap-ng
@@ -111,6 +109,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         address tokenUsdFeed;
         address tokenEthFeed;
         bytes32 pythFeedId;
+        uint256 stalenessThreshold;
     }
 
     struct DeploymentVars {
@@ -135,7 +134,7 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
     }
 
     function run() external {
-        string memory saltString = "DeFiDollar_v2";
+        string memory saltString = "DeFiDollar-USDFI";
         SALT = keccak256(abi.encodePacked(saltString));
 
         if (vm.envBytes("DEPLOYER").length == 20) {
@@ -160,16 +159,17 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
 
         TroveManagerParams[] memory troveManagerParamsArray = new TroveManagerParams[](10);
 
-        troveManagerParamsArray[0] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // FXS
-        troveManagerParamsArray[1] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // LINK
-        troveManagerParamsArray[2] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // UNI
-        troveManagerParamsArray[3] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // SKY
-        troveManagerParamsArray[4] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // CRV
-        troveManagerParamsArray[5] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // AAVE
-        troveManagerParamsArray[6] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // YFI
-        troveManagerParamsArray[7] = TroveManagerParams(139e16, 133e16, 110e16, 10e16, 5e16, 10e16); // LDO
-        troveManagerParamsArray[8] = TroveManagerParams(160e16, 153e16, 120e16, 10e16, 5e16, 10e16); // LQTY
-        troveManagerParamsArray[9] = TroveManagerParams(122e16, 117e16, 110e16, 10e16, 5e16, 10e16); // WBTC
+                                                        // CCR,          MCR,          SCR,   BCR, LIQUIDATION_PENALTY_SP, LIQUIDATION_PENALTY_REDISTRIBUTION
+        troveManagerParamsArray[0] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // FXS
+        troveManagerParamsArray[1] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // LINK
+        troveManagerParamsArray[2] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // UNI
+        troveManagerParamsArray[3] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // SKY
+        troveManagerParamsArray[4] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // CRV
+        troveManagerParamsArray[5] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // AAVE
+        troveManagerParamsArray[6] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // YFI
+        troveManagerParamsArray[7] = TroveManagerParams(139e16, 1333333333333333333, 110e16, 10e16, 5e16, 10e16); // LDO
+        troveManagerParamsArray[8] = TroveManagerParams(160e16, 1538461538461538461, 120e16, 10e16, 5e16, 10e16); // LQTY
+        troveManagerParamsArray[9] = TroveManagerParams(122e16, 1176470588235294117, 110e16, 10e16, 5e16, 10e16); // WBTC
 
         address[] memory collTokens = new address[](10);
         collTokens[0] = 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0; // FXS
@@ -184,16 +184,16 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
         collTokens[9] = WBTC_ADDRESS; // WBTC
 
         PriceFeedParams[] memory priceFeeds = new PriceFeedParams[](10);
-        priceFeeds[0] = PriceFeedParams({tokenUsdFeed: 0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // FXS
-        priceFeeds[1] = PriceFeedParams({tokenUsdFeed: 0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // LINK
-        priceFeeds[2] = PriceFeedParams({tokenUsdFeed: 0x553303d460EE0afB37EdFf9bE42922D8FF63220e, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // UNI
-        priceFeeds[3] = PriceFeedParams({tokenUsdFeed: 0xee10fE5E7aa92dd7b136597449c3d5813cFC5F18, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // SKY
-        priceFeeds[4] = PriceFeedParams({tokenUsdFeed: 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // CRV
-        priceFeeds[5] = PriceFeedParams({tokenUsdFeed: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // AAVE
-        priceFeeds[6] = PriceFeedParams({tokenUsdFeed: 0xA027702dbb89fbd58938e4324ac03B58d812b0E1, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0)}); // YFI
-        priceFeeds[7] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0x4e844125952D32AcdF339BE976c98E22F6F318dB, pythFeedId: bytes32(0)}); // LDO
-        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63}); // LQTY
-        priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23, pythFeedId: bytes32(0)}); // WBTC
+        priceFeeds[0] = PriceFeedParams({tokenUsdFeed: 0x6Ebc52C8C1089be9eB3945C4350B68B8E4C2233f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // FXS
+        priceFeeds[1] = PriceFeedParams({tokenUsdFeed: 0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 24 hours}); // LINK
+        priceFeeds[2] = PriceFeedParams({tokenUsdFeed: 0x553303d460EE0afB37EdFf9bE42922D8FF63220e, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 24 hours}); // UNI
+        priceFeeds[3] = PriceFeedParams({tokenUsdFeed: 0xee10fE5E7aa92dd7b136597449c3d5813cFC5F18, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // SKY
+        priceFeeds[4] = PriceFeedParams({tokenUsdFeed: 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // CRV
+        priceFeeds[5] = PriceFeedParams({tokenUsdFeed: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 24 hours}); // AAVE
+        priceFeeds[6] = PriceFeedParams({tokenUsdFeed: 0xA027702dbb89fbd58938e4324ac03B58d812b0E1, tokenEthFeed: ZERO_ADDRESS, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // YFI
+        priceFeeds[7] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0x4e844125952D32AcdF339BE976c98E22F6F318dB, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // LDO
+        priceFeeds[8] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: ZERO_ADDRESS, pythFeedId: 0x5e8b35b0da37ede980d8f4ddaa7988af73d8c3d110e3eddd2a56977beb839b63, stalenessThreshold: 48 hours}); // LQTY
+        priceFeeds[9] = PriceFeedParams({tokenUsdFeed: ZERO_ADDRESS, tokenEthFeed: 0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23, pythFeedId: bytes32(0), stalenessThreshold: 48 hours}); // WBTC
 
 
         DeploymentResult memory deployed = _deployAndConnectContracts(troveManagerParamsArray, collTokens, priceFeeds);
@@ -237,14 +237,14 @@ contract DeployDeFiDollarScript is StdCheats, MetadataDeployment {
             for (vars.i = 0; vars.i < vars.numCollaterals; vars.i++) {
                 vars.collaterals[vars.i] = IERC20Metadata(_collTokens[vars.i]);
                 if (_priceFeeds[vars.i].tokenUsdFeed != ZERO_ADDRESS) {
-                    vars.priceFeeds[vars.i] = new ChainlinkPriceFeed(_priceFeeds[vars.i].tokenUsdFeed, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new ChainlinkPriceFeed(_priceFeeds[vars.i].tokenUsdFeed, _priceFeeds[vars.i].stalenessThreshold);
                 } else if (_collTokens[vars.i] == WBTC_ADDRESS) {
                     // WBTC/BTC -> BTC/USD = WBTC/USD
-                    vars.priceFeeds[vars.i] = new WBTCPriceFeed(BTC_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new WBTCPriceFeed(BTC_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, 24 hours, _priceFeeds[vars.i].stalenessThreshold);
                 } else if (_priceFeeds[vars.i].tokenEthFeed != ZERO_ADDRESS) {
-                    vars.priceFeeds[vars.i] = new CompositeChainlinkPriceFeed(ETH_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, STALENESS_THRESHOLD, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new CompositeChainlinkPriceFeed(ETH_USD_PRICE_FEED, _priceFeeds[vars.i].tokenEthFeed, 24 hours, _priceFeeds[vars.i].stalenessThreshold);
                 } else if (_priceFeeds[vars.i].pythFeedId != bytes32(0)) {
-                    vars.priceFeeds[vars.i] = new PythPriceFeed(PYTH_ORACLE_ADDRESS, _priceFeeds[vars.i].pythFeedId, STALENESS_THRESHOLD);
+                    vars.priceFeeds[vars.i] = new PythPriceFeed(PYTH_ORACLE_ADDRESS, _priceFeeds[vars.i].pythFeedId, _priceFeeds[vars.i].stalenessThreshold);
                 } else {
                     revert("Invalid price feed params");
                 }
