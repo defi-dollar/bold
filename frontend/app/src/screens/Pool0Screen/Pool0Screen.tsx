@@ -19,6 +19,7 @@ import { ReactNode, useState } from "react";
 import { usePool0Rewards } from "@/src/pool0-utils";
 import { FlowButton, FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
+import InsufficientFundsModal from "./InsufficientFundsModal";
 
 export function Pool0Screen() {
   return (
@@ -223,6 +224,9 @@ const RedeemCard = () => {
     dn.mul(rewardsAmount, proportion),
     redemptionPrice
   );
+
+  const [insufficientFundsModalVisible, setInsufficientFundsModalVisible] = useState(false);
+
   return (
     <VFlex gap={48}>
       <VFlex
@@ -285,7 +289,8 @@ const RedeemCard = () => {
           </RedeemRow>
         </VFlex>
       </VFlex>
-      <FlowButton
+      <FlowButtonView label="Redeem" onClick={() => setInsufficientFundsModalVisible(true)} />
+      {/* <FlowButton
         label="Redeem"
         request={{
           flowId: "pool0ClaimRewards",
@@ -295,6 +300,10 @@ const RedeemCard = () => {
           totalRewardsAmount: rewardsAmount,
           redemptionProportion: proportion,
         }}
+      /> */}
+      <InsufficientFundsModal
+        visible={insufficientFundsModalVisible}
+        onClose={() => setInsufficientFundsModalVisible(false)}
       />
     </VFlex>
   );
