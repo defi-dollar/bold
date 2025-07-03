@@ -18,7 +18,12 @@ import {
 } from "@/src/liquity-utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, IconBorrow, IconEarn, TokenIcon } from "@liquity2/uikit";
+import {
+  BOLD_TOKEN_SYMBOL,
+  IconBorrow,
+  IconEarn,
+  TokenIcon,
+} from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useState } from "react";
 import { HomeTable } from "./HomeTable";
@@ -65,23 +70,16 @@ export function HomeScreen() {
   );
 }
 
-function BorrowTable({
-  compact,
-}: {
-  compact: boolean;
-}) {
+function BorrowTable({ compact }: { compact: boolean }) {
   const columns: ReactNode[] = [
     "Collateral",
-    "Rewards", // TODO: Tooltip here
-    <span title="Average interest rate, per annum">
+    // TODO: Tooltip here
+    <abbr title="Rewards">Rewards</abbr>,
+    <abbr title="Average interest rate, per annum">
       {compact ? "Rate" : "Avg rate"}
-    </span>,
-    <span title="Maximum Loan-to-Value ratio">
-      Max LTV
-    </span>,
-    <span title="Total debt">
-      {compact ? "Debt" : "Total debt"}
-    </span>,
+    </abbr>,
+    <abbr title="Maximum Loan-to-Value ratio">Max LTV</abbr>,
+    compact ? <abbr title="Total debt">Debt</abbr> : "Total debt",
   ];
 
   if (!compact) {
@@ -94,28 +92,20 @@ function BorrowTable({
       subtitle="You can adjust your loans, including your interest rate, at any time"
       icon={<IconBorrow />}
       columns={columns}
-      rows={getBranches().sort(sortBranches).map(({ symbol }) => (
-        <BorrowingRow
-          key={symbol}
-          compact={compact}
-          symbol={symbol}
-        />
-      ))}
+      rows={getBranches()
+        .sort(sortBranches)
+        .map(({ symbol }) => (
+          <BorrowingRow key={symbol} compact={compact} symbol={symbol} />
+        ))}
     />
   );
 }
 
-function EarnTable({
-  compact,
-}: {
-  compact: boolean;
-}) {
+function EarnTable({ compact }: { compact: boolean }) {
   const columns: ReactNode[] = [
     "Pool",
     <abbr title="Annual Percentage Rate over the last 24 hours">APR</abbr>,
-    <abbr title="Annual Percentage Rate over the last 7 days">
-      7d APR
-    </abbr>,
+    <abbr title="Annual Percentage Rate over the last 7 days">7d APR</abbr>,
     "Pool size",
   ];
 
@@ -129,13 +119,11 @@ function EarnTable({
       subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & collateral token rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
       icon={<IconEarn />}
       columns={columns}
-      rows={getBranches().sort(sortBranches).map(({ symbol }) => (
-        <EarnRewardsRow
-          key={symbol}
-          compact={compact}
-          symbol={symbol}
-        />
-      ))}
+      rows={getBranches()
+        .sort(sortBranches)
+        .map(({ symbol }) => (
+          <EarnRewardsRow key={symbol} compact={compact} symbol={symbol} />
+        ))}
     />
   );
 }
@@ -153,9 +141,10 @@ function BorrowingRow({
   const branchDebt = useBranchDebt(branch.id);
   const pool0Rewards = usePool0Rewards();
 
-  const maxLtv = collateral?.collateralRatio && dn.gt(collateral.collateralRatio, 0)
-    ? dn.div(DNUM_1, collateral.collateralRatio)
-    : null;
+  const maxLtv =
+    collateral?.collateralRatio && dn.gt(collateral.collateralRatio, 0)
+      ? dn.div(DNUM_1, collateral.collateralRatio)
+      : null;
 
   return (
     <tr>
@@ -172,24 +161,13 @@ function BorrowingRow({
         </div>
       </td>
       <td>
-        <Amount
-          fallback="…"
-          percentage
-          value={pool0Rewards.data}
-        />
+        <Amount fallback="…" percentage value={pool0Rewards.data} />
       </td>
       <td>
-        <Amount
-          fallback="…"
-          percentage
-          value={avgInterestRate.data}
-        />
+        <Amount fallback="…" percentage value={avgInterestRate.data} />
       </td>
       <td>
-        <Amount
-          value={maxLtv}
-          percentage
-        />
+        <Amount value={maxLtv} percentage />
       </td>
       <td>
         <Amount
@@ -257,18 +235,10 @@ function EarnRewardsRow({
         </div>
       </td>
       <td>
-        <Amount
-          fallback="…"
-          percentage
-          value={earnPool.data?.apr}
-        />
+        <Amount fallback="…" percentage value={earnPool.data?.apr} />
       </td>
       <td>
-        <Amount
-          fallback="…"
-          percentage
-          value={earnPool.data?.apr7d}
-        />
+        <Amount fallback="…" percentage value={earnPool.data?.apr7d} />
       </td>
       <td>
         <Amount
