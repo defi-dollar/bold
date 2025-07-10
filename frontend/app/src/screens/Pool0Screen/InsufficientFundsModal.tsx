@@ -18,7 +18,7 @@ const InsufficientFundsModal = ({
     <Modal
       onClose={onClose}
       visible={visible}
-      title="Insufficient funds"
+      title={`Insufficient ${BOLD_TOKEN_SYMBOL}`}
       maxWidth={99999}
     >
       <div
