@@ -20,6 +20,7 @@ import { usePool0Rewards } from "@/src/pool0-utils";
 import { FlowButton, FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
 import InsufficientFundsModal from "./InsufficientFundsModal";
+import { useBreakpoint } from "@/src/breakpoints";
 
 export function Pool0Screen() {
   return (
@@ -225,7 +226,13 @@ const RedeemCard = () => {
     redemptionPrice
   );
 
-  const [insufficientFundsModalVisible, setInsufficientFundsModalVisible] = useState(false);
+  const [compact, setCompact] = useState(false);
+  useBreakpoint(({ medium }) => {
+    setCompact(!medium);
+  });
+
+  const [insufficientFundsModalVisible, setInsufficientFundsModalVisible] =
+    useState(false);
 
   return (
     <VFlex gap={48}>
@@ -252,7 +259,7 @@ const RedeemCard = () => {
           Redeem
         </h2>
         <VFlex gap={24}>
-          <RedeemRow label="Redemption proportion">
+          <RedeemRow label="Redemption proportion" compact={compact}>
             <div>
               <Tabs
                 compact
@@ -313,18 +320,27 @@ const RedeemRow = ({
   label,
   children,
   tooltip,
+  compact,
 }: {
   label: ReactNode;
   children: ReactNode;
   tooltip?: string;
+  compact?: boolean;
 }) => {
   return (
-    <HFlex justifyContent="space-between" alignItems="start" gap={24}>
-      <HFlex gap={4}>
+    <div className={css({
+      display: "flex",
+      flexDirection: compact ? "column" : "row",
+      justifyContent: "space-between",
+      alignItems: compact ? "stretch" : "start",
+      columnGap: 24,
+      rowGap: 8,
+    })}>
+        <HFlex gap={4} justifyContent={compact ? "start" : "center"}>
         {label}
         {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
       </HFlex>
       {children}
-    </HFlex>
+    </div>
   );
 };
