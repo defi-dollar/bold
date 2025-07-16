@@ -113,8 +113,15 @@ export const InterestRateField = memo(
       },
     });
 
+    console.log("fieldValue", fieldValue.value);
+    console.log("interestRate", interestRate);
+    console.log("fmtnum(interestRate, 'pct1z')", fmtnum(interestRate, "pct1z"));
+    console.log("averageInterestRate.data", averageInterestRate.data);
+    console.log("fmtnum(averageInterestRate.data, 'pct1z')", fmtnum(averageInterestRate.data, "pct1z"));
+
     const interestChartData = useInterestRateChartData();
     const interestRateRounded = interestRate && dn.div(dn.round(dn.mul(interestRate, 1000)), 1000);
+    console.log("interestChartData", interestChartData.data?.map(({ rate }) => fmtnum(rate, "pct1z")));
 
     const bracket = interestRateRounded && interestChartData.data?.find(
       ({ rate }) => rate[0] === interestRateRounded[0],
@@ -472,11 +479,13 @@ function ManualInterestRateSlider({
           gradientMode="high-to-low"
           chart={interestChartData.data?.map(({ size }) => size) ?? []}
           onChange={(value) => {
+            console.log('onChange', value);
             if (interestChartData.data) {
+              console.log('interestChartData.data', interestChartData.data);
               const index = Math.min(
-                interestChartData.data.length - 1,
-                Math.round(value * (interestChartData.data.length)),
-              );
+                interestChartData.data.length - 1, // 125
+                Math.round(value * (interestChartData.data.length)), //  1 * 126 = 126
+              ); // = 125
               fieldValue.setValue(String(dn.toNumber(dn.mul(
                 interestChartData.data[index]?.rate ?? dn.from(0, 18),
                 100,

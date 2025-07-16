@@ -2,6 +2,20 @@ import * as dn from "dnum";
 import { useQuery } from "@tanstack/react-query";
 
 import { dnum18 } from "./dnum-utils";
+import { useAccount } from "wagmi";
+
+export const useAccountPoints = () => {
+  const { address } = useAccount();
+
+  return useQuery({
+    queryKey: ["useAccountPoints", address ?? '0x'],
+    queryFn: async () => {
+      // TODO: Actual rewards
+      return dnum18(172379000000000000000000n);
+    },
+    enabled: !!address,
+  });
+};
 
 export const usePool0Rewards = () => {
   return useQuery({

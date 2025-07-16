@@ -10,6 +10,7 @@ export type MenuItem = [
   label: ReactNode,
   url: string,
   Icon: ComponentType<{}>,
+  hideInDesktop?: boolean,
 ];
 
 export function Menu({
@@ -36,10 +37,12 @@ export function Menu({
           height: "100%",
         })}
       >
-        {menuItems.map(([label, href, Icon]) => {
+        {menuItems.map(([label, href, Icon, hideInDesktop]) => {
           const selected = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
-            <li key={label + href}>
+            <li key={label + href} className={css({
+              display: hideInDesktop ? "none" : "block",
+            })}>
               <Link
                 href={href}
                 className={css({

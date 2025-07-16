@@ -17,39 +17,31 @@ import Link from "next/link";
 import { AccountButton } from "./AccountButton";
 import { Menu } from "./Menu";
 import { MenuDrawerButton } from "./MenuDrawer";
-import { usePool0Rewards } from "@/src/pool0-utils";
+import { useAccountPoints, usePool0Rewards } from "@/src/pool0-utils";
 import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
 import { Amount } from "../Amount/Amount";
-import { useBreakpoint } from "@/src/breakpoints";
-import { useState } from "react";
 
 const IconRewards = () => {
   return (
-    <div className={css({
-      transform: "rotate(45deg)",
-    })}>
+    <div
+      className={css({
+        transform: "rotate(45deg)",
+      })}
+    >
       <IconEarn size={24} />
     </div>
   );
 };
 
 export function TopBar() {
-  const pool0Rewards = usePool0Rewards();
-  const [compact, setCompact] = useState(false);
-  useBreakpoint(({ medium }) => {
-    setCompact(!medium);
-  });
+  const accountPoints = useAccountPoints();
 
   const menuItems: MenuItem[] = [
     [content.menu.dashboard, "/", IconDashboard],
     [content.menu.borrow, "/borrow", IconBorrow],
     [content.menu.earn, "/earn", IconEarn], // TODO: Add icon
     // [content.menu.stake, "/stake", IconStake],
-    [
-      "Rewards",
-      "/pool0",
-      IconRewards,
-    ],
+    ["Rewards", "/pool0", IconRewards, true],
   ];
 
   return (
@@ -173,28 +165,29 @@ export function TopBar() {
         <div
           className={css({
             display: "grid",
-            gridTemplateColumns: "min-content min-content min-content",
+            gridTemplateColumns: "min-content 1fr min-content",
             justifyContent: "end",
-            gap: {
-              base: 8,
-              large: 0,
-            },
+            gap: 8,
           })}
         >
-          {!compact && (
-            <LinkTextButton
-              href="/pool0"
-              label={
-                pool0Rewards.data ? (
-                  <>
-                    Rewards: <Amount percentage value={pool0Rewards.data} />
-                  </>
-                ) : (
-                  "Rewards"
-                )
-              }
-            />
-          )}
+          <LinkTextButton
+            className={css({
+              display: {
+                base: "none",
+                medium: "flex",
+              },
+              alignItems: "center",
+              justifyContent: "center",
+            })}
+            href="/pool0"
+            label={
+              accountPoints.data ? (
+                <Amount prefix="Points: " value={accountPoints.data} format={0} />
+              ) : (
+                "Rewards"
+              )
+            }
+          />
           <div
             className={css({
               display: "grid",
