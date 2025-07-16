@@ -17,7 +17,7 @@ import Link from "next/link";
 import { AccountButton } from "./AccountButton";
 import { Menu } from "./Menu";
 import { MenuDrawerButton } from "./MenuDrawer";
-import { useAccountPoints, usePool0Rewards } from "@/src/pool0-utils";
+import { useAccountPoints } from "@/src/pool0-utils";
 import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
 import { Amount } from "../Amount/Amount";
 

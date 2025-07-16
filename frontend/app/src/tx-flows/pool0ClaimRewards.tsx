@@ -110,7 +110,7 @@ export const pool0ClaimRewards: FlowDeclaration<Pool0ClaimRewardsRequest> = {
       name: () => "Claim rewards",
       Status: TransactionStatus,
 
-      async commit(ctx) {
+      async commit() {
         return null;
       },
 
