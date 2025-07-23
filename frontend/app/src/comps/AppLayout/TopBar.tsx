@@ -59,7 +59,7 @@ export function TopBar() {
           display: "grid",
           gridTemplateColumns: {
             base: "auto auto",
-            medium: "200px auto 200px",
+            medium: "200px auto auto",
           },
           justifyContent: "space-between",
           gap: 16,
