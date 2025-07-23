@@ -6,17 +6,38 @@ import {
   Tabs,
   VFlex,
 } from "@liquity2/uikit";
-import { useState } from "react";
 import { PointRedemption } from "./PointRedemption";
 import { PointLeaderboard } from "./PointLeaderboard";
+import { useRouter } from "next/navigation";
+import { a, useTransition } from "@react-spring/web";
 
 const TABS = [
   { label: "My Points", id: "redemption" },
   { label: "Leaderboard", id: "leaderboard" },
 ];
 
-export function Pool0Screen() {
-  const [tab, setTab] = useState("redemption");
+export function PointRewardsScreen({
+  tab = "redemption",
+}: {
+  tab?: "redemption" | "leaderboard";
+}) {
+  const router = useRouter();
+
+  const tabsTransition = useTransition(
+    tab,
+    {
+      from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
+      enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
+      leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
+      trail: 80,
+      config: {
+        mass: 1,
+        tension: 1800,
+        friction: 140,
+      },
+    }
+  );
+  
   return (
     <div
       className={css({
@@ -71,13 +92,17 @@ export function Pool0Screen() {
           }))}
           selected={TABS.findIndex(({ id }) => id === tab)}
           onSelect={(index) => {
-            setTab(TABS[index]!.id);
+            router.push(`/point-rewards/${TABS[index]!.id}`);
           }}
         />
 
       <VFlex gap={24}>
-        {tab === "redemption" && <PointRedemption />}
-        {tab === "leaderboard" && <PointLeaderboard />}
+        {tabsTransition((style, tabId) => ( 
+          <a.div style={style}>
+            {tabId === "redemption" && <PointRedemption />}
+            {tabId === "leaderboard" && <PointLeaderboard />}
+          </a.div>
+        ))}
       </VFlex>
     </div>
   );

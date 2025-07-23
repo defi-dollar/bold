@@ -179,7 +179,7 @@ export function TopBar() {
               alignItems: "center",
               justifyContent: "center",
             })}
-            href="/pool0"
+            href="/point-rewards"
             label={
               accountPoints.data ? (
                 <Amount prefix="Points: " value={accountPoints.data} format={0} />

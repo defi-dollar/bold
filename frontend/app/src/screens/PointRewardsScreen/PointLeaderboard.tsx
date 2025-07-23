@@ -98,7 +98,7 @@ export const PointLeaderboard = () => {
                 background: isCurrentUser ? "#ffefd0" : "transparent",
               })}>
                 <td>{row.rank}</td>
-                <td>{isCurrentUser ? 'You' : shortenAddress(address!, 4)}</td>
+                <td>{isCurrentUser ? 'You' : shortenAddress(row.address, 4)}</td>
                 <td>{row.points}</td>
               </tr>
             );
