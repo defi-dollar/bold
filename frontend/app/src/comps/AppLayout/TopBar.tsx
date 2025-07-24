@@ -41,7 +41,7 @@ export function TopBar() {
     [content.menu.borrow, "/borrow", IconBorrow],
     [content.menu.earn, "/earn", IconEarn], // TODO: Add icon
     // [content.menu.stake, "/stake", IconStake],
-    ["Rewards", "/pool0", IconRewards, true],
+    ["Rewards", "/point-rewards", IconRewards, true],
   ];
 
   return (

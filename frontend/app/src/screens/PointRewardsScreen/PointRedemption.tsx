@@ -343,7 +343,7 @@ const RedeemCard = () => {
         label="Redeem"
         request={{
           flowId: "pool0ClaimRewards",
-          backLink: [`/pool0`, `Back to ${DEFI.name} Rewards`],
+          backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
           successLink: ["/", "Go to the Dashboard"],
           successMessage: "The rewards have been claimed successfully.",
           totalRewardsAmount: rewardsAmount,
