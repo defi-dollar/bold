@@ -14,7 +14,6 @@ import {
   VFlex,
 } from "@liquity2/uikit";
 import { ReactNode, useState } from "react";
-import { useAccountPoints } from "@/src/pool0-utils";
 import { FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
 import InsufficientFundsModal from "./InsufficientFundsModal";
@@ -22,6 +21,7 @@ import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
+import { useUserPoints } from "@/src/points-utils";
 
 const campaignBeginDate = new Date(Date.now());
 const campaignEndDate = new Date(
@@ -109,12 +109,12 @@ export function PointRedemption() {
 
 const RewardsCard = () => {
   const { state } = useCampaignState();
-  const { data: points } = useAccountPoints();
+  const { data: userPoints } = useUserPoints();
   const pointsToDeFiRate = [50000000000000000n, 18] as dn.Dnum;
   const showDeFiAmount = state === "redeemable" || state === "ended";
   const defiAmount =
-    showDeFiAmount && points !== undefined
-      ? dn.mul(points, pointsToDeFiRate)
+    showDeFiAmount && userPoints !== undefined
+      ? dn.mul(userPoints.points, pointsToDeFiRate)
       : undefined;
 
   return (
@@ -149,7 +149,7 @@ const RewardsCard = () => {
               pl: 24,
             })}
           >
-            <Amount value={points} suffix={` Points`} fallback="-" format={0} />
+            <Amount value={userPoints?.points} suffix={` Points`} fallback="-" format={0} />
             {defiAmount !== undefined && (
               <div
                 className={css({

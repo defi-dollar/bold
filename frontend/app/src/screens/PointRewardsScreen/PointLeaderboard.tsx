@@ -1,32 +1,35 @@
+import { fmtnum } from "@/src/formatting";
+import { usePointsLeaderboard, useUserPoints } from "@/src/points-utils";
 import { css } from "@/styled-system/css";
 import { shortenAddress, VFlex } from "@liquity2/uikit";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { isAddressEqual } from "viem";
 import { useAccount } from "wagmi";
-
-const getRandomRows = (count: number) => {
-  return Array.from({ length: count }, (_, i) => ({
-    rank: i + 1,
-    address: `0x${Math.random().toString(16).slice(2, 18)}` as `0x${string}`,
-    points: Math.floor(Math.random() * 1000),
-  }));
-};
 
 export const PointLeaderboard = () => {
   const { address } = useAccount();
-  const [rows, setRows] = useState<{
-    rank: number;
-    address: `0x${string}`;
-    points: number;
-  }[]>([]);
-  useEffect(() => {
-    const newRows = getRandomRows(20);
-    if (address) {
-      const index = Math.floor(Math.random() * newRows.length);
-      newRows[index]!.address = address!;
+  const leaderboard = usePointsLeaderboard();
+  const { data: userPoints } = useUserPoints();
+
+  const rows = useMemo(() => {
+    if (!leaderboard) return;
+    const rows = [...leaderboard];
+
+    if (
+      userPoints &&
+      address &&
+      !rows.find((row) => isAddressEqual(row.address, address))
+    ) {
+      rows[rows.length - 1] = {
+        rank: userPoints.rank,
+        points: userPoints.points,
+        address: address as `0x${string}`,
+      };
     }
-    setRows(newRows);
-  }, [address]);
-  
+
+    return rows;
+  }, [leaderboard, userPoints, address]);
+
   return (
     <VFlex
       gap={16}
@@ -69,7 +72,6 @@ export const PointLeaderboard = () => {
           },
           "& th:first-of-type, & td:first-of-type": {
             textAlign: "center",
-            
           },
           "& th:nth-of-type(2), & td:nth-of-type(2)": {
             width: "100%",
@@ -91,15 +93,20 @@ export const PointLeaderboard = () => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
-            const isCurrentUser = row.address === address;
+          {rows?.map((row) => {
+            const isCurrentUser = address && isAddressEqual(row.address, address);
             return (
-              <tr key={row.address} className={css({
-                background: isCurrentUser ? "#ffefd0" : "transparent",
-              })}>
+              <tr
+                key={row.address}
+                className={css({
+                  background: isCurrentUser ? "#ffefd0" : "transparent",
+                })}
+              >
                 <td>{row.rank}</td>
-                <td>{isCurrentUser ? 'You' : shortenAddress(row.address, 4)}</td>
-                <td>{row.points}</td>
+                <td>
+                  {isCurrentUser ? "You" : shortenAddress(row.address, 4)}
+                </td>
+                <td>{fmtnum(row.points, 0)}</td>
               </tr>
             );
           })}

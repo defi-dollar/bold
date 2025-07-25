@@ -28,7 +28,6 @@ import * as dn from "dnum";
 import { useState } from "react";
 import { HomeTable } from "./HomeTable";
 import { sortBranches } from "@/src/utils";
-import { usePool0Rewards } from "@/src/pool0-utils";
 
 export function HomeScreen() {
   const account = useAccount();
@@ -73,8 +72,6 @@ export function HomeScreen() {
 function BorrowTable({ compact }: { compact: boolean }) {
   const columns: ReactNode[] = [
     "Collateral",
-    // TODO: Tooltip here
-    <abbr title="Rewards">Rewards</abbr>,
     <abbr title="Average interest rate, per annum">
       {compact ? "Rate" : "Avg rate"}
     </abbr>,
@@ -139,7 +136,6 @@ function BorrowingRow({
   const collateral = getCollToken(branch.id);
   const avgInterestRate = useAverageInterestRate(branch.id);
   const branchDebt = useBranchDebt(branch.id);
-  const pool0Rewards = usePool0Rewards();
 
   const maxLtv =
     collateral?.collateralRatio && dn.gt(collateral.collateralRatio, 0)
@@ -159,9 +155,6 @@ function BorrowingRow({
           <TokenIcon symbol={symbol} size="mini" />
           <span>{collateral?.name}</span>
         </div>
-      </td>
-      <td>
-        <Amount fallback="…" percentage value={pool0Rewards.data} />
       </td>
       <td>
         <Amount fallback="…" percentage value={avgInterestRate.data} />

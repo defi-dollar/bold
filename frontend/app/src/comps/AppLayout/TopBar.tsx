@@ -17,9 +17,9 @@ import Link from "next/link";
 import { AccountButton } from "./AccountButton";
 import { Menu } from "./Menu";
 import { MenuDrawerButton } from "./MenuDrawer";
-import { useAccountPoints } from "@/src/pool0-utils";
 import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
 import { Amount } from "../Amount/Amount";
+import { useUserPoints } from "@/src/points-utils";
 
 const IconRewards = () => {
   return (
@@ -34,7 +34,7 @@ const IconRewards = () => {
 };
 
 export function TopBar() {
-  const accountPoints = useAccountPoints();
+  const accountPoints = useUserPoints();
 
   const menuItems: MenuItem[] = [
     [content.menu.dashboard, "/", IconDashboard],
@@ -182,7 +182,7 @@ export function TopBar() {
             href="/point-rewards"
             label={
               accountPoints.data ? (
-                <Amount prefix="Points: " value={accountPoints.data} format={0} />
+                <Amount prefix="Points: " value={accountPoints.data.points} format={0} />
               ) : (
                 "Rewards"
               )
