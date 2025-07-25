@@ -324,7 +324,7 @@ const RedeemCard = () => {
           </RedeemRow>
           <RedeemRow
             label="Redemption cost"
-            tooltip={content.pool0Pools.infoTooltips.redemptionCost}
+            tooltip={content.pointRewardsScreen.infoTooltips.redemptionCost}
           >
             <Amount
               value={redemptionCost}
@@ -342,7 +342,7 @@ const RedeemCard = () => {
       {/* <FlowButton
         label="Redeem"
         request={{
-          flowId: "pool0ClaimRewards",
+          flowId: "pointsClaimRewards",
           backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
           successLink: ["/", "Go to the Dashboard"],
           successMessage: "The rewards have been claimed successfully.",

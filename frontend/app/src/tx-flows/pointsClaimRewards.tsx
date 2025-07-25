@@ -12,16 +12,16 @@ import { usePrice } from "../services/Prices";
 import { dnum18 } from "@/src/dnum-utils";
 import { CONTRACT_BOLD_TOKEN } from "../env";
 import { erc20Abi } from "viem";
-import { getPoolRedemptionCost } from "../pool0-utils";
+import { getPointsRedemptionCost } from "../points-utils";
 
-const RequestSchema = createRequestSchema("pool0ClaimRewards", {
+const RequestSchema = createRequestSchema("pointsClaimRewards", {
   totalRewardsAmount: vDnum(),
   redemptionProportion: vDnum(),
 });
 
-export type Pool0ClaimRewardsRequest = v.InferOutput<typeof RequestSchema>;
+export type PointsClaimRewardsRequest = v.InferOutput<typeof RequestSchema>;
 
-export const pool0ClaimRewards: FlowDeclaration<Pool0ClaimRewardsRequest> = {
+export const pointsClaimRewards: FlowDeclaration<PointsClaimRewardsRequest> = {
   title: "Review & Send Transaction",
 
   Summary() {
@@ -88,14 +88,14 @@ export const pool0ClaimRewards: FlowDeclaration<Pool0ClaimRewardsRequest> = {
       async commit(ctx) {
         const { totalRewardsAmount, redemptionProportion } = ctx.request;
         const defiToRedeem = dn.mul(redemptionProportion, totalRewardsAmount);
-        const boldCost = getPoolRedemptionCost(defiToRedeem);
+        const boldCost = getPointsRedemptionCost(defiToRedeem);
 
         return ctx.writeContract({
           address: CONTRACT_BOLD_TOKEN,
           abi: erc20Abi,
           functionName: "approve",
           args: [
-            CONTRACT_BOLD_TOKEN, // TODO: get the address of the pool0 contract
+            CONTRACT_BOLD_TOKEN, // TODO: get the address of the points contract
             boldCost[0],
           ],
         });
@@ -127,7 +127,7 @@ export const pool0ClaimRewards: FlowDeclaration<Pool0ClaimRewardsRequest> = {
       request: { totalRewardsAmount, redemptionProportion },
     } = ctx;
     const defiToRedeem = dn.mul(redemptionProportion, totalRewardsAmount);
-    const boldCost = getPoolRedemptionCost(defiToRedeem);
+    const boldCost = getPointsRedemptionCost(defiToRedeem);
 
     const allowance = dnum18(
       await readContract({
