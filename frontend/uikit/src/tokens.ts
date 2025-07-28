@@ -6,7 +6,7 @@ import tokenEth from "./token-icons/eth.svg";
 import tokenWBTC from './token-icons/WBTC.png';
 import tokenLINK from './token-icons/LINK.png';
 import tokenUNI from './token-icons/UNI.png';
-import tokenAAVE from './token-icons/AAVE.png';
+import tokenAAVE from './token-icons/aave-token-round.svg';
 import tokenLDO from './token-icons/LDO.png';
 import tokenCRV from './token-icons/CRV.png';
 import tokenFXS from './token-icons/FXS.png';
