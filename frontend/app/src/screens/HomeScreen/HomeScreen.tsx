@@ -113,7 +113,7 @@ function EarnTable({ compact }: { compact: boolean }) {
   return (
     <HomeTable
       title={`Earn rewards with ${BOLD_TOKEN_SYMBOL}`}
-      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & collateral token rewards by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
+      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & native token yield by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
       icon={<IconEarn />}
       columns={columns}
       rows={getBranches()
