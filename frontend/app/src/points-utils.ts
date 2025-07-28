@@ -9,20 +9,28 @@ import { dnum18 } from "./dnum-utils";
 export const usePointsLeaderboard = () => {
   const { data } = useLiquityStats();
   return data?.userPointsTop100
-    .map(([address, points], rank) => ({
+    .map(([address, { totalPoint }], rank) => ({
       rank: rank + 1,
-      address: address as `0x${string}`,
-      points: points as number,
+      address,
+      points: totalPoint,
     }))
     .slice(0, 20);
 };
+
+export interface APIUserPoints {
+  crvUsd: number;
+  rank: number;
+  stabilityUsd: number;
+  totalPoint: number;
+  troveUsd: number;
+}
 
 export const useUserPoints = () => {
   const { address } = useAccount();
   return useQuery({
     queryKey: ["user-points", address],
     queryFn: async () => {
-      const response = await axios.get<{ points: number; rank: number }>(
+      const response = await axios.get<APIUserPoints>(
         `https://defi-dollar.github.io/stats/v2/userPoints/${address?.toLowerCase()}.json`
       );
       return response.data;

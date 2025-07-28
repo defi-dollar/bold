@@ -654,8 +654,10 @@ const StatsSchema = v.pipe(
     max_sp_apy: v.string(),
     userPointsTop100: v.array(
       v.tuple([
-        v.string(), // address
-        v.number(), // points value
+        vAddress(),
+        v.object({
+          totalPoint: v.number(),
+        })
       ])
     ),
     branch: v.record(
@@ -684,10 +686,7 @@ const StatsSchema = v.pipe(
     totalSpDeposits: dnumOrNull(value.total_sp_deposits, 18),
     totalValueLocked: dnumOrNull(value.total_value_locked, 18),
     maxSpApy: dnumOrNull(value.max_sp_apy, 18),
-    userPointsTop100: value.userPointsTop100.map(([address, points]) => [
-      address,
-      points,
-    ]),
+    userPointsTop100: value.userPointsTop100,
     branch: Object.fromEntries(
       Object.entries(value.branch).map(([symbol, branch]) => {
         symbol = symbol.toUpperCase();

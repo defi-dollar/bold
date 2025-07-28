@@ -21,7 +21,7 @@ import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
-import { useUserPoints } from "@/src/points-utils";
+import { APIUserPoints, useUserPoints } from "@/src/points-utils";
 
 const campaignBeginDate = new Date(Date.now());
 const campaignEndDate = new Date(
@@ -114,7 +114,7 @@ const RewardsCard = () => {
   const showDeFiAmount = state === "redeemable" || state === "ended";
   const defiAmount =
     showDeFiAmount && userPoints !== undefined
-      ? dn.mul(userPoints.points, pointsToDeFiRate)
+      ? dn.mul(userPoints.totalPoint, pointsToDeFiRate)
       : undefined;
 
   return (
@@ -149,7 +149,7 @@ const RewardsCard = () => {
               pl: 24,
             })}
           >
-            <Amount value={userPoints?.points} suffix={` Points`} fallback="-" format={0} />
+            <Amount value={userPoints?.totalPoint} suffix={` Points`} fallback="-" format={0} />
             {defiAmount !== undefined && (
               <div
                 className={css({
@@ -170,7 +170,7 @@ const RewardsCard = () => {
           </div>
         </VFlex>
       </HFlex>
-      {(state === "not-started" || state === "active") && <DepositStats />}
+      {(state === "not-started" || state === "active") && <DepositStats userPoints={userPoints} />}
       {(state === "redeemable") && (
         <div>
           Redemption ends in <Countdown date={redemptionEndDate} />
@@ -185,16 +185,17 @@ const RewardsCard = () => {
   );
 };
 
-const DepositStats = () => {
-  const deposits = dnum18(1000000000000000000n);
+const DepositStats = ({ userPoints }: { userPoints: APIUserPoints | undefined }) => {
 
   const { multiplier: overallMultiplier, endDate: overallMultiplierEndDate } =
     useOverallMultiplier(campaignBeginDate);
 
+    const totalDeposits = userPoints !== undefined ? userPoints.crvUsd + userPoints.troveUsd + userPoints.stabilityUsd : undefined;
+
   return (
     <VFlex gap={16}>
       <RedeemRow label="Your deposits">
-        <Amount value={deposits} prefix="$" fallback="-" />
+        <Amount value={totalDeposits} prefix="$" fallback="-" format="compact" />
       </RedeemRow>
       <VFlex
         gap={8}
@@ -213,13 +214,13 @@ const DepositStats = () => {
           }
           badge="5x"
         >
-          <Amount value={deposits} prefix="$" fallback="-" />
+          <Amount value={userPoints?.crvUsd} prefix="$" fallback="-" format="compact" />
         </RedeemRow>
         <RedeemRow
           label={<UnderlineLink href="/">in collateral</UnderlineLink>}
           badge="2x"
         >
-          <Amount value={deposits} prefix="$" fallback="-" />
+          <Amount value={userPoints?.troveUsd} prefix="$" fallback="-" format="compact" />
         </RedeemRow>
         <RedeemRow
           label={
@@ -229,7 +230,7 @@ const DepositStats = () => {
           }
           badge="1x"
         >
-          <Amount value={deposits} prefix="$" fallback="-" />
+          <Amount value={userPoints?.stabilityUsd} prefix="$" fallback="-" format="compact" />
         </RedeemRow>
       </VFlex>
       {overallMultiplier > 0 && (

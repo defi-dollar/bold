@@ -22,7 +22,7 @@ export const PointLeaderboard = () => {
     ) {
       rows[rows.length - 1] = {
         rank: userPoints.rank,
-        points: userPoints.points,
+        points: userPoints.totalPoint,
         address: address as `0x${string}`,
       };
     }

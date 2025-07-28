@@ -182,7 +182,7 @@ export function TopBar() {
             href="/point-rewards"
             label={
               accountPoints.data ? (
-                <Amount prefix="Points: " value={accountPoints.data.points} format={0} />
+                <Amount prefix="Points: " value={accountPoints.data.totalPoint} format={0} />
               ) : (
                 "Rewards"
               )
