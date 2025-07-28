@@ -7,8 +7,8 @@ import { useLiquityStats } from "./liquity-utils";
 import { dnum18 } from "./dnum-utils";
 
 export const usePointsLeaderboard = () => {
-  const { data: lqtyStats } = useLiquityStats();
-  return lqtyStats?.userPointsTop100
+  const { data } = useLiquityStats();
+  return data?.userPointsTop100
     .map(([address, points], rank) => ({
       rank: rank + 1,
       address: address as `0x${string}`,

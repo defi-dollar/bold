@@ -50,14 +50,10 @@ export function BorrowScreen() {
     throw new Error(`Invalid collateral symbol: ${collSymbol}`);
   }
 
-  console.log("collSymbol", collSymbol);
-
   const router = useRouter();
   const account = useAccount();
 
   const branch = getBranch(collSymbol);
-
-  console.log("branch", branch);
   const collateral = getCollToken(branch.id);
   const collaterals = branches.map((b) => getCollToken(b.branchId));
 
