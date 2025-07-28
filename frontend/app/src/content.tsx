@@ -414,7 +414,7 @@ export default {
     headline: (
       <>
         Deposit
-        <NoWrap>DUSD LP</NoWrap>
+        <NoWrap>{BOLD_TOKEN_SYMBOL} LP</NoWrap>
         to earn{" "}
         <NoWrap>
           rewards <TokenIcon symbol={DEFI.symbol} />
@@ -422,7 +422,7 @@ export default {
       </>
     ),
     subheading:
-      "A Curve LP staked in Pool1 earns rewards from the protocol incentive program. Deposit DUSD liquidity in Curve and stake the LP for the rewards.",
+      `A Curve LP staked in Pool1 earns rewards from the protocol incentive program. Deposit ${BOLD_TOKEN_SYMBOL} liquidity in Curve and stake the LP for the rewards.`,
   },
   pool2Pools: {
     headline: (

@@ -18,8 +18,7 @@ import tokenDusdBold from './token-icons/DUSDBOLD.png';
 import tokenDusdFraxbp from './token-icons/DUSDFRAXBP.png';
 import tokenDefiWeth from './token-icons/DEFIWETH.png';
 
-
-export const BOLD_TOKEN_SYMBOL = 'DUSD';
+export const BOLD_TOKEN_SYMBOL = 'USDFI';
 
 export type CollateralSymbols = [
   "ETH", // To bypass type-checking
@@ -163,16 +162,16 @@ export const DEFI: Token = {
   symbol: "DEFI" as const,
 } as const;
 
-export const DUSDBOLD: Token = {
+export const USDFIBOLD: Token = {
   icon: tokenDusdBold,
-  name: "DUSD/BOLD LP",
-  symbol: "DUSDBOLD" as const,
+  name: "USDFI/BOLD LP",
+  symbol: "USDFIBOLD" as const,
 } as const;
 
-export const DUSDFRAXBP: Token = {
+export const USDFIFRAXBP: Token = {
   icon: tokenDusdFraxbp,
-  name: "DUSD/FRAXBP LP",
-  symbol: "DUSDFRAXBP" as const,
+  name: "USDFI/FRAXBP LP",
+  symbol: "USDFIFRAXBP" as const,
 } as const;
 
 export const DEFIWETH: Token = {
@@ -209,7 +208,7 @@ export const TOKENS_BY_SYMBOL = {
   LQTY,
   ETH,
   DEFI,
-  DUSDBOLD,
-  DUSDFRAXBP,
+  USDFIBOLD,
+  USDFIFRAXBP,
   DEFIWETH,
 } as const;
