@@ -208,7 +208,7 @@ const DepositStats = () => {
               href="https://www.curve.finance/dex/ethereum/pools/?search=usdfi"
               target="_blank"
             >
-              in pool 1
+              in Curve USDFI LP
             </UnderlineLink>
           }
           badge="5x"
@@ -216,7 +216,7 @@ const DepositStats = () => {
           <Amount value={deposits} prefix="$" fallback="-" />
         </RedeemRow>
         <RedeemRow
-          label={<UnderlineLink href="/">in pool 0</UnderlineLink>}
+          label={<UnderlineLink href="/">in collateral</UnderlineLink>}
           badge="2x"
         >
           <Amount value={deposits} prefix="$" fallback="-" />
