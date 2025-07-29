@@ -102,19 +102,19 @@ export const POOL1_CONFIGS: Record<
     poolName: "USDFI/BOLD",
     lpTokenSymbol: "USDFIBOLD",
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9", // TODO: Update to actual data
-    lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E", // TODO: Update to actual data
+    lpToken: "0x791341bd3739Ba8A3DDE41e9411689A1e453FB71",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D", // TODO: Update to actual data
-    curvePoolId: "factory-stable-ng-491", // TODO: Update to actual data
-    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-491/deposit/" // TODO: Update to actual data
+    curvePoolId: "factory-stable-ng-524",
+    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-524/deposit/"
   },
   "USDFI-FRAXBP": {
     poolName: "USDFI/FRAXBP",
     lpTokenSymbol: "USDFIFRAXBP",
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9", // TODO: Update to actual data
-    lpToken: "0xEFc6516323FbD28e80B85A497B65A86243a54B3E", // TODO: Update to actual data
+    lpToken: "0xC2bAA41C8CA2F2dbDb70057B7956137462B2517F",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D", // TODO: Update to actual data
-    curvePoolId: "factory-stable-ng-492", // TODO: Update to actual data
-    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-492/deposit/" // TODO: Update to actual data
+    curvePoolId: "factory-stable-ng-525",
+    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-525/deposit/"
   },
 };
 
