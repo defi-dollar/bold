@@ -1,5 +1,10 @@
 import { fmtnum } from "@/src/formatting";
-import { usePointsLeaderboard, useUserPoints } from "@/src/points-utils";
+import { useEnsIdentity } from "@/src/hooks/useEnsIdentity";
+import {
+  LeaderboardRow,
+  usePointsLeaderboard,
+  useUserPoints,
+} from "@/src/points-utils";
 import { css } from "@/styled-system/css";
 import { shortenAddress, VFlex } from "@liquity2/uikit";
 import { useMemo } from "react";
@@ -29,6 +34,23 @@ export const PointLeaderboard = () => {
 
     return rows;
   }, [leaderboard, userPoints, address]);
+
+  const Row = ({ row }: { row: LeaderboardRow }) => {
+    const isCurrentUser = address && isAddressEqual(row.address, address);
+    const identity = useEnsIdentity(row.address);
+    return (
+      <tr
+        key={row.address}
+        className={css({
+          background: isCurrentUser ? "#ffefd0" : "transparent",
+        })}
+      >
+        <td>{row.rank}</td>
+        <td>{isCurrentUser ? "You" : identity?.name ?? shortenAddress(row.address, 4)}</td>
+        <td>{fmtnum(row.points, 0)}</td>
+      </tr>
+    );
+  };
 
   return (
     <VFlex
@@ -93,23 +115,7 @@ export const PointLeaderboard = () => {
           </tr>
         </thead>
         <tbody>
-          {rows?.map((row) => {
-            const isCurrentUser = address && isAddressEqual(row.address, address);
-            return (
-              <tr
-                key={row.address}
-                className={css({
-                  background: isCurrentUser ? "#ffefd0" : "transparent",
-                })}
-              >
-                <td>{row.rank}</td>
-                <td>
-                  {isCurrentUser ? "You" : shortenAddress(row.address, 4)}
-                </td>
-                <td>{fmtnum(row.points, 0)}</td>
-              </tr>
-            );
-          })}
+          {rows?.map((row) => <Row key={row.address} row={row} />)}
         </tbody>
       </table>
     </VFlex>
