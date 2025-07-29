@@ -23,7 +23,7 @@ import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
 import { APIUserPoints, useUserPoints } from "@/src/points-utils";
 
-const campaignBeginDate = new Date(Date.now());
+const campaignBeginDate = new Date(Date.now() + 30 * 60 * 60 * 1000);
 const campaignEndDate = new Date(
   campaignBeginDate.getTime() + 28 * 24 * 60 * 60 * 1000
 );
@@ -101,7 +101,9 @@ export function PointRedemption() {
   return (
     <VFlex gap={24}>
       <RewardsCard />
-      {state === "active" && <RedemptionCountdownCard />}
+      {(state === "not-started" || state === "active") && (
+        <RedemptionCountdownCard />
+      )}
       {(state === "redeemable" || state === "ended") && <RedeemCard />}
     </VFlex>
   );
@@ -116,6 +118,8 @@ const RewardsCard = () => {
     showDeFiAmount && userPoints !== undefined
       ? dn.mul(userPoints.totalPoint, pointsToDeFiRate)
       : undefined;
+
+  const isStarted = state !== "not-started";
 
   return (
     <VFlex
@@ -139,17 +143,26 @@ const RewardsCard = () => {
       >
         Point Rewards
       </h2>
-      <HFlex alignItems="start" justifyContent="start">
-        <VFlex gap={0}>
-          <div
+      <div
+        className={css({
+          pl: 24,
+        })}
+      >
+        {isStarted ? (
+          <VFlex
+            gap={0}
             className={css({
               fontSize: 24,
               fontWeight: 700,
               color: "content",
-              pl: 24,
             })}
           >
-            <Amount value={userPoints?.totalPoint} suffix={` Points`} fallback="-" format={0} />
+            <Amount
+              value={userPoints?.totalPoint}
+              suffix={` Points`}
+              fallback="-"
+              format={0}
+            />
             {defiAmount !== undefined && (
               <div
                 className={css({
@@ -167,35 +180,63 @@ const RewardsCard = () => {
                 />
               </div>
             )}
+          </VFlex>
+        ) : (
+          <div
+            className={css({
+              color: "content",
+            })}
+          >
+            Starting in{" "}
+            <span
+              className={css({
+                fontSize: 24,
+                fontWeight: 700,
+              })}
+            >
+              <Countdown date={campaignBeginDate} />
+            </span>
           </div>
-        </VFlex>
-      </HFlex>
-      {(state === "not-started" || state === "active") && <DepositStats userPoints={userPoints} />}
-      {(state === "redeemable") && (
+        )}
+      </div>
+      {(state === "not-started" || state === "active") && (
+        <DepositStats userPoints={userPoints} />
+      )}
+      {state === "redeemable" && (
         <div>
           Redemption ends in <Countdown date={redemptionEndDate} />
         </div>
       )}
-      {(state === "ended") && (
-        <div>
-          Redemption ended
-        </div>
-      )}
+      {state === "ended" && <div>Redemption ended</div>}
     </VFlex>
   );
 };
 
-const DepositStats = ({ userPoints }: { userPoints: APIUserPoints | undefined }) => {
-
+const DepositStats = ({
+  userPoints,
+}: {
+  userPoints: APIUserPoints | undefined;
+}) => {
   const { multiplier: overallMultiplier, endDate: overallMultiplierEndDate } =
     useOverallMultiplier(campaignBeginDate);
 
-    const totalDeposits = userPoints !== undefined ? userPoints.crvUsd + userPoints.troveUsd + userPoints.stabilityUsd : undefined;
+  const totalDeposits =
+    userPoints !== undefined
+      ? userPoints.crvUsd + userPoints.troveUsd + userPoints.stabilityUsd
+      : undefined;
+
+  const { state } = useCampaignState();
+  const isStarted = state !== "not-started";
 
   return (
     <VFlex gap={16}>
       <RedeemRow label="Your deposits">
-        <Amount value={totalDeposits} prefix="$" fallback="-" format="compact" />
+        <Amount
+          value={totalDeposits}
+          prefix="$"
+          fallback="-"
+          format="compact"
+        />
       </RedeemRow>
       <VFlex
         gap={8}
@@ -214,13 +255,23 @@ const DepositStats = ({ userPoints }: { userPoints: APIUserPoints | undefined })
           }
           badge="5x"
         >
-          <Amount value={userPoints?.crvUsd} prefix="$" fallback="-" format="compact" />
+          <Amount
+            value={userPoints?.crvUsd}
+            prefix="$"
+            fallback="-"
+            format="compact"
+          />
         </RedeemRow>
         <RedeemRow
           label={<UnderlineLink href="/">in collateral</UnderlineLink>}
           badge="2x"
         >
-          <Amount value={userPoints?.troveUsd} prefix="$" fallback="-" format="compact" />
+          <Amount
+            value={userPoints?.troveUsd}
+            prefix="$"
+            fallback="-"
+            format="compact"
+          />
         </RedeemRow>
         <RedeemRow
           label={
@@ -230,7 +281,12 @@ const DepositStats = ({ userPoints }: { userPoints: APIUserPoints | undefined })
           }
           badge="1x"
         >
-          <Amount value={userPoints?.stabilityUsd} prefix="$" fallback="-" format="compact" />
+          <Amount
+            value={userPoints?.stabilityUsd}
+            prefix="$"
+            fallback="-"
+            format="compact"
+          />
         </RedeemRow>
       </VFlex>
       {overallMultiplier > 0 && (
@@ -241,8 +297,16 @@ const DepositStats = ({ userPoints }: { userPoints: APIUserPoints | undefined })
             color: "content",
           })}
         >
-          Overall multiplier: <Badge>{overallMultiplier}x</Badge> for{" "}
-          <Countdown date={overallMultiplierEndDate} />
+          {isStarted ? (
+            <>
+              Overall multiplier: <Badge>{overallMultiplier}x</Badge> for{" "}
+              <Countdown date={overallMultiplierEndDate} />
+            </>
+          ) : (
+            <>
+              Overall multiplier: <Badge>{overallMultiplier}x</Badge>
+            </>
+          )}
         </div>
       )}
     </VFlex>

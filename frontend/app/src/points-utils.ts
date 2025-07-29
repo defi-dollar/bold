@@ -6,10 +6,16 @@ import * as dn from "dnum";
 import { useLiquityStats } from "./liquity-utils";
 import { dnum18 } from "./dnum-utils";
 
+export interface LeaderboardRow {
+  rank: number;
+  address: `0x${string}`;
+  points: number;
+}
+
 export const usePointsLeaderboard = () => {
   const { data } = useLiquityStats();
   return data?.userPointsTop100
-    .map(([address, { totalPoint }], rank) => ({
+    .map<LeaderboardRow>(([address, { totalPoint }], rank) => ({
       rank: rank + 1,
       address,
       points: totalPoint,
