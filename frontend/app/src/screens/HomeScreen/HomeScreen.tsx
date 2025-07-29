@@ -244,7 +244,7 @@ function EarnRewardsRow({
       {!compact && (
         <td>
           <LinkTextButton
-            href={`/earn/${symbol.toLowerCase()}`}
+            href={`/earn/stability/${symbol.toLowerCase()}`}
             label={
               <div
                 className={css({
