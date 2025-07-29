@@ -100,7 +100,7 @@ export function Pool2PoolScreen() {
                     <IconEarn size={16} />
                   </div>
                   <HFlex gap={8}>
-                    Fetching {poolName} Stability Pool…
+                    Fetching {poolName} Pool…
                     <Spinner size={18} />
                   </HFlex>
                 </div>
