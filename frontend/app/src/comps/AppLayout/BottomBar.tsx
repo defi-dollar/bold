@@ -8,10 +8,16 @@ import { useLiquityStats } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, HFlex, shortenAddress, TokenIcon } from "@liquity2/uikit";
+import {
+  BOLD_TOKEN_SYMBOL,
+  HFlex,
+  shortenAddress,
+  TokenIcon,
+} from "@liquity2/uikit";
 import { blo } from "blo";
 import Image from "next/image";
 import { AboutButton } from "./AboutButton";
+import { fmtnum } from "@/src/formatting";
 // import merklLogoSrc from "./logo-merkl.svg";
 // import Link from "next/link";
 
@@ -26,6 +32,7 @@ export function BottomBar() {
   const stats = useLiquityStats();
 
   const tvl = stats.data?.totalValueLocked;
+  const boldSupply = stats.data?.totalBoldSupply;
 
   return (
     <div
@@ -78,33 +85,63 @@ export function BottomBar() {
             userSelect: "none",
           })}
         >
-          <div
-            className={css({
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            })}
-          >
-            <Logo size={16} />
-            <span>TVL</span>{" "}
-            <span>
-              {tvl && (
-                <Amount
-                  fallback="…"
-                  format="compact"
-                  prefix="$"
-                  value={tvl}
-                />
-              )}
-            </span>
-          </div>
+          <HFlex gap={16}>
+            <div
+              className={css({
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              })}
+            >
+              <Logo size={16} />
+              <span>TVL</span>{" "}
+              <span>
+                {tvl && (
+                  <Amount
+                    fallback="…"
+                    format="compact"
+                    prefix="$"
+                    value={tvl}
+                  />
+                )}
+              </span>
+            </div>
+            <div
+              title={`Total supply: ${fmtnum(boldSupply, {
+                suffix: ` ${BOLD_TOKEN_SYMBOL}`,
+                preset: "2z",
+              })}`}
+              className={css({
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                whiteSpace: "nowrap",
+              })}
+            >
+              <div
+                className={css({
+                  flexShrink: 0,
+                })}
+              >
+                <TokenIcon title={null} symbol={BOLD_TOKEN_SYMBOL} size={16} />
+              </div>
+              <span>
+                {boldSupply && (
+                  <Amount
+                    title={null}
+                    fallback="…"
+                    format="compact"
+                    value={boldSupply}
+                    suffix={` ${BOLD_TOKEN_SYMBOL}`}
+                  />
+                )}
+              </span>
+            </div>
+          </HFlex>
           <HFlex gap={16}>
             <AboutButton />
             {DISPLAYED_PRICES.map((symbol) => (
-              <Price
-                key={symbol}
-                symbol={symbol}
-              />
+              <Price key={symbol} symbol={symbol} />
             ))}
             {account.address && ACCOUNT_SCREEN && (
               <LinkTextButton
@@ -148,22 +185,11 @@ export function BottomBar() {
 function Price({ symbol }: { symbol: TokenSymbol }) {
   const price = usePrice(symbol);
   return (
-    <HFlex
-      key={symbol}
-      gap={4}
-    >
-      <TokenIcon
-        size={16}
-        symbol={symbol}
-      />
+    <HFlex key={symbol} gap={4}>
+      <TokenIcon size={16} symbol={symbol} />
       <HFlex gap={8}>
         <span>{symbol}</span>
-        <Amount
-          prefix="$"
-          fallback="…"
-          value={price.data}
-          format="2z"
-        />
+        <Amount prefix="$" fallback="…" value={price.data} format="2z" />
       </HFlex>
     </HFlex>
   );
