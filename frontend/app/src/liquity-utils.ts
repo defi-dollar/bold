@@ -660,6 +660,7 @@ const StatsSchema = v.pipe(
         })
       ])
     ),
+    lastUpdatedTimestamp: v.number(),
     branch: v.record(
       v.string(),
       v.object({
@@ -687,6 +688,7 @@ const StatsSchema = v.pipe(
     totalValueLocked: dnumOrNull(value.total_value_locked, 18),
     maxSpApy: dnumOrNull(value.max_sp_apy, 18),
     userPointsTop100: value.userPointsTop100,
+    lastUpdatedTimestamp: value.lastUpdatedTimestamp,
     branch: Object.fromEntries(
       Object.entries(value.branch).map(([symbol, branch]) => {
         symbol = symbol.toUpperCase();

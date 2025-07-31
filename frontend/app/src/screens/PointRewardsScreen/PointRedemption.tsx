@@ -22,6 +22,8 @@ import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
 import { useDepositsForPoints, useUserPoints } from "@/src/points-utils";
+import { useLiquityStats } from "@/src/liquity-utils";
+import { formatDate } from "@/src/formatting";
 
 const campaignBeginDate = new Date("Mon, 04 Aug 2025 00:00:00 GMT");
 const campaignEndDate = new Date(
@@ -112,6 +114,11 @@ export function PointRedemption() {
 const RewardsCard = () => {
   const { state } = useCampaignState();
   const { data: userPoints } = useUserPoints();
+  const { data: liquidityStats } = useLiquityStats();
+  const lastUpdatedTimestamp =
+    liquidityStats != undefined
+      ? new Date(liquidityStats.lastUpdatedTimestamp)
+      : undefined;
   const pointsToDeFiRate = [50000000000000000n, 18] as dn.Dnum;
   const showDeFiAmount = state === "redeemable" || state === "ended";
   const defiAmount =
@@ -178,6 +185,17 @@ const RewardsCard = () => {
                   fallback="-"
                   format={0}
                 />
+              </div>
+            )}
+            {lastUpdatedTimestamp && (
+              <div
+                className={css({
+                  color: "#aaaaaa",
+                  fontSize: 14,
+                  fontWeight: 500,
+                })}
+              >
+                updated at {formatDate(lastUpdatedTimestamp)}
               </div>
             )}
           </VFlex>
