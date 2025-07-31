@@ -21,7 +21,7 @@ import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
-import { APIUserPoints, useUserPoints } from "@/src/points-utils";
+import { useDepositsForPoints, useUserPoints } from "@/src/points-utils";
 
 const campaignBeginDate = new Date(Date.now() + 30 * 60 * 60 * 1000);
 const campaignEndDate = new Date(
@@ -199,9 +199,7 @@ const RewardsCard = () => {
           </div>
         )}
       </div>
-      {(state === "not-started" || state === "active") && (
-        <DepositStats userPoints={userPoints} />
-      )}
+      {(state === "not-started" || state === "active") && <DepositStats />}
       {state === "redeemable" && (
         <div>
           Redemption ends in <Countdown date={redemptionEndDate} />
@@ -212,21 +210,19 @@ const RewardsCard = () => {
   );
 };
 
-const DepositStats = ({
-  userPoints,
-}: {
-  userPoints: APIUserPoints | undefined;
-}) => {
+const DepositStats = () => {
   const { multiplier: overallMultiplier, endDate: overallMultiplierEndDate } =
     useOverallMultiplier(campaignBeginDate);
 
-  const totalDeposits =
-    userPoints !== undefined
-      ? userPoints.crvUsd + userPoints.troveUsd + userPoints.stabilityUsd
-      : undefined;
-
   const { state } = useCampaignState();
   const isStarted = state !== "not-started";
+
+  const {
+    totalDeposits,
+    collateralDeposits,
+    pool1Deposits,
+    stabilityPoolDeposits,
+  } = useDepositsForPoints();
 
   return (
     <VFlex gap={16}>
@@ -256,7 +252,7 @@ const DepositStats = ({
           badge="5x"
         >
           <Amount
-            value={userPoints?.crvUsd}
+            value={pool1Deposits}
             prefix="$"
             fallback="-"
             format="compact"
@@ -267,7 +263,7 @@ const DepositStats = ({
           badge="2x"
         >
           <Amount
-            value={userPoints?.troveUsd}
+            value={collateralDeposits}
             prefix="$"
             fallback="-"
             format="compact"
@@ -282,7 +278,7 @@ const DepositStats = ({
           badge="1x"
         >
           <Amount
-            value={userPoints?.stabilityUsd}
+            value={stabilityPoolDeposits}
             prefix="$"
             fallback="-"
             format="compact"

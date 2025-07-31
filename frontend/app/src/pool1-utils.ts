@@ -9,7 +9,7 @@ import { dnum18 } from "@/src/dnum-utils";
 import { DEFI } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
-import { useConfig as useWagmiConfig } from "wagmi";
+import { useAccount, useReadContracts, useConfig as useWagmiConfig } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { fetchPrice, usePrice } from "./services/Prices";
 
@@ -103,5 +103,41 @@ export function usePool1Position(
     placeholderData: (previousData) => {
       return previousData;
     }
+  });
+}
+
+export function usePool1Deposits(poolId: string) {
+  const {address} = useAccount();
+
+  return useReadContracts({
+    contracts: [
+      {
+        ...getPool1Contracts(poolId).lpToken,
+        functionName: "balanceOf",
+        args: [address ?? "0x"],
+      }, {
+        ...getPool1Contracts(poolId).lpToken,
+        functionName: "get_virtual_price",
+      }
+    ],
+    query: {
+      enabled: Boolean(address),
+      select: ([balance, price]) => {
+        if (balance.result === undefined) {
+          return undefined;
+        }
+        if (price.result === undefined) {
+          return undefined;
+        }
+        const balanceDnum = dnum18(balance.result);
+        const priceDnum = dnum18(price.result);
+        const depositsUsd = dn.mul(balanceDnum, priceDnum);
+        return {
+          balance: balanceDnum,
+          virtualPrice: priceDnum,
+          depositsUsd,
+        }
+      }
+    },
   });
 }
