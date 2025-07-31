@@ -21,7 +21,7 @@ export function PositionCardEarn({
   return (
     <PositionCard
       className="position-card position-card-earn"
-      href={token ? `/earn/${token.symbol.toLowerCase()}` : ""}
+      href={token ? `/earn/stability/${token.symbol.toLowerCase()}` : ""}
       heading={[
         <div
           key="start"
