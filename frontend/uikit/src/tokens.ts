@@ -9,7 +9,7 @@ import tokenUNI from './token-icons/UNI.png';
 import tokenAAVE from './token-icons/aave-token-round.svg';
 import tokenLDO from './token-icons/LDO.png';
 import tokenCRV from './token-icons/CRV.png';
-import tokenFXS from './token-icons/FXS.png';
+import tokenFRAX from './token-icons/FRAX icon.svg';
 import tokenSKY from './token-icons/SKY.png';
 import tokenLQTY from './token-icons/lqty.svg';
 import tokenYFI from './token-icons/YFI.png';
@@ -115,7 +115,7 @@ export const CRV: CollateralToken  = {
 };
 
 export const FXS: CollateralToken  = {
-  icon: tokenFXS,
+  icon: tokenFRAX,
   name: "FRAX",
   symbol: "FXS" as const,
   collateralRatio: 1.333333333333333333,
