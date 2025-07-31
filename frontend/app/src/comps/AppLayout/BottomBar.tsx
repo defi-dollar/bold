@@ -12,8 +12,8 @@ import { BOLD_TOKEN_SYMBOL, HFlex, shortenAddress, TokenIcon } from "@liquity2/u
 import { blo } from "blo";
 import Image from "next/image";
 import { AboutButton } from "./AboutButton";
-import merklLogoSrc from "./logo-merkl.svg";
-import Link from "next/link";
+// import merklLogoSrc from "./logo-merkl.svg";
+// import Link from "next/link";
 
 const DISPLAYED_PRICES = [
   // "LQTY",
@@ -38,7 +38,7 @@ export function BottomBar() {
         },
       })}
     >
-      <div
+      {/* <div
         className={css({
           display: "flex",
           alignItems: "center",
@@ -53,7 +53,7 @@ export function BottomBar() {
         <Link href="https://merkl.xyz" target="_blank">
           <Image alt="Powered by Merkl" src={merklLogoSrc} width={90} height={20} />
         </Link>
-      </div>
+      </div> */}
       <div
         className={css({
           display: "flex",
