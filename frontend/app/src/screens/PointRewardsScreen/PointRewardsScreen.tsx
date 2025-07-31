@@ -81,7 +81,7 @@ export function PointRewardsScreen({
           })}
         >
           Manage and claim your {DEFI.name} rewards earned from depositing
-          asset.
+          assets.
         </div>
       </header>
       <Tabs

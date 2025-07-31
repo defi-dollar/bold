@@ -246,7 +246,7 @@ const DepositStats = () => {
               href="https://www.curve.finance/dex/ethereum/pools/?search=usdfi"
               target="_blank"
             >
-              in Curve USDFI LP
+              in Curve USDFI LPs
             </UnderlineLink>
           }
           badge="5x"
@@ -272,7 +272,7 @@ const DepositStats = () => {
         <RedeemRow
           label={
             <UnderlineLink href="/earn/stability">
-              in stability pool
+              in stability pools
             </UnderlineLink>
           }
           badge="1x"

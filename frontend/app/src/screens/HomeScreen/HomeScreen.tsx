@@ -85,7 +85,7 @@ function BorrowTable({ compact }: { compact: boolean }) {
 
   return (
     <HomeTable
-      title={`Borrow ${BOLD_TOKEN_SYMBOL} against DeFi governance tokens`}
+      title={`Borrow ${BOLD_TOKEN_SYMBOL} against major DeFi tokens`}
       subtitle="You can adjust your loans, including your interest rate, at any time"
       icon={<IconBorrow />}
       columns={columns}
@@ -113,7 +113,7 @@ function EarnTable({ compact }: { compact: boolean }) {
   return (
     <HomeTable
       title={`Earn rewards with ${BOLD_TOKEN_SYMBOL}`}
-      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & native token yield by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
+      subtitle={`Earn ${BOLD_TOKEN_SYMBOL} & token collateral by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`}
       icon={<IconEarn />}
       columns={columns}
       rows={getBranches()
