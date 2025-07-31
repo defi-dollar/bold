@@ -107,14 +107,14 @@ export const POOL1_CONFIGS: Record<
     curvePoolId: "factory-stable-ng-524",
     curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-524/deposit/"
   },
-  "USDFI-FRAXBP": {
-    poolName: "USDFI/FRAXBP",
-    lpTokenSymbol: "USDFIFRAXBP",
+  "USDFI-frxUSD": {
+    poolName: "USDFI/frxUSD",
+    lpTokenSymbol: "USDFIFRXUSD",
     gauge: "0x07a01471fA544D9C6531B631E6A96A79a9AD05E9", // TODO: Update to actual data
-    lpToken: "0xC2bAA41C8CA2F2dbDb70057B7956137462B2517F",
+    lpToken: "0x2eFC11c7Bb2E0FBdBa8A05a3712398860E6A8E53",
     rewardToken: "0x6440f144b7e50D6a8439336510312d2F54beB01D", // TODO: Update to actual data
-    curvePoolId: "factory-stable-ng-525",
-    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-525/deposit/"
+    curvePoolId: "factory-stable-ng-527",
+    curvePoolUrl: "https://www.curve.finance/dex/ethereum/pools/factory-stable-ng-527/deposit/"
   },
 };
 

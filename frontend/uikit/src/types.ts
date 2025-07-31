@@ -13,7 +13,7 @@ export type TokenSymbol =
   | "ETH"
   | "DEFI"
   | "USDFIBOLD"
-  | "USDFIFRAXBP"
+  | "USDFIFRXUSD"
   | "DEFIWETH"
   | CollateralSymbol;
 

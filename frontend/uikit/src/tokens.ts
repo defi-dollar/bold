@@ -168,10 +168,10 @@ export const USDFIBOLD: Token = {
   symbol: "USDFIBOLD" as const,
 } as const;
 
-export const USDFIFRAXBP: Token = {
+export const USDFIFRXUSD: Token = {
   icon: tokenDusdFraxbp,
-  name: "USDFI/FRAXBP LP",
-  symbol: "USDFIFRAXBP" as const,
+  name: "USDFI/frxUSD LP",
+  symbol: "USDFIFRXUSD" as const,
 } as const;
 
 export const DEFIWETH: Token = {
@@ -209,6 +209,6 @@ export const TOKENS_BY_SYMBOL = {
   ETH,
   DEFI,
   USDFIBOLD,
-  USDFIFRAXBP,
+  USDFIFRXUSD,
   DEFIWETH,
 } as const;
