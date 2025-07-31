@@ -16,6 +16,8 @@ import { usePrice } from "./services/Prices";
 import { POOL1_CONFIGS } from "./constants";
 import { usePool1Deposits } from "./pool1-utils";
 
+export const POINT_SYSTEM_ENABLED = false;
+
 export interface LeaderboardRow {
   rank: number;
   address: `0x${string}`;
@@ -24,6 +26,9 @@ export interface LeaderboardRow {
 
 export const usePointsLeaderboard = () => {
   const { data } = useLiquityStats();
+  if (!POINT_SYSTEM_ENABLED) {
+    return [];
+  }
   return data?.userPointsTop100
     .map<LeaderboardRow>(([address, { totalPoint }], rank) => ({
       rank: rank + 1,
@@ -46,6 +51,15 @@ export const useUserPoints = () => {
   return useQuery({
     queryKey: ["user-points", address],
     queryFn: async () => {
+      if (!POINT_SYSTEM_ENABLED) {
+        return {
+          crvUsd: 0,
+          rank: 0,
+          stabilityUsd: 0,
+          totalPoint: 0,
+          troveUsd: 0,
+        };
+      }
       const response = await axios.get<APIUserPoints>(
         `https://defi-dollar.github.io/stats/v2/userPoints/${address?.toLowerCase()}.json`
       );
@@ -111,7 +125,10 @@ export const useDepositsForPoints = () => {
     if (!stabilityPoolDeposits || !collateralDeposits || !pool1DepositsUsd) {
       return undefined;
     }
-    return dn.add(stabilityPoolDeposits, dn.add(collateralDeposits, pool1DepositsUsd));
+    return dn.add(
+      stabilityPoolDeposits,
+      dn.add(collateralDeposits, pool1DepositsUsd)
+    );
   }, [stabilityPoolDeposits, collateralDeposits, pool1DepositsUsd]);
 
   return {

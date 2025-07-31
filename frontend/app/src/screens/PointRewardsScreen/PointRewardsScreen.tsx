@@ -10,10 +10,11 @@ import { PointRedemption } from "./PointRedemption";
 import { PointLeaderboard } from "./PointLeaderboard";
 import { useRouter } from "next/navigation";
 import { a, useTransition } from "@react-spring/web";
+import { POINT_SYSTEM_ENABLED } from "@/src/points-utils";
 
 const TABS = [
-  { label: "My Points", id: "redemption" },
-  { label: "Leaderboard", id: "leaderboard" },
+  { label: "My Points", id: "redemption", enabled: true },
+  { label: "Leaderboard", id: "leaderboard", enabled: POINT_SYSTEM_ENABLED },
 ];
 
 export function PointRewardsScreen({
@@ -85,10 +86,11 @@ export function PointRewardsScreen({
         </div>
       </header>
       <Tabs
-          items={TABS.map(({ label, id }) => ({
+          items={TABS.map(({ label, id, enabled }) => ({
             label,
             panelId: `p-${id}`,
             tabId: `t-${id}`,
+            disabled: !enabled,
           }))}
           selected={TABS.findIndex(({ id }) => id === tab)}
           onSelect={(index) => {
