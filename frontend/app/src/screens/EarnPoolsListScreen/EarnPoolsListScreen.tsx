@@ -34,7 +34,7 @@ export function EarnPoolsListScreen({
           margin: "0 auto",
         })}
       >
-        <Tabs
+        {/* <Tabs
           items={TABS.map(({ label, id }) => ({
             label,
             panelId: `p-${id}`,
@@ -48,7 +48,7 @@ export function EarnPoolsListScreen({
             }
             router.push(`/earn/${tab.id}`, { scroll: false });
           }}
-        />
+        /> */}
       </div>
       {pool === "stability" && <StabilityPools />}
       {pool === "pool1" && <Pool1Pools />}
