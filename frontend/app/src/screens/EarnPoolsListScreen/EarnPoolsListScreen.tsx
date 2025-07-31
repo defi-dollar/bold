@@ -1,24 +1,24 @@
 "use client";
 
 import { css } from "@/styled-system/css";
-import { Tabs } from "@liquity2/uikit";
-import { useRouter } from "next/navigation";
+// import { Tabs } from "@liquity2/uikit";
+// import { useRouter } from "next/navigation";
 import { StabilityPools } from "./StabilityPools";
 import { Pool1Pools } from "./Pool1Pools";
 import { Pool2Pools } from "./Pool2Pools";
 
-const TABS = [
-  { label: "Stability Pool", id: "stability" },
-  { label: "Pool1", id: "pool1" },
-  { label: "Pool2", id: "pool2" },
-];
+// const TABS = [
+//   { label: "Stability Pool", id: "stability" },
+//   { label: "Pool1", id: "pool1" },
+//   { label: "Pool2", id: "pool2" },
+// ];
 
 export function EarnPoolsListScreen({
   pool: pool = "stability",
 }: {
   pool?: string;
 }) {
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <div className={css({
