@@ -23,7 +23,7 @@ import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
 import { useDepositsForPoints, useUserPoints } from "@/src/points-utils";
 
-const campaignBeginDate = new Date(Date.now() + 30 * 60 * 60 * 1000);
+const campaignBeginDate = new Date("Mon, 04 Aug 2025 00:00:00 GMT");
 const campaignEndDate = new Date(
   campaignBeginDate.getTime() + 28 * 24 * 60 * 60 * 1000
 );
