@@ -12,7 +12,7 @@ import {
 } from "@/src/valibot-utils";
 import * as v from "valibot";
 
-const DEFAULT_COMMIT_URL = "https://github.com/liquity/bold/tree/{commit}";
+const DEFAULT_COMMIT_URL = "https://github.com/defi-dollar/bold/tree/{commit}";
 const DEFAULT_VERSION_URL = "https://github.com/liquity/bold/releases/tag/%40liquity2%2Fapp-v{version}";
 
 export const COLL_NUM = parseInt(process.env.NEXT_PUBLIC_COLL_NUM ?? "0");

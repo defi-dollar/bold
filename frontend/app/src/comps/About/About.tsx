@@ -273,7 +273,7 @@ export function About({ children }: { children: ReactNode }) {
             <AboutTable
               title={
                 <>
-                  Liquity V2 contracts ({env.CONTRACTS_COMMIT_URL
+                  DeFi Dollar contracts ({env.CONTRACTS_COMMIT_URL
                     ? (
                       <LinkTextButton
                         external
@@ -361,7 +361,7 @@ function ModalTitle() {
           <Logo size={40} />
         </a.div>
       </a.div>
-      <div>Liquity V2 App</div>
+      <div>DeFi Dollar App</div>
     </div>
   );
 }
