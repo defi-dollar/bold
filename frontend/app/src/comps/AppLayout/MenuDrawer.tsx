@@ -175,7 +175,7 @@ function NavItems({
   const pathname = usePathname();
 
   const transition = useTransition(menuItems, {
-    keys: (item) => item[1],
+    keys: (item) => item.url,
     initial: {
       opacity: 0,
       transform: "translateX(40px)",
@@ -201,17 +201,18 @@ function NavItems({
           flexDirection: "column",
         })}
       >
-        {transition((styles, [label, href, Icon]) => {
-          const selected = href === "/"
+        {transition((styles, {label, url, Icon, external}) => {
+          const selected = url === "/"
             ? pathname === "/"
-            : pathname.startsWith(href);
+            : pathname.startsWith(url);
           return (
             <a.li
-              key={label + href}
+              key={label + url}
               style={styles}
             >
               <Link
-                href={href}
+                href={url}
+                target={external ? "_blank" : undefined}
                 onClick={onClose}
                 className={css({
                   display: "block",

@@ -28,6 +28,7 @@ export default {
     borrow: "Borrow",
     multiply: "Multiply",
     earn: "Earn",
+    docs: "Docs",
     stake: "Stake",
   },
 

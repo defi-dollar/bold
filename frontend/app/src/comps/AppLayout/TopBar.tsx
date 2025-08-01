@@ -20,6 +20,8 @@ import { MenuDrawerButton } from "./MenuDrawer";
 import { LinkTextButton } from "../LinkTextButton/LinkTextButton";
 import { Amount } from "../Amount/Amount";
 import { useUserPoints } from "@/src/points-utils";
+import Image from "next/image";
+import docsIconSrc from "./icon-docs.svg";
 
 const IconRewards = () => {
   return (
@@ -37,11 +39,23 @@ export function TopBar() {
   const accountPoints = useUserPoints();
 
   const menuItems: MenuItem[] = [
-    [content.menu.dashboard, "/", IconDashboard],
-    [content.menu.borrow, "/borrow", IconBorrow],
-    [content.menu.earn, "/earn", IconEarn], // TODO: Add icon
+    { label: content.menu.dashboard, url: "/", Icon: IconDashboard },
+    { label: content.menu.borrow, url: "/borrow", Icon: IconBorrow },
+    { label: content.menu.earn, url: "/earn", Icon: IconEarn }, // TODO: Add icon
+    
     // [content.menu.stake, "/stake", IconStake],
-    ["Rewards", "/point-rewards", IconRewards, true],
+    {
+      label: "Rewards",
+      url: "/point-rewards",
+      Icon: IconRewards,
+      hideInDesktop: true,
+    },
+    {
+      label: content.menu.docs,
+      url: "https://docs.defidollar.io",
+      Icon: IconDocs,
+      external: true,
+    },
   ];
 
   return (
@@ -182,7 +196,11 @@ export function TopBar() {
             href="/point-rewards"
             label={
               accountPoints.data ? (
-                <Amount prefix="Points: " value={accountPoints.data.totalPoint} format={0} />
+                <Amount
+                  prefix="Points: "
+                  value={accountPoints.data.totalPoint}
+                  format={0}
+                />
               ) : (
                 "Rewards"
               )
@@ -210,3 +228,7 @@ export function TopBar() {
     </div>
   );
 }
+
+const IconDocs = () => {
+  return <Image src={docsIconSrc} alt="Documentation" width={24} height={24} />;
+};

@@ -6,12 +6,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuItem } from "./MenuItem";
 
-export type MenuItem = [
+export type MenuItem = {
   label: ReactNode,
   url: string,
   Icon: ComponentType<{}>,
   hideInDesktop?: boolean,
-];
+  external?: boolean,
+};
 
 export function Menu({
   menuItems,
@@ -37,14 +38,15 @@ export function Menu({
           height: "100%",
         })}
       >
-        {menuItems.map(([label, href, Icon, hideInDesktop]) => {
-          const selected = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        {menuItems.map(({label, url, Icon, hideInDesktop, external}) => {
+          const selected = url === "/" ? pathname === "/" : pathname.startsWith(url);
           return (
-            <li key={label + href} className={css({
+            <li key={label + url} className={css({
               display: hideInDesktop ? "none" : "block",
             })}>
               <Link
-                href={href}
+                href={url}
+                target={external ? "_blank" : undefined}
                 className={css({
                   display: "flex",
                   height: "100%",
