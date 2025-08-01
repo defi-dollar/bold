@@ -24,7 +24,7 @@ if (!subgraphUrl) {
 console.log("Using subgraph URL:", subgraphUrl, "\n");
 
 const config: CodegenConfig = {
-  schema: subgraphUrl,
+  schema: './subgraph-schema.json',
   documents: "src/**/*.{ts,tsx}",
   ignoreNoDocuments: true,
   generates: {
