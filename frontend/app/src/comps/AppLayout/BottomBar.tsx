@@ -2,7 +2,6 @@ import type { TokenSymbol } from "@/src/types";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
-import { Logo } from "@/src/comps/Logo/Logo";
 import { ACCOUNT_SCREEN } from "@/src/env";
 import { useLiquityStats } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
@@ -10,6 +9,7 @@ import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
 import {
   BOLD_TOKEN_SYMBOL,
+  DEFI,
   HFlex,
   shortenAddress,
   TokenIcon,
@@ -23,6 +23,7 @@ import { fmtnum } from "@/src/formatting";
 
 const DISPLAYED_PRICES = [
   // "LQTY",
+  DEFI.symbol,
   BOLD_TOKEN_SYMBOL,
   // "ETH"
 ] as const;
@@ -93,7 +94,6 @@ export function BottomBar() {
                 gap: 4,
               })}
             >
-              <Logo size={16} />
               <span>TVL</span>{" "}
               <span>
                 {tvl && (
@@ -189,7 +189,12 @@ function Price({ symbol }: { symbol: TokenSymbol }) {
       <TokenIcon size={16} symbol={symbol} />
       <HFlex gap={8}>
         <span>{symbol}</span>
-        <Amount prefix="$" fallback="…" value={price.data} format="2z" />
+        <Amount
+          prefix="$"
+          fallback="-"
+          value={symbol === DEFI.symbol ? undefined : price.data}
+          format="2z"
+        />
       </HFlex>
     </HFlex>
   );
