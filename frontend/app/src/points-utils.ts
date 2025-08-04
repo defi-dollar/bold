@@ -16,7 +16,7 @@ import { usePrice } from "./services/Prices";
 import { POOL1_CONFIGS } from "./constants";
 import { usePool1Deposits } from "./pool1-utils";
 
-export const POINT_SYSTEM_ENABLED = false;
+export const POINT_SYSTEM_ENABLED = true;
 
 export interface LeaderboardRow {
   rank: number;
@@ -61,10 +61,10 @@ export const useUserPoints = () => {
         };
       }
       try {
-      const response = await axios.get<APIUserPoints>(
-        `https://defi-dollar.github.io/stats/v2/userPoints/${address?.toLowerCase()}.json`
-      );
-      return response.data;
+        const response = await axios.get<APIUserPoints>(
+          `https://defi-dollar.github.io/stats/v2/userPoints/${address?.toLowerCase()}.json`
+        );
+        return response.data;
       } catch (error) {
         if (error instanceof AxiosError) {
           if (error.response?.status === 404) {
