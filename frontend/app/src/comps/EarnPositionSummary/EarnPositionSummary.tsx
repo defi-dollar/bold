@@ -69,7 +69,7 @@ export function EarnPositionSummary({
           ? null
           : {
               label: `${active ? "Manage" : "Deposit to"} ${collToken.name} pool`,
-              path: `/earn/${collToken.symbol.toLowerCase()}`,
+              path: `/earn/stability/${collToken.symbol.toLowerCase()}`,
             }
       }
       active={active}

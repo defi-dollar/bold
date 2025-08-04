@@ -392,8 +392,8 @@ export function PanelUpdate({
             if (mode === "redeem") {
               return {
                 flowId: "sboldRedeem",
-                backLink: ["/earn/sbold", "Back to editing"],
-                successLink: ["/earn/sbold", "Go to the sBOLD Pool"],
+                backLink: ["/earn/stability/sbold", "Back to editing"],
+                successLink: ["/earn/stability/sbold", "Go to the sBOLD Pool"],
                 successMessage: "The sBOLD has been redeemed successfully.",
                 sboldPosition: newSboldPosition,
                 prevSboldPosition,
@@ -402,8 +402,8 @@ export function PanelUpdate({
 
             return {
               flowId: "sboldDeposit",
-              backLink: ["/earn/sbold", "Back to editing"],
-              successLink: ["/earn/sbold", "Go to the sBOLD Pool"],
+              backLink: ["/earn/stability/sbold", "Back to editing"],
+              successLink: ["/earn/stability/sbold", "Go to the sBOLD Pool"],
               successMessage: "The deposit has been processed successfully.",
               depositFee,
               sboldPosition: newSboldPosition,

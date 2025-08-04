@@ -16,7 +16,7 @@ export function PositionCardSbold({
   return (
     <PositionCard
       className="position-card position-card-sbold"
-      href="/earn/sbold"
+      href="/earn/stability/sbold"
       heading={[
         <div
           key="start"

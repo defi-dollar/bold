@@ -36,7 +36,7 @@ export function SboldPositionSummary({
     <EarnPositionSummaryBase
       action={!linkToScreen ? null : {
         label: `${active ? "Manage" : "Deposit to"} the sBOLD pool`,
-        path: `/earn/sbold`,
+        path: `/earn/stability/sbold`,
       }}
       active={active}
       poolToken="SBOLD"
