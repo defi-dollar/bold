@@ -6,6 +6,7 @@ import {
   ACCOUNT_SCREEN,
   CHAIN_BLOCK_EXPLORER,
   CONTRACT_BOLD_TOKEN,
+  CONTRACT_DEFI_TOKEN,
   CONTRACT_LQTY_TOKEN,
 } from "@/src/env";
 import { fmtnum } from "@/src/formatting";
@@ -194,7 +195,7 @@ function getTokenAddress(symbol: TokenSymbol) {
     return CONTRACT_BOLD_TOKEN;
   }
   if (symbol === "DEFI") {
-    return;
+    return CONTRACT_DEFI_TOKEN;
   }
   return null;
 }
