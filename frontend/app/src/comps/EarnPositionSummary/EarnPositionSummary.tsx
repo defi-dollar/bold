@@ -222,32 +222,40 @@ export function EarnPositionSummary({
           ? null
           : {
               label: "Rewards",
-              content: active ? (
-                <>
-                  <HFlex
-                    gap={4}
-                    title={`${fmtnum(earnPosition?.rewards.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
-                    className={css({
-                      fontVariantNumeric: "tabular-nums",
-                    })}
-                  >
-                    {fmtnum(earnPosition?.rewards.bold)}
-                    <TokenIcon
-                      symbol={BOLD_TOKEN_SYMBOL}
-                      size="mini"
-                      title={null}
-                    />
-                  </HFlex>
-                  <HFlex gap={4}>
-                    <Amount value={earnPosition?.rewards.coll} />
-                    <TokenIcon symbol={collToken.symbol} size="mini" />
-                  </HFlex>
-                </>
-              ) : (
-                <TokenIcon.Group size="mini">
-                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
-                  <TokenIcon symbol={collToken.symbol} />
-                </TokenIcon.Group>
+              content: (
+                <HFlex
+                  className={css({
+                    height: 24,
+                  })}
+                >
+                  {active ? (
+                    <>
+                      <HFlex
+                        gap={4}
+                        title={`${fmtnum(earnPosition?.rewards.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
+                        className={css({
+                          fontVariantNumeric: "tabular-nums",
+                        })}
+                      >
+                        {fmtnum(earnPosition?.rewards.bold)}
+                        <TokenIcon
+                          symbol={BOLD_TOKEN_SYMBOL}
+                          size="mini"
+                          title={null}
+                        />
+                      </HFlex>
+                      <HFlex gap={4}>
+                        <Amount value={earnPosition?.rewards.coll} />
+                        <TokenIcon symbol={collToken.symbol} size="mini" />
+                      </HFlex>
+                    </>
+                  ) : (
+                    <TokenIcon.Group size="mini">
+                      <TokenIcon symbol={BOLD_TOKEN_SYMBOL} />
+                      <TokenIcon symbol={collToken.symbol} />
+                    </TokenIcon.Group>
+                  )}
+                </HFlex>
               ),
             },
         !active
