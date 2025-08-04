@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import * as dn from "dnum";
 
 import {
@@ -60,10 +60,25 @@ export const useUserPoints = () => {
           troveUsd: 0,
         };
       }
+      try {
       const response = await axios.get<APIUserPoints>(
         `https://defi-dollar.github.io/stats/v2/userPoints/${address?.toLowerCase()}.json`
       );
       return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          if (error.response?.status === 404) {
+            return {
+              crvUsd: 0,
+              rank: 0,
+              stabilityUsd: 0,
+              totalPoint: 0,
+              troveUsd: 0,
+            };
+          }
+        }
+        throw error;
+      }
     },
     enabled: !!address,
   });
