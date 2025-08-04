@@ -808,8 +808,6 @@ export type Subscription = {
   governanceAllocations: Array<GovernanceAllocation>;
   governanceInitiative?: Maybe<GovernanceInitiative>;
   governanceInitiatives: Array<GovernanceInitiative>;
-  governanceUser?: Maybe<GovernanceUser>;
-  governanceUsers: Array<GovernanceUser>;
   interestBatch?: Maybe<InterestBatch>;
   interestBatches: Array<InterestBatch>;
   interestRateBracket?: Maybe<InterestRateBracket>;
@@ -911,24 +909,6 @@ export type SubscriptionGovernanceInitiativesArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<GovernanceInitiative_Filter>;
-};
-
-
-export type SubscriptionGovernanceUserArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type SubscriptionGovernanceUsersArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GovernanceUser_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<GovernanceUser_Filter>;
 };
 
 
@@ -1290,7 +1270,7 @@ export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
 {
-  __apiType?: DocumentTypeDecoration<TResult, TVariables>['__apiType'];
+  __apiType?: NonNullable<DocumentTypeDecoration<TResult, TVariables>['__apiType']>;
   private value: string;
   public __meta__?: Record<string, any> | undefined;
 
@@ -1300,7 +1280,7 @@ export class TypedDocumentString<TResult, TVariables>
     this.__meta__ = __meta__;
   }
 
-  toString(): string & DocumentTypeDecoration<TResult, TVariables> {
+  override toString(): string & DocumentTypeDecoration<TResult, TVariables> {
     return this.value;
   }
 }
