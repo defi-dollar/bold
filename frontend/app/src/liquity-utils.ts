@@ -1088,7 +1088,7 @@ export function useLegacyPositions(account: Address | null): UseQueryResult<{
                 branchId,
                 collToken: {
                   name: branch.name,
-                  symbol: branch.symbol,
+                  symbol: branch.symbol as CollateralSymbol,
                 },
                 troveId,
               };
