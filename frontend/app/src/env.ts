@@ -224,7 +224,6 @@ export const EnvSchema = v.pipe(
     })(),
   }),
   v.transform((data) => {
-    // TODO: Fix this
     const env = { ...data,};
 
     const envBranches: BranchEnv[] = [];
@@ -233,7 +232,7 @@ export const EnvSchema = v.pipe(
       ([chainId]) => chainId === env.CHAIN_ID,
     )?.[1] ?? null;
 
-    for (const index of Array(10).keys()) {
+    for (const index of Array(COLL_NUM).keys()) {
       const collEnvName = `COLL_${index as BranchId}` as const;
       const contracts: Partial<Record<ContractEnvName, Address>> = {};
 

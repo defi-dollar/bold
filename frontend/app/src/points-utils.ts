@@ -154,7 +154,7 @@ export const useDepositsForPoints = () => {
   };
 };
 
-export const pointsRedemptionPrice = dnum18(100000000000000000n); // 0.1 BOLD_TOKEN_SYMBOL per DEFI.name
+export const pointsRedemptionPrice = dnum18(100000000000000000n)
 
 export const getPointsRedemptionCost = (amount: dn.Dnum) => {
   return dn.mul(amount, pointsRedemptionPrice);

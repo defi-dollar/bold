@@ -14,7 +14,7 @@ import type { Address, Initiative } from "@/src/types";
 import { tokenIconUrl } from "@/src/utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { shortenAddress, Tabs, TokenIcon, VFlex } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, shortenAddress, Tabs, TokenIcon, VFlex } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -203,7 +203,7 @@ function BribesInfoBox({
                 })}
               >
                 <div
-                  title={`${fmtnum(data.boldAmount)} BOLD`}
+                  title={`${fmtnum(data.boldAmount)} ${BOLD_TOKEN_SYMBOL}`}
                   className={css({
                     display: "flex",
                     alignItems: "center",
@@ -217,7 +217,7 @@ function BribesInfoBox({
                   />
                   <TokenIcon
                     size={16}
-                    symbol="BOLD"
+                    symbol={BOLD_TOKEN_SYMBOL}
                     title={null}
                   />
                 </div>

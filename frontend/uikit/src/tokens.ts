@@ -1,4 +1,5 @@
 import tokenBold from "./token-icons/DUSD.svg";
+import tokenSbold from "./token-icons/sbold.svg";
 import tokenLusd from "./token-icons/lusd.svg";
 import tokenEth from "./token-icons/eth.svg";
 import tokenWBTC from './token-icons/WBTC.png';
@@ -17,7 +18,6 @@ import tokenDusdFraxbp from './token-icons/DUSDFRAXBP.png';
 import tokenDefiWeth from './token-icons/DEFIWETH.png';
 
 export const BOLD_TOKEN_SYMBOL = 'USDFI';
-
 
 export type CollateralSymbols = [
   "ETH", // To bypass type-checking
@@ -67,7 +67,7 @@ export type Token = ExternalToken & {
 
 export function isTokenSymbol(symbolOrUrl: string): symbolOrUrl is TokenSymbol {
   return (
-    symbolOrUrl === "BOLD"
+    symbolOrUrl === BOLD_TOKEN_SYMBOL
     || symbolOrUrl === "ETH"
     || symbolOrUrl === "LQTY"
     || symbolOrUrl === "LUSD"
@@ -195,6 +195,12 @@ export const BOLD: Token = {
   symbol: BOLD_TOKEN_SYMBOL,
 } as const;
 
+export const SBOLD: Token = {
+  icon: tokenSbold,
+  name: "sBOLD",
+  symbol: "SBOLD" as const,
+} as const;
+
 export const DEFI: Token = {
   icon: tokenDEFI,
   name: "DEFI",
@@ -234,6 +240,7 @@ export const COLLATERALS: CollateralToken[] = [
 
 export const TOKENS_BY_SYMBOL = {
   [BOLD_TOKEN_SYMBOL]: BOLD,
+  SBOLD,
   LUSD,
   WBTC,
   LINK,

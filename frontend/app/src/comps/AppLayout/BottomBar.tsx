@@ -28,7 +28,7 @@ import { AboutButton } from "./AboutButton";
 
 const DISPLAYED_PRICES = [
   // "LQTY",
-  DEFI.symbol,
+  "DEFI",
   BOLD_TOKEN_SYMBOL,
   // "ETH"
 ] as const;

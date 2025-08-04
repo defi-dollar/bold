@@ -23,7 +23,7 @@ import { tokenIconUrl } from "@/src/utils";
 import { jsonStringifyWithBigInt } from "@/src/utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { Button, IconDownvote, IconEdit, IconExternal, IconUpvote, shortenAddress, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, Button, IconDownvote, IconEdit, IconExternal, IconUpvote, shortenAddress, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -848,7 +848,7 @@ function InitiativeRow({
               >
                 {dn.gt(bribe.boldAmount, 0) && (
                   <div
-                    title={`${fmtnum(bribe.boldAmount)} BOLD`}
+                    title={`${fmtnum(bribe.boldAmount)} ${BOLD_TOKEN_SYMBOL}`}
                     className={css({
                       display: "flex",
                       alignItems: "center",
@@ -861,7 +861,7 @@ function InitiativeRow({
                       value={bribe.boldAmount}
                     />
                     <TokenIcon
-                      symbol="BOLD"
+                      symbol={BOLD_TOKEN_SYMBOL}
                       size={12}
                       title={null}
                     />

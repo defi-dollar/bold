@@ -1,3 +1,5 @@
+"use client";
+
 import type { TypedDocumentString } from "@/src/graphql/graphql";
 import type { Address, BranchId, TroveId } from "@/src/types";
 

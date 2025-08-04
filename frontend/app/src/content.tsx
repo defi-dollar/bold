@@ -2,10 +2,8 @@
 
 import { BOLD_TOKEN_SYMBOL, DEFI, TokenIcon } from "@liquity2/uikit";
 import type { ReactNode as N } from "react";
-import * as dn from "dnum";
 
 import { css } from "@/styled-system/css";
-import { pointsRedemptionPrice } from "./points-utils";
 
 export default {
   // Used in the top bar and other places
@@ -223,8 +221,8 @@ export default {
       },
     },
     earnTable: {
-      title: "Earn rewards with BOLD",
-      subtitle: "Earn BOLD & (staked) ETH rewards by depositing your BOLD in a stability pool",
+      title: `Earn rewards with ${BOLD_TOKEN_SYMBOL}`,
+      subtitle: `Earn ${BOLD_TOKEN_SYMBOL} & token collateral by putting your ${BOLD_TOKEN_SYMBOL} in a stability pool`,
       forksInfo: {
         text: (
           <>
@@ -456,8 +454,8 @@ export default {
   },
   pointRewardsScreen: {
     infoTooltips: {
-      rewardAPR: `calculated by on chain ${DEFI.name} price, while redemption fee ${dn.format(pointsRedemptionPrice)} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} is not included`,
-      redemptionCost: `Redemption cost at ${dn.format(pointsRedemptionPrice)} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} token to redeem`,
+      rewardAPR: (redemptionPrice: N) => `calculated by on chain ${DEFI.name} price, while redemption fee ${redemptionPrice} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} is not included`,
+      redemptionCost: (redemptionPrice: N) => `Redemption cost at ${redemptionPrice} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} token to redeem`,
     }
   },
   // Stake screen

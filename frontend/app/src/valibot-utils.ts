@@ -4,6 +4,7 @@ import type { Dnum } from "dnum";
 import { isPrefixedtroveId, isTroveId } from "@/src/types";
 import { isDnum } from "dnum";
 import * as v from "valibot";
+import { BOLD_TOKEN_SYMBOL } from "@liquity2/uikit";
 
 // this is duplicated from the UI kit rather than being imported,
 // to make valibot-utils.ts RSC-compatible.
@@ -319,7 +320,7 @@ export function vCollateralSymbol() {
 export function vTokenSymbol() {
   return v.union([
     vCollateralSymbol(),
-    v.literal("BOLD"),
+    v.literal(BOLD_TOKEN_SYMBOL),
     v.literal("LEGACY_BOLD"),
     v.literal("LQTY"),
     v.literal("LUSD"),

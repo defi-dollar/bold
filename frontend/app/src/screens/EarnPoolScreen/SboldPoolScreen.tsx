@@ -21,7 +21,7 @@ import { isSboldEnabled, usePreviewDeposit, usePreviewRedeem, useSboldPosition, 
 import { infoTooltipProps } from "@/src/uikit-utils";
 import { useAccount, useBalance } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { HFlex, IconEarn, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, IconEarn, InfoTooltip, InputField, Tabs, TextButton, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
 import * as dn from "dnum";
 import { notFound } from "next/navigation";
@@ -61,7 +61,7 @@ export function SboldPoolScreen() {
     },
   });
 
-  const boldBalance = useBalance(account.address, "BOLD");
+  const boldBalance = useBalance(account.address, BOLD_TOKEN_SYMBOL);
 
   return (
     <Screen
@@ -231,28 +231,28 @@ export function PanelUpdate({
               drawer={insufficientBalance
                 ? {
                   mode: "error",
-                  message: `Insufficient balance. You have ${fmtnum(boldBalance)} BOLD.`,
+                  message: `Insufficient balance. You have ${fmtnum(boldBalance)} ${BOLD_TOKEN_SYMBOL}.`,
                 }
                 : withdrawAboveDeposit
                 ? {
                   mode: "error",
                   message: hasAnyBoldDeposited
                     ? `You can’t withdraw more than you have deposited.`
-                    : `No BOLD deposited.`,
+                    : `No ${BOLD_TOKEN_SYMBOL} deposited.`,
                 }
                 : null}
               contextual={
                 <InputTokenBadge
                   background={false}
-                  icon={<TokenIcon symbol={mode === "deposit" ? "BOLD" : "SBOLD"} />}
-                  label={mode === "deposit" ? "BOLD" : "sBOLD"}
+                  icon={<TokenIcon symbol={mode === "deposit" ? BOLD_TOKEN_SYMBOL : "SBOLD"} />}
+                  label={mode === "deposit" ? BOLD_TOKEN_SYMBOL : "sBOLD"}
                 />
               }
               id="input-deposit-change"
               label={{
                 start: mode === "redeem"
                   ? "Redeem sBOLD"
-                  : "Deposit BOLD",
+                  : `Deposit ${BOLD_TOKEN_SYMBOL}`,
                 end: (
                   <Tabs
                     compact

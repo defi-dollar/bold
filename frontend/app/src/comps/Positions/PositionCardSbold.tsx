@@ -3,7 +3,7 @@ import type { Address } from "@/src/types";
 import { Amount } from "@/src/comps/Amount/Amount";
 import { useSboldPosition } from "@/src/sbold";
 import { css } from "@/styled-system/css";
-import { HFlex, IconEarn, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, HFlex, IconEarn, TokenIcon } from "@liquity2/uikit";
 import { PositionCard } from "./PositionCard";
 import { CardRow, CardRows } from "./shared";
 
@@ -47,7 +47,7 @@ export function PositionCardSbold({
               fallback="−"
               format={2}
             />
-            <TokenIcon size="medium" symbol="BOLD" />
+            <TokenIcon size="medium" symbol={BOLD_TOKEN_SYMBOL} />
           </HFlex>
         ),
         label: (

@@ -18,9 +18,6 @@ import type { Address, CollateralSymbol, CollateralToken } from "@liquity2/uikit
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { Config as WagmiConfig } from "wagmi";
 
-import { Governance } from "@/src/abi/Governance";
-import { StabilityPool } from "@/src/abi/StabilityPool";
-import { TroveManager } from "@/src/abi/TroveManager";
 import {
   INTEREST_RATE_ADJ_COOLDOWN,
   INTEREST_RATE_END,
@@ -44,7 +41,7 @@ import {
 } from "@/src/subgraph";
 import { isBranchId, isPrefixedtroveId, isTroveId } from "@/src/types";
 import { bigIntAbs, jsonStringifyWithBigInt } from "@/src/utils";
-import { vAddress, vPrefixedTroveId, vTokenSymbol } from "@/src/valibot-utils";
+import { vAddress, vPrefixedTroveId } from "@/src/valibot-utils";
 import { addressesEqual, COLLATERALS, isAddress, shortenAddress, TOKENS_BY_SYMBOL } from "@liquity2/uikit";
 import { useQuery } from "@tanstack/react-query";
 import * as dn from "dnum";
@@ -53,6 +50,9 @@ import * as v from "valibot";
 import { encodeAbiParameters, erc20Abi, isAddressEqual, keccak256, parseAbiParameters, zeroAddress } from "viem";
 import { useBalance, useConfig as useWagmiConfig, useReadContract, useReadContracts } from "wagmi";
 import { readContract, readContracts } from "wagmi/actions";
+import { TroveManager } from "./abi/TroveManager";
+import { StabilityPool } from "./abi/StabilityPool";
+import { Governance } from "./abi/Governance";
 
 export function shortenTroveId(troveId: TroveId, chars = 8) {
   return troveId.length < chars * 2 + 2
@@ -665,10 +665,10 @@ const StatsSchema = v.pipe(
       ])
     ),
     lastUpdatedTimestamp: v.number(),
-    prices: v.record(
-      vTokenSymbol(),
-      v.string(),
-    ),
+    // prices: v.record(
+    //   vTokenSymbol(),
+    //   v.string(),
+    // ),
     branch: v.record(
       v.string(),
       v.object({
@@ -718,12 +718,12 @@ const StatsSchema = v.pipe(
         }];
       }),
     ),
-    prices: Object.fromEntries(
-      Object.entries(value.prices).map(([symbol, price]) => [
-        symbol,
-        dnumOrNull(price, 18),
-      ]),
-    ) as Record<TokenSymbol, Dnum | null>,
+    // prices: Object.fromEntries(
+    //   Object.entries(value.prices).map(([symbol, price]) => [
+    //     symbol,
+    //     dnumOrNull(price, 18),
+    //   ]),
+    // ) as Record<TokenSymbol, Dnum | null>,
   })),
 );
 

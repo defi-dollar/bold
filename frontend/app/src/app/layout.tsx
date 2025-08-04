@@ -18,7 +18,7 @@ import { TransactionFlow } from "@/src/services/TransactionFlow";
 import { UiKit } from "@liquity2/uikit";
 import { Analytics } from "@vercel/analytics/react";
 import { GeistSans } from "geist/font/sans";
-import { OnboardingProvider } from "./_onboard";
+// import { OnboardingProvider } from "./_onboard";
 
 export const metadata: Metadata = {
   title: content.appName,
@@ -63,13 +63,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Ethereum>
                   <IndicatorManager>
                     <Blocking>
-                      <OnboardingProvider>
+                      {/* <OnboardingProvider> */}
                         <TransactionFlow>
                           <About>
                             <AppLayout>{children}</AppLayout>
                           </About>
                         </TransactionFlow>
-                      </OnboardingProvider>
+                      {/* </OnboardingProvider> */}
                     </Blocking>
                   </IndicatorManager>
                 </Ethereum>

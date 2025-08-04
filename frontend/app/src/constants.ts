@@ -7,6 +7,7 @@ import type {
   TokenSymbol,
   BranchId,
   ChainId,
+  IcStrategy,
 } from "@/src/types";
 
 import { vEnvLegacyCheck } from "@/src/valibot-utils";
@@ -253,41 +254,41 @@ export const DEFAULT_STRATEGIES: Array<
   [ChainId, Array<[BranchId, IcStrategy[]]>]
 > = [
   // mainnet
-  [
-    1,
-    [
-      // ETH
-      [
-        0,
-        [
-          {
-            name: "Conservative Strategy",
-            address: "0xE507E4d0763851A6287238aadD243948D18AB60a",
-          },
-        ],
-      ],
-      // WSTETH
-      [
-        1,
-        [
-          {
-            name: "Conservative Strategy",
-            address: "0x8869a6FB59a8Df330F90D9Fbf46eBfaFf6D4BC14",
-          },
-        ],
-      ],
-      // RETH
-      [
-        2,
-        [
-          {
-            name: "Conservative Strategy",
-            address: "0x7700B2D305f47aE82e9598BAb6D7CCb57299A82b",
-          },
-        ],
-      ],
-    ],
-  ],
+  // [
+  //   1,
+  //   [
+  //     // ETH
+  //     [
+  //       0,
+  //       [
+  //         {
+  //           name: "Conservative Strategy",
+  //           address: "0xE507E4d0763851A6287238aadD243948D18AB60a",
+  //         },
+  //       ],
+  //     ],
+  //     // WSTETH
+  //     [
+  //       1,
+  //       [
+  //         {
+  //           name: "Conservative Strategy",
+  //           address: "0x8869a6FB59a8Df330F90D9Fbf46eBfaFf6D4BC14",
+  //         },
+  //       ],
+  //     ],
+  //     // RETH
+  //     [
+  //       2,
+  //       [
+  //         {
+  //           name: "Conservative Strategy",
+  //           address: "0x7700B2D305f47aE82e9598BAb6D7CCb57299A82b",
+  //         },
+  //       ],
+  //     ],
+  //   ],
+  // ],
 ];
 
 export const DEFI_DOLLAR_API_URL = "https://api.defidollar.io/api/v1";

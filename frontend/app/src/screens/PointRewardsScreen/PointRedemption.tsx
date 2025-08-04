@@ -21,7 +21,7 @@ import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
-import { useDepositsForPoints, useUserPoints } from "@/src/points-utils";
+import { pointsRedemptionPrice, useDepositsForPoints, useUserPoints } from "@/src/points-utils";
 import { useLiquityStats } from "@/src/liquity-utils";
 import { formatDate } from "@/src/formatting";
 
@@ -403,7 +403,9 @@ const RedeemCard = () => {
           </RedeemRow>
           <RedeemRow
             label="Redemption cost"
-            tooltip={content.pointRewardsScreen.infoTooltips.redemptionCost}
+            tooltip={content.pointRewardsScreen.infoTooltips.redemptionCost(
+              dn.format(pointsRedemptionPrice)
+            )}
           >
             <Amount
               value={redemptionCost}

@@ -9,7 +9,7 @@ import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionS
 import { tokenIconUrl } from "@/src/utils";
 import { vAddress, vDnum } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
-import { TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
 import { createRequestSchema, verifyTransaction } from "./shared";
@@ -67,7 +67,7 @@ export const claimBribes: FlowDeclaration<ClaimBribesRequest> = {
           value={[
             <div
               key="bold"
-              title={`${fmtnum(boldAmount)} BOLD`}
+              title={`${fmtnum(boldAmount)} ${BOLD_TOKEN_SYMBOL}`}
               className={css({
                 display: "flex",
                 alignItems: "center",
@@ -82,7 +82,7 @@ export const claimBribes: FlowDeclaration<ClaimBribesRequest> = {
               />
               <TokenIcon
                 size={16}
-                symbol="BOLD"
+                symbol={BOLD_TOKEN_SYMBOL}
                 title={null}
               />
             </div>,

@@ -7,7 +7,7 @@ import { getBranch } from "@/src/liquity-utils";
 import { useSboldStats } from "@/src/sbold";
 import { isBranchId } from "@/src/types";
 import { css } from "@/styled-system/css";
-import { InfoTooltip, TokenIcon } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, InfoTooltip, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { EarnPositionSummaryBase } from "./EarnPositionSummaryBase";
 import { DUNE_URL } from "@/src/constants";
@@ -116,7 +116,7 @@ export function SboldPositionSummary({
             <Amount
               fallback="-"
               format="compact"
-              suffix=" BOLD"
+              suffix={` ${BOLD_TOKEN_SYMBOL}`}
               value={tvl_}
             />
           </div>
@@ -214,7 +214,7 @@ export function SboldPositionSummary({
             <>
               <div
                 title={active
-                  ? `${fmtnum(sboldPosition?.bold, "full")} BOLD`
+                  ? `${fmtnum(sboldPosition?.bold, "full")} ${BOLD_TOKEN_SYMBOL}`
                   : undefined}
                 className={css({
                   display: "flex",
@@ -225,11 +225,11 @@ export function SboldPositionSummary({
                 })}
               >
                 {active && fmtnum(sboldPosition?.bold)}
-                <TokenIcon symbol="BOLD" size="mini" title={null} />
+                <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
               </div>
               {prevSboldPosition && (
                 <div
-                  title={`${fmtnum(prevSboldPosition.bold, "full")} BOLD`}
+                  title={`${fmtnum(prevSboldPosition.bold, "full")} ${BOLD_TOKEN_SYMBOL}`}
                   className={css({
                     display: "flex",
                     justifyContent: "flex-start",
@@ -241,7 +241,7 @@ export function SboldPositionSummary({
                   })}
                 >
                   {fmtnum(prevSboldPosition.bold)}
-                  <TokenIcon symbol="BOLD" size="mini" title={null} />
+                  <TokenIcon symbol={BOLD_TOKEN_SYMBOL} size="mini" title={null} />
                 </div>
               )}
             </>

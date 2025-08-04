@@ -7,7 +7,7 @@ import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/Transact
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
 import { vDnum, vPositionSbold } from "@/src/valibot-utils";
 import { css } from "@/styled-system/css";
-import { InfoTooltip } from "@liquity2/uikit";
+import { BOLD_TOKEN_SYMBOL, InfoTooltip } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
 import { maxUint256 } from "viem";
@@ -60,7 +60,7 @@ export const sboldDeposit: FlowDeclaration<SboldDepositRequest> = {
           value={[
             <Amount
               key="start"
-              suffix=" BOLD"
+              suffix={` ${BOLD_TOKEN_SYMBOL}`}
               value={depositChange}
             />,
             dn.gt(depositFee, 0) && (
@@ -77,10 +77,10 @@ export const sboldDeposit: FlowDeclaration<SboldDepositRequest> = {
                   fallback="…"
                   title={{
                     prefix: "Accounting for ",
-                    suffix: " BOLD (Entry Fee)",
+                    suffix: `${BOLD_TOKEN_SYMBOL} (Entry Fee)`,
                   }}
                   value={depositFee}
-                  suffix=" BOLD Entry Fee"
+                  suffix={` ${BOLD_TOKEN_SYMBOL} Entry Fee`}
                 />
                 <InfoTooltip heading="sBOLD Entry Fee">
                   This fee is charged when you deposit BOLD for sBOLD shares, and has been deducted from the deposit
@@ -122,7 +122,7 @@ export const sboldDeposit: FlowDeclaration<SboldDepositRequest> = {
 
   steps: {
     approveBold: {
-      name: () => "Approve BOLD",
+      name: () => `Approve ${BOLD_TOKEN_SYMBOL}`,
       Status: (props) => (
         <TransactionStatus
           {...props}
