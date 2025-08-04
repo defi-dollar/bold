@@ -11,6 +11,7 @@ import { Blocking } from "@/src/comps/Blocking/Blocking";
 import content from "@/src/content";
 import { VERCEL_ANALYTICS } from "@/src/env";
 import { Ethereum } from "@/src/services/Ethereum";
+import { IndicatorManager } from "@/src/services/IndicatorManager";
 import { ReactQuery } from "@/src/services/ReactQuery";
 import { StoredState } from "@/src/services/StoredState";
 import { TransactionFlow } from "@/src/services/TransactionFlow";
@@ -60,15 +61,17 @@ export default function Layout({ children }: { children: ReactNode }) {
             <StoredState>
               <BreakpointName>
                 <Ethereum>
-                  <Blocking>
-                    <OnboardingProvider>
-                      <TransactionFlow>
-                        <About>
-                          <AppLayout>{children}</AppLayout>
-                        </About>
-                      </TransactionFlow>
-                    </OnboardingProvider>
-                  </Blocking>
+                  <IndicatorManager>
+                    <Blocking>
+                      <OnboardingProvider>
+                        <TransactionFlow>
+                          <About>
+                            <AppLayout>{children}</AppLayout>
+                          </About>
+                        </TransactionFlow>
+                      </OnboardingProvider>
+                    </Blocking>
+                  </IndicatorManager>
                 </Ethereum>
               </BreakpointName>
             </StoredState>

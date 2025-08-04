@@ -29,8 +29,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 function isInitiativeStatusActive(
   status: InitiativeStatus,
-): status is Exclude<InitiativeStatus, "disabled" | "nonexistent" | "unregisterable"> {
-  return status !== "disabled" && status !== "nonexistent" && status !== "unregisterable";
+): status is Exclude<InitiativeStatus, "disabled" | "nonexistent" | "unregisterable" | "warm up"> {
+  return status !== "disabled"
+    && status !== "nonexistent"
+    && status !== "unregisterable"
+    && status !== "warm up";
 }
 
 function initiativeStatusLabel(status: InitiativeStatus) {
@@ -498,11 +501,13 @@ export function PanelVoting() {
         <tbody>
           {initiatives.data
             // remove inactive initiatives that are not voted on
-            ?.filter((initiative) => {
-              return isInitiativeStatusActive(
+            ?.filter((initiative) => (
+              isInitiativeStatusActive(
                 initiativesStates.data?.[initiative.address]?.status ?? "nonexistent",
-              ) || Boolean(voteAllocations[initiative.address]);
-            })
+              ) || Boolean(
+                voteAllocations[initiative.address],
+              )
+            ))
             .sort((a, b) => {
               // 1. sort by allocation
               const allocationA = voteAllocations[a.address];
@@ -520,10 +525,7 @@ export function PanelVoting() {
 
               return 0;
             })
-            .map((
-              initiative,
-              index,
-            ) => {
+            .map((initiative, index) => {
               const status = initiativesStates.data?.[initiative.address]?.status;
               return (
                 <InitiativeRow
@@ -921,24 +923,34 @@ function InitiativeRow({
                 vote={inputVoteAllocation?.vote ?? null}
               />
             )
+            : voteAllocation?.vote
+            ? (
+              <Vote
+                onEdit={() => {
+                  setEditIntent(true);
+                  setTimeout(() => {
+                    inputRef.current?.focus();
+                  }, 0);
+                }}
+                disabled={disabled}
+                share={dn.eq(totalStaked, 0) ? DNUM_0 : dn.div(
+                  voteAllocation?.value ?? DNUM_0,
+                  totalStaked,
+                )}
+                vote={voteAllocation?.vote ?? null}
+                voteTotals={voteTotals}
+              />
+            )
             : (
-              voteAllocation?.vote && (
-                <Vote
-                  onEdit={() => {
-                    setEditIntent(true);
-                    setTimeout(() => {
-                      inputRef.current?.focus();
-                    }, 0);
-                  }}
-                  disabled={disabled}
-                  share={dn.eq(totalStaked, 0) ? DNUM_0 : dn.div(
-                    voteAllocation?.value ?? DNUM_0,
-                    totalStaked,
-                  )}
-                  vote={voteAllocation?.vote ?? null}
-                  voteTotals={voteTotals}
-                />
-              )
+              <VoteInput
+                ref={inputRef}
+                forDisabled={true}
+                againstDisabled={true}
+                onChange={() => {}}
+                onVote={() => {}}
+                value={null}
+                vote={null}
+              />
             )}
         </div>
       </td>
@@ -1073,8 +1085,7 @@ function BribeMarketsInfo() {
             color: "contentAlt",
           })}
         >
-          Initiatives may offer bribes to incentivize votes, which are displayed in the table above. Claiming
-          functionality coming soon.
+          Initiatives may offer bribes to incentivize votes, which are displayed in the table above.
         </p>
       </header>
       <div>

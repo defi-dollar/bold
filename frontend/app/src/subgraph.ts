@@ -4,6 +4,7 @@ import type { Address, BranchId, TroveId } from "@/src/types";
 import { dnum18 } from "@/src/dnum-utils";
 import { SUBGRAPH_URL } from "@/src/env";
 import { graphql } from "@/src/graphql";
+import { subgraphIndicator } from "@/src/indicators/subgraph-indicator";
 import { getPrefixedTroveId } from "@/src/liquity-utils";
 
 type IndexedTrove = {
@@ -15,11 +16,19 @@ type IndexedTrove = {
   status: string;
 };
 
+async function tryFetch(...args: Parameters<typeof fetch>) {
+  try {
+    return await fetch(...args);
+  } catch {
+    return null;
+  }
+}
+
 async function graphQuery<TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
   ...[variables]: TVariables extends Record<string, never> ? [] : [TVariables]
 ) {
-  const response = await fetch(SUBGRAPH_URL, {
+  const response = await tryFetch(SUBGRAPH_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +40,8 @@ async function graphQuery<TResult, TVariables>(
     ),
   });
 
-  if (!response.ok) {
+  if (response === null || !response.ok) {
+    subgraphIndicator.setError("Subgraph error: unable to fetch data.");
     throw new Error("Error while fetching data from the subgraph");
   }
 
@@ -39,8 +49,12 @@ async function graphQuery<TResult, TVariables>(
 
   if (!result.data) {
     console.error(result);
+    subgraphIndicator.setError("Subgraph error: invalid response.");
     throw new Error("Invalid response from the subgraph");
   }
+
+  // successful query: clear previous indicator errors
+  subgraphIndicator.clearError();
 
   return result.data as TResult;
 }
@@ -184,7 +198,11 @@ export async function getInterestBatches(
 
 const AllInterestRateBracketsQuery = graphql(`
   query AllInterestRateBrackets {
-    interestRateBrackets(orderBy: rate) {
+    interestRateBrackets(
+      first: 1000
+      where: { totalDebt_gt: 0 }
+      orderBy: rate
+    ) {
       collateral {
         collIndex
       }
@@ -238,4 +256,65 @@ const GovernanceInitiativesQuery = graphql(`
 export async function getIndexedInitiatives() {
   const { governanceInitiatives } = await graphQuery(GovernanceInitiativesQuery);
   return governanceInitiatives.map((initiative) => initiative.id as Address);
+}
+
+const AllocationHistoryQuery = graphql(`
+  query AllocationHistory($user: String $initiative: String) {
+    userAllocations: governanceAllocations(
+      where: {
+        initiative: $initiative
+        user: $user
+      }
+      orderBy: epoch
+      orderDirection: desc
+    ) {
+      epoch
+      voteLQTY
+      vetoLQTY
+      voteOffset
+      vetoOffset
+    }
+
+    totalAllocations: governanceAllocations(
+      where: {
+        initiative: $initiative
+        user: null
+      }
+      orderBy: epoch
+      orderDirection: desc
+    ) {
+      epoch
+      voteLQTY
+      vetoLQTY
+      voteOffset
+      vetoOffset
+    }
+  }
+`);
+
+// A user's allocation history of a single initiative against the total allocations to that initiative,
+// ordered by descending epoch
+export async function getAllocationHistory(user: Address, initiative: Address) {
+  const { userAllocations, totalAllocations } = await graphQuery(AllocationHistoryQuery, {
+    user: user.toLowerCase(),
+    initiative: initiative.toLowerCase(),
+  });
+
+  return {
+    userAllocations: userAllocations.map((allocation) => ({
+      epoch: BigInt(allocation.epoch),
+      voteLQTY: BigInt(allocation.voteLQTY),
+      vetoLQTY: BigInt(allocation.vetoLQTY),
+      voteOffset: BigInt(allocation.voteOffset),
+      vetoOffset: BigInt(allocation.vetoOffset),
+    })),
+
+    totalAllocations: totalAllocations.map((allocation) => ({
+      epoch: BigInt(allocation.epoch),
+      voteLQTY: BigInt(allocation.voteLQTY),
+      vetoLQTY: BigInt(allocation.vetoLQTY),
+      voteOffset: BigInt(allocation.voteOffset),
+      vetoOffset: BigInt(allocation.vetoOffset),
+    })),
+  };
 }
