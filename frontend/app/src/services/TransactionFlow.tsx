@@ -32,6 +32,8 @@ import { earnUpdate, type EarnUpdateRequest } from "@/src/tx-flows/earnUpdate";
 import { openBorrowPosition, type OpenBorrowPositionRequest } from "@/src/tx-flows/openBorrowPosition";
 import { openLeveragePosition, type OpenLeveragePositionRequest } from "@/src/tx-flows/openLeveragePosition";
 import { redeemCollateral, type RedeemCollateralRequest } from "@/src/tx-flows/redeemCollateral";
+import { sboldDeposit, type SboldDepositRequest } from "@/src/tx-flows/sboldDeposit";
+import { sboldRedeem, type SboldRedeemRequest } from "@/src/tx-flows/sboldRedeem";
 import { stakeClaimRewards, type StakeClaimRewardsRequest } from "@/src/tx-flows/stakeClaimRewards";
 import { stakeDeposit, type StakeDepositRequest } from "@/src/tx-flows/stakeDeposit";
 import { unstakeDeposit, type UnstakeDepositRequest } from "@/src/tx-flows/unstakeDeposit";
@@ -55,8 +57,10 @@ export type FlowRequestMap = {
   "pointsClaimRewards": PointsClaimRewardsRequest;
   "openBorrowPosition": OpenBorrowPositionRequest;
   "openLeveragePosition": OpenLeveragePositionRequest;
-  "stakeClaimRewards": StakeClaimRewardsRequest;
   "redeemCollateral": RedeemCollateralRequest;
+  "sboldDeposit": SboldDepositRequest;
+  "sboldRedeem": SboldRedeemRequest;
+  "stakeClaimRewards": StakeClaimRewardsRequest;
   "stakeDeposit": StakeDepositRequest;
   "unstakeDeposit": UnstakeDepositRequest;
   "updateBorrowPosition": UpdateBorrowPositionRequest;
@@ -75,8 +79,10 @@ const FlowIdSchema = v.union([
   v.literal("pool2ClaimRewards"),
   v.literal("openBorrowPosition"),
   v.literal("openLeveragePosition"),
-  v.literal("stakeClaimRewards"),
   v.literal("redeemCollateral"),
+  v.literal("sboldDeposit"),
+  v.literal("sboldRedeem"),
+  v.literal("stakeClaimRewards"),
   v.literal("stakeDeposit"),
   v.literal("unstakeDeposit"),
   v.literal("updateBorrowPosition"),
@@ -96,8 +102,10 @@ export const flows: FlowsMap = {
   pointsClaimRewards,
   openBorrowPosition,
   openLeveragePosition,
-  stakeClaimRewards,
   redeemCollateral,
+  sboldDeposit,
+  sboldRedeem,
+  stakeClaimRewards,
   stakeDeposit,
   unstakeDeposit,
   updateBorrowPosition,
@@ -521,19 +529,21 @@ function useFlowManager(account: Address | null, isSafe: boolean = false) {
     startStep(stepDef, stepIndex, verifyingStep.artifact);
   }, [flow, account, startStep]);
 
+  const discardFlow = useCallback(() => {
+    setFlow(null);
+    FlowContextStorage.clear();
+    runningStepRef.current = null;
+  }, [setFlow]);
+
   const startFlow = useCallback((
     request: FlowRequestMap[keyof FlowRequestMap],
     account: Address,
   ) => {
+    discardFlow(); // discard any current flow before starting a new one
     const newFlow = { account, request, steps: null };
     setFlow(newFlow);
     FlowContextStorage.set(newFlow);
-  }, []);
-
-  const discardFlow = useCallback(() => {
-    setFlow(null);
-    FlowContextStorage.clear();
-  }, []);
+  }, [discardFlow, setFlow]);
 
   const setFlowSteps = useCallback((steps: FlowStep[] | null) => {
     if (!flow) return;

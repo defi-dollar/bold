@@ -9,7 +9,6 @@ import { About } from "@/src/comps/About/About";
 import { AppLayout } from "@/src/comps/AppLayout/AppLayout";
 import { Blocking } from "@/src/comps/Blocking/Blocking";
 import content from "@/src/content";
-import { DemoMode } from "@/src/demo-mode";
 import { VERCEL_ANALYTICS } from "@/src/env";
 import { Ethereum } from "@/src/services/Ethereum";
 import { ReactQuery } from "@/src/services/ReactQuery";
@@ -32,17 +31,27 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function Layout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={GeistSans.className}>
@@ -50,21 +59,17 @@ export default function Layout({
           <UiKit>
             <StoredState>
               <BreakpointName>
-                <DemoMode>
-                  <Ethereum>
-                    <Blocking>
-                      <OnboardingProvider>
-                        <TransactionFlow>
-                          <About>
-                            <AppLayout>
-                              {children}
-                            </AppLayout>
-                          </About>
-                        </TransactionFlow>
-                      </OnboardingProvider>
-                    </Blocking>
-                  </Ethereum>
-                </DemoMode>
+                <Ethereum>
+                  <Blocking>
+                    <OnboardingProvider>
+                      <TransactionFlow>
+                        <About>
+                          <AppLayout>{children}</AppLayout>
+                        </About>
+                      </TransactionFlow>
+                    </OnboardingProvider>
+                  </Blocking>
+                </Ethereum>
               </BreakpointName>
             </StoredState>
           </UiKit>
@@ -74,4 +79,3 @@ export default function Layout({
     </html>
   );
 }
-

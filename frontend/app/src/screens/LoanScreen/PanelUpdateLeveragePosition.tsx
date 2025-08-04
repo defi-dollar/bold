@@ -33,7 +33,7 @@ import {
   VFlex,
 } from "@liquity2/uikit";
 import * as dn from "dnum";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export function PanelUpdateLeveragePosition({
   loan,
@@ -147,6 +147,8 @@ export function PanelUpdateLeveragePosition({
   useEffect(() => {
     setAgreeToLiquidationRisk(false);
   }, [newLoanDetails.status]);
+
+  const agreeCheckboxId = useId();
 
   const allowSubmit = account.isConnected
     && (newLoanDetails.status !== "at-risk" || agreeToLiquidationRisk)
@@ -442,6 +444,7 @@ export function PanelUpdateLeveragePosition({
                   liquidated.
                 </div>
                 <label
+                  htmlFor={agreeCheckboxId}
                   className={css({
                     display: "flex",
                     alignItems: "center",
@@ -450,6 +453,7 @@ export function PanelUpdateLeveragePosition({
                   })}
                 >
                   <Checkbox
+                    id={agreeCheckboxId}
                     checked={agreeToLiquidationRisk}
                     onChange={(checked) => {
                       setAgreeToLiquidationRisk(checked);

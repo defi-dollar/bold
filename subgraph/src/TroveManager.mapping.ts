@@ -138,7 +138,7 @@ function getLeverageUpdate(event: TroveOperationEvent): LeverageUpdate {
   let receipt = event.receipt;
   let logs = receipt ? receipt.logs : [];
   for (let i = 0; i < logs.length; i++) {
-    if (logs[i].topics[0].equals(FLASH_LOAN_TOPIC)) {
+    if (logs[i].topics.length > 0 && logs[i].topics[0].equals(FLASH_LOAN_TOPIC)) {
       return LeverageUpdate.yes;
     }
   }
@@ -311,6 +311,7 @@ function createTrove(
   trove.status = "active";
   trove.troveId = troveId.toHexString();
   trove.updatedAt = timestamp;
+  trove.previousOwner = Address.zero();
 
   // batches are handled separately, not
   // when creating the trove but right after

@@ -53,7 +53,8 @@ export function Modal({
       return;
     }
     if (visible) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
       document.documentElement.style.overflow = "hidden";
       document.body.style.position = "relative";
       document.body.style.left = `-${scrollbarWidth / 2}px`;
@@ -66,25 +67,15 @@ export function Modal({
 
   return (
     <Root>
-      {visibility(({
-        opacity,
-        overlayOpacity,
-        transform,
-      }, item) => (
-        item && (
-          <div
-            onMouseDown={({ target, currentTarget }) => {
-              if (target === currentTarget) {
-                onClose();
-              }
-            }}
-            className={css({
-              position: "fixed",
-              inset: 0,
-              zIndex: 2,
-            })}
-          >
+      {visibility(
+        ({ opacity, overlayOpacity, transform }, item) =>
+          item && (
             <a.section
+              onMouseDown={({ target, currentTarget }) => {
+                if (target === currentTarget) {
+                  onClose();
+                }
+              }}
               className={css({
                 position: "fixed",
                 inset: 0,
@@ -173,35 +164,31 @@ export function Modal({
                         )}
                         {children}
                       </div>
-                      {
-                        withCloseButton && (
-                          <div
+                      {withCloseButton && (
+                        <div
+                          className={css({
+                            position: "absolute",
+                            top: 24,
+                            right: 24,
+                            display: "flex",
+                          })}
+                        >
+                          <TextButton
+                            label={<IconCross size={32} />}
+                            onClick={onClose}
                             className={css({
-                              position: "absolute",
-                              top: 24,
-                              right: 24,
-                              display: "flex",
+                              color: "content!",
                             })}
-                          >
-                            <TextButton
-                              label={<IconCross size={32} />}
-                              onClick={onClose}
-                              className={css({
-                                color: "content!",
-                              })}
-                            />
-                          </div>
-                        )
-                      }
-                      
+                          />
+                        </div>
+                      )}
                     </a.div>
                   </div>
                 </FocusTrap>
               </div>
             </a.section>
-          </div>
-        )
-      ))}
+          )
+      )}
     </Root>
   );
 }

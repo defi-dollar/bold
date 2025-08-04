@@ -8,6 +8,7 @@ export type BOLDTokenSymbol = typeof BOLD_TOKEN_SYMBOL;
 
 export type TokenSymbol =
   | BOLDTokenSymbol
+  | "SBOLD"
   | "LQTY"
   | "LUSD"
   | "ETH"

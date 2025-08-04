@@ -1,8 +1,14 @@
-import type { TokenSymbol } from "@/src/types";
+import type { Address, TokenSymbol } from "@/src/types";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
-import { ACCOUNT_SCREEN } from "@/src/env";
+import {
+  ACCOUNT_SCREEN,
+  CHAIN_BLOCK_EXPLORER,
+  CONTRACT_BOLD_TOKEN,
+  CONTRACT_LQTY_TOKEN,
+} from "@/src/env";
+import { fmtnum } from "@/src/formatting";
 import { useLiquityStats } from "@/src/liquity-utils";
 import { usePrice } from "@/src/services/Prices";
 import { useAccount } from "@/src/wagmi-utils";
@@ -17,7 +23,6 @@ import {
 import { blo } from "blo";
 import Image from "next/image";
 import { AboutButton } from "./AboutButton";
-import { fmtnum } from "@/src/formatting";
 // import merklLogoSrc from "./logo-merkl.svg";
 // import Link from "next/link";
 
@@ -148,7 +153,13 @@ export function BottomBar() {
                 id="footer-account-button"
                 href={`/account?address=${account.address}`}
                 label={
-                  <HFlex gap={4} alignItems="center">
+                  <div
+                    className={css({
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    })}
+                  >
                     <Image
                       alt=""
                       width={16}
@@ -160,18 +171,11 @@ export function BottomBar() {
                     />
 
                     {shortenAddress(account.address, 3)}
-                  </HFlex>
+                  </div>
                 }
                 className={css({
                   color: "content",
-                  borderRadius: 4,
                   whiteSpace: "nowrap",
-                  _focusVisible: {
-                    outline: "2px solid token(colors.focused)",
-                  },
-                  _active: {
-                    translate: "0 1px",
-                  },
                 })}
               />
             )}
@@ -182,20 +186,78 @@ export function BottomBar() {
   );
 }
 
-function Price({ symbol }: { symbol: TokenSymbol }) {
+function getTokenAddress(symbol: TokenSymbol) {
+  if (symbol === "LQTY") {
+    return CONTRACT_LQTY_TOKEN;
+  }
+  if (symbol === BOLD_TOKEN_SYMBOL) {
+    return CONTRACT_BOLD_TOKEN;
+  }
+  if (symbol === "DEFI") {
+    return;
+  }
+  return null;
+}
+
+function getTokenLink(address: Address) {
+  if (!CHAIN_BLOCK_EXPLORER) {
+    return null;
+  }
+  return address && `${CHAIN_BLOCK_EXPLORER.url}token/${address}`;
+}
+
+function Price({ symbol }: { symbol: Exclude<TokenSymbol, "SBOLD"> }) {
   const price = usePrice(symbol);
+  const tokenAddress = getTokenAddress(symbol);
+  const tokenUrl = tokenAddress && getTokenLink(tokenAddress);
+  const token = (
+    <div
+      className={css({
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+      })}
+    >
+      <TokenIcon size={16} symbol={symbol} title={null} />
+      <span>{symbol}</span>
+    </div>
+  );
   return (
-    <HFlex key={symbol} gap={4}>
-      <TokenIcon size={16} symbol={symbol} />
-      <HFlex gap={8}>
-        <span>{symbol}</span>
-        <Amount
-          prefix="$"
-          fallback="-"
-          value={symbol === DEFI.symbol ? undefined : price.data}
-          format="2z"
+    <div
+      className={css({
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      })}
+    >
+      {tokenUrl ? (
+        <LinkTextButton
+          title={`${symbol}: ${tokenAddress}`}
+          external
+          href={tokenUrl}
+          label={token}
+          className={css({
+            color: "content!",
+            _hover: {
+              textDecoration: "underline",
+            },
+            _focusVisible: {
+              outline: "2px solid token(colors.focused)",
+            },
+            _active: {
+              translate: "0 1px",
+            },
+          })}
         />
-      </HFlex>
-    </HFlex>
+      ) : (
+        token
+      )}
+      <Amount
+        prefix="$"
+        fallback="…"
+        value={symbol === DEFI.symbol ? undefined : price.data}
+        format="2z"
+      />
+    </div>
   );
 }

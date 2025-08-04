@@ -350,6 +350,7 @@ export function LeverageScreen() {
             })}
           >
             <Button
+              // oxlint-disable-next-line
               disabled={true || !allowSubmit}
               label="Coming Soon"
               mode="primary"

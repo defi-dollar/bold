@@ -3,35 +3,41 @@
 import type { BranchId, TokenSymbol } from "@/src/types";
 
 import { EarnPositionSummary } from "@/src/comps/EarnPositionSummary/EarnPositionSummary";
+import { SboldPositionSummary } from "@/src/comps/EarnPositionSummary/SboldPositionSummary";
 import { LinkTextButton } from "@/src/comps/LinkTextButton/LinkTextButton";
 import { Screen } from "@/src/comps/Screen/Screen";
 import content from "@/src/content";
 import { getBranches, useEarnPosition } from "@/src/liquity-utils";
+import { isSboldEnabled, useSboldPosition } from "@/src/sbold";
 import { useAccount } from "@/src/wagmi-utils";
-import { css } from "@/styled-system/css";
-import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
 import { a, useTransition } from "@react-spring/web";
-import { sortAlphabetically, sortBranches } from "@/src/utils";
+import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
+import { sortAlphabetically } from "@/src/utils";
+import { css } from "@/styled-system/css";
 
+type PoolId = BranchId | "sbold";
 
 export function StabilityPools() {
   const branches = getBranches();
   const collSymbols = branches.map((b) => b.symbol);
 
-  const poolsTransition = useTransition(
-    branches.sort(sortBranches).map((c) => c.branchId),
-    {
-      from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
-      enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
-      leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
-      trail: 80,
-      config: {
-        mass: 1,
-        tension: 1800,
-        friction: 140,
-      },
-    }
-  );
+  const pools: PoolId[] = branches.map((b) => b.branchId);
+
+  if (isSboldEnabled()) {
+    pools.push("sbold");
+  }
+
+  const poolsTransition = useTransition(pools, {
+    from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
+    enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
+    leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
+    trail: 80,
+    config: {
+      mass: 1,
+      tension: 1800,
+      friction: 140,
+    },
+  });
 
   return (
     <Screen
@@ -77,9 +83,11 @@ export function StabilityPools() {
           gap: 16,
         })}
       >
-        {poolsTransition((style, branchId) => (
+        {poolsTransition((style, poolId) => (
           <a.div style={style}>
-            <EarnPool branchId={branchId} />
+            {poolId === "sbold"
+              ? <SboldPool />
+              : <EarnPool branchId={poolId} />}
           </a.div>
         ))}
       </div>
@@ -95,6 +103,17 @@ function EarnPool({ branchId }: { branchId: BranchId }) {
       branchId={branchId}
       earnPosition={earnPosition.data ?? null}
       linkToScreen
+    />
+  );
+}
+
+function SboldPool() {
+  const account = useAccount();
+  const sboldPosition = useSboldPosition(account.address ?? null);
+  return (
+    <SboldPositionSummary
+      linkToScreen
+      sboldPosition={sboldPosition.data ?? null}
     />
   );
 }

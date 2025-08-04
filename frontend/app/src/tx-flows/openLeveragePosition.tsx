@@ -83,6 +83,7 @@ export const openLeveragePosition: FlowDeclaration<OpenLeveragePositionRequest> 
           value={[
             `${fmtnum(borrowedWithFee)} ${BOLD_TOKEN_SYMBOL}`,
             <div
+              key="end"
               className={css({
                 display: "flex",
                 alignItems: "center",

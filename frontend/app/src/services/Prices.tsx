@@ -6,16 +6,16 @@ import type { Dnum } from "dnum";
 
 import { POOL1_CONFIGS, PRICE_REFRESH_INTERVAL } from "@/src/constants";
 import { getBranchContract } from "@/src/contracts";
-import { dnum18 } from "@/src/dnum-utils";
 import { COINGECKO_API_KEY } from "@/src/env";
 import { BOLD_TOKEN_SYMBOL, DEFI, isCollateralSymbol } from "@liquity2/uikit";
+import { dnum18 } from "@/src/dnum-utils";
 import { useQuery } from "@tanstack/react-query";
-import * as dn from "dnum";
-import * as v from "valibot";
 import { useConfig as useWagmiConfig } from "wagmi";
 import { readContract } from "wagmi/actions";
 import axios from "axios";
 import { parseUnits } from "viem";
+import * as v from "valibot";
+import * as dn from "dnum";
 
 async function fetchCollateralPrice(
   symbol: CollateralSymbol,

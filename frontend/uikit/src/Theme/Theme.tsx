@@ -185,6 +185,7 @@ export const lightTheme = {
     tableBorder: "gray:100",
     warning: "yellow:400",
     warningAlt: "yellow:300",
+    warningAltContent: "blue:950",
     disabledBorder: "#DDE8E6",
     disabledContent: "text:grey",
     disabledSurface: "#F4F8F8",
