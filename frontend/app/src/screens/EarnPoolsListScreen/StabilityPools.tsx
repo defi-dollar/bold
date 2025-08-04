@@ -12,13 +12,13 @@ import { isSboldEnabled, useSboldPosition } from "@/src/sbold";
 import { useAccount } from "@/src/wagmi-utils";
 import { a, useTransition } from "@react-spring/web";
 import { BOLD_TOKEN_SYMBOL, TokenIcon } from "@liquity2/uikit";
-import { sortAlphabetically } from "@/src/utils";
+import { sortAlphabetically, sortBranches } from "@/src/utils";
 import { css } from "@/styled-system/css";
 
 type PoolId = BranchId | "sbold";
 
 export function StabilityPools() {
-  const branches = getBranches();
+  const branches = getBranches().sort(sortBranches);
   const collSymbols = branches.map((b) => b.symbol);
 
   const pools: PoolId[] = branches.map((b) => b.branchId);
@@ -85,9 +85,11 @@ export function StabilityPools() {
       >
         {poolsTransition((style, poolId) => (
           <a.div style={style}>
-            {poolId === "sbold"
-              ? <SboldPool />
-              : <EarnPool branchId={poolId} />}
+            {poolId === "sbold" ? (
+              <SboldPool />
+            ) : (
+              <EarnPool branchId={poolId} />
+            )}
           </a.div>
         ))}
       </div>
