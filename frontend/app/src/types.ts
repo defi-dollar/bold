@@ -215,7 +215,6 @@ export type LoanDetails = {
   maxDebtAllowed: Dnum | null;
   maxLtv: Dnum;
   maxLtvAllowed: Dnum;
-  redemptionRisk: RiskLevel | null;
   status:
     | null
     | "healthy"

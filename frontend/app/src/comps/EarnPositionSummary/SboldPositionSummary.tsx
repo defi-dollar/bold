@@ -94,7 +94,7 @@ export function SboldPositionSummary({
               fallback="-%"
               format="1z"
               percentage
-              value={null}
+              value={stats.data?.apr7d ?? null}
             />
             <InfoTooltip
               content={{

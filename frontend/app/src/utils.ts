@@ -1,11 +1,13 @@
 import { CollateralToken } from "@liquity2/uikit";
 import { Branch } from "./types";
+import type { Address, ChainId } from "@/src/types";
+import { TOKEN_ICON_URL } from "@/src/constants";
 
 export function noop() {}
 
 export function debounce<T extends unknown[]>(
   callback: (...args: T) => void,
-  wait: number,
+  wait: number
 ): (...args: T) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -34,9 +36,9 @@ export function roundToDecimal(value: number, decimals: number) {
 }
 
 export function jsonStringifyWithBigInt(data: unknown) {
-  return JSON.stringify(data, (_, value) => (
+  return JSON.stringify(data, (_, value) =>
     typeof value === "bigint" ? String(value) : value
-  ));
+  );
 }
 
 export function bigIntAbs(value: bigint) {
@@ -53,4 +55,11 @@ export function sortCollaterals(a: CollateralToken, b: CollateralToken) {
 
 export function sortAlphabetically(a: string, b: string) {
   return a.localeCompare(b);
+}
+
+export function tokenIconUrl(chainId: ChainId, address: Address) {
+  return TOKEN_ICON_URL.replace(/\{chainId\}/, String(chainId)).replace(
+    /\{tokenAddress\}/,
+    address.toLowerCase()
+  );
 }

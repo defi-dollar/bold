@@ -22,6 +22,9 @@ export const FORKS_INFO = [
   ["Quill Finance", "/fork-icons/quill.svg"],
 ] as const;
 
+// TODO: make it possible to override this in the env
+export const TOKEN_ICON_URL = "https://assets.smold.app/api/token/{chainId}/{tokenAddress}/logo.svg";
+
 export const ONE_SECOND = 1000;
 export const ONE_MINUTE = 60 * ONE_SECOND;
 export const ONE_HOUR = 60 * ONE_MINUTE;
@@ -93,10 +96,10 @@ export const LTV_RISK: Record<Exclude<RiskLevel, "low">, number> = {
   high: 0.73,
 };
 
-// redemption risk levels, as interest rate ratios
+// redemption risk levels, as debt positioning ratios
 export const REDEMPTION_RISK: Record<Exclude<RiskLevel, "high">, number> = {
-  medium: 3.5 / 100,
-  low: 5 / 100,
+  medium: 0.05, // 5% of total debt in front
+  low: 0.60, // 60% of total debt in front
 };
 
 // TODO: Update to actual data

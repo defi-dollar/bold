@@ -111,7 +111,6 @@ export function useAccount():
   }
 {
   const account = useWagmiAccount();
-  const connectKitModal = useConnectKitModal();
   const ensName = useEnsName({ address: account?.address });
 
   const safeStatus = useQuery({
@@ -127,6 +126,8 @@ export function useAccount():
     refetchInterval: false, // only needed once
     enabled: Boolean(account.address),
   });
+
+  const connectKitModal = useConnectKitModal();
 
   return {
     ...account,

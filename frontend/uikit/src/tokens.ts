@@ -1,5 +1,3 @@
-import type { Token } from "./types";
-
 import tokenBold from "./token-icons/DUSD.svg";
 import tokenLusd from "./token-icons/lusd.svg";
 import tokenEth from "./token-icons/eth.svg";
@@ -19,6 +17,7 @@ import tokenDusdFraxbp from './token-icons/DUSDFRAXBP.png';
 import tokenDefiWeth from './token-icons/DEFIWETH.png';
 
 export const BOLD_TOKEN_SYMBOL = 'USDFI';
+
 
 export type CollateralSymbols = [
   "ETH", // To bypass type-checking
@@ -51,6 +50,46 @@ export function isCollateralSymbol(symbol: string): symbol is CollateralSymbol {
     "WBTC",
   ].includes(symbol);
 }
+
+// any external token, without a known symbol
+export type ExternalToken = {
+  icon: string;
+  name: string;
+  symbol: string;
+};
+
+// a token with a known symbol (TokenSymbol)
+export type Token = ExternalToken & {
+  icon: string;
+  name: string;
+  symbol: TokenSymbol;
+};
+
+export function isTokenSymbol(symbolOrUrl: string): symbolOrUrl is TokenSymbol {
+  return (
+    symbolOrUrl === "BOLD"
+    || symbolOrUrl === "ETH"
+    || symbolOrUrl === "LQTY"
+    || symbolOrUrl === "LUSD"
+    || symbolOrUrl === "RETH"
+    || symbolOrUrl === "SBOLD"
+    || symbolOrUrl === "WSTETH"
+  );
+}
+
+export type BOLDTokenSymbol = typeof BOLD_TOKEN_SYMBOL;
+
+export type TokenSymbol =
+  | BOLDTokenSymbol
+  | "SBOLD"
+  | "LQTY"
+  | "LUSD"
+  | "ETH"
+  | "DEFI"
+  | "USDFIBOLD"
+  | "USDFIFRXUSD"
+  | "DEFIWETH"
+  | CollateralSymbol;
 
 export type CollateralToken = Token & {
   collateralRatio: number;

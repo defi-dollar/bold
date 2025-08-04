@@ -1,6 +1,5 @@
 import type { InitiativeStatus } from "@/src/liquity-governance";
 import type { Address, Dnum, Entries, Initiative, Vote, VoteAllocation, VoteAllocations } from "@/src/types";
-import type { ReactNode } from "react";
 
 import { Amount } from "@/src/comps/Amount/Amount";
 import { FlowButton } from "@/src/comps/FlowButton/FlowButton";
@@ -10,18 +9,21 @@ import { Tag } from "@/src/comps/Tag/Tag";
 import { VoteInput } from "@/src/comps/VoteInput/VoteInput";
 import content from "@/src/content";
 import { DNUM_0 } from "@/src/dnum-utils";
-import { CHAIN_BLOCK_EXPLORER } from "@/src/env";
+import { CHAIN_BLOCK_EXPLORER, CHAIN_ID } from "@/src/env";
 import { fmtnum, formatDate } from "@/src/formatting";
 import {
+  useCurrentEpochBribes,
   useGovernanceState,
   useGovernanceUser,
   useInitiativesStates,
+  useInitiativesVoteTotals,
   useNamedInitiatives,
 } from "@/src/liquity-governance";
+import { tokenIconUrl } from "@/src/utils";
 import { jsonStringifyWithBigInt } from "@/src/utils";
 import { useAccount } from "@/src/wagmi-utils";
 import { css } from "@/styled-system/css";
-import { Button, IconDownvote, IconEdit, IconExternal, IconUpvote, shortenAddress } from "@liquity2/uikit";
+import { Button, IconDownvote, IconEdit, IconExternal, IconUpvote, shortenAddress, TokenIcon } from "@liquity2/uikit";
 import * as dn from "dnum";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -75,7 +77,11 @@ export function PanelVoting() {
   const governanceState = useGovernanceState();
   const governanceUser = useGovernanceUser(account.address ?? null);
   const initiatives = useNamedInitiatives();
-  const initiativesStates = useInitiativesStates(initiatives.data?.map((i) => i.address) ?? []);
+
+  const initiativesAddresses = initiatives.data?.map((i) => i.address) ?? [];
+  const initiativesStates = useInitiativesStates(initiativesAddresses);
+  const currentBribes = useCurrentEpochBribes(initiativesAddresses);
+  const voteTotals = useInitiativesVoteTotals(initiativesAddresses);
 
   const stakedLQTY: Dnum = [governanceUser.data?.stakedLQTY ?? 0n, 18];
 
@@ -258,6 +264,7 @@ export function PanelVoting() {
     governanceState.status !== "success"
     || initiatives.status !== "success"
     || initiativesStates.status !== "success"
+    || voteTotals.status !== "success"
     || governanceUser.status !== "success"
   ) {
     return (
@@ -327,6 +334,7 @@ export function PanelVoting() {
           {content.stakeScreen.votingPanel.intro}
         </div>
       </header>
+
       <div
         className={css({
           display: "flex",
@@ -520,6 +528,7 @@ export function PanelVoting() {
               return (
                 <InitiativeRow
                   key={index}
+                  bribe={currentBribes.data?.[initiative.address]}
                   disabled={!isInitiativeStatusActive(status ?? "nonexistent")}
                   disableFor={isCutoff}
                   initiative={initiative}
@@ -529,6 +538,7 @@ export function PanelVoting() {
                   onVoteInputChange={handleVoteInputChange}
                   totalStaked={stakedLQTY}
                   voteAllocation={voteAllocations[initiative.address]}
+                  voteTotals={voteTotals.data?.[initiative.address]}
                 />
               );
             })}
@@ -582,6 +592,8 @@ export function PanelVoting() {
           </tr>
         </tfoot>
       </table>
+
+      <BribeMarketsInfo />
 
       {governanceState.data && (
         <div
@@ -671,6 +683,13 @@ export function PanelVoting() {
 
       <FlowButton
         disabled={!allowSubmit}
+        footnote={!allowSubmit && dn.eq(stakedLQTY, 0)
+          ? "You have no voting power to allocate. Please stake LQTY before voting."
+          : !allowSubmit && hasAnyAllocations
+          ? "You can reset your votes by allocating 0% to all initiatives."
+          : allowSubmit && dn.eq(remainingVotingPower, 1)
+          ? "Your votes will be reset to 0% for all initiatives."
+          : null}
         label="Cast votes"
         request={{
           flowId: "allocateVotingPower",
@@ -683,30 +702,12 @@ export function PanelVoting() {
           ),
         }}
       />
-      {!allowSubmit && dn.eq(stakedLQTY, 0)
-        ? (
-          <FlowButtonNote>
-            You have no voting power to allocate. Please stake LQTY before voting.
-          </FlowButtonNote>
-        )
-        : !allowSubmit && hasAnyAllocations
-        ? (
-          <FlowButtonNote>
-            You can reset your votes by allocating 0% to all initiatives.
-          </FlowButtonNote>
-        )
-        : allowSubmit && dn.eq(remainingVotingPower, 1)
-        ? (
-          <FlowButtonNote>
-            Your votes will be reset to 0% for all initiatives.
-          </FlowButtonNote>
-        )
-        : null}
     </section>
   );
 }
 
 function InitiativeRow({
+  bribe,
   disableFor,
   disabled,
   initiative,
@@ -716,7 +717,14 @@ function InitiativeRow({
   onVoteInputChange,
   totalStaked,
   voteAllocation,
+  voteTotals,
 }: {
+  bribe?: {
+    boldAmount: Dnum;
+    tokenAmount: Dnum;
+    tokenAddress: Address;
+    tokenSymbol: string;
+  };
   disableFor: boolean;
   disabled: boolean;
   initiative: Initiative;
@@ -726,6 +734,7 @@ function InitiativeRow({
   onVoteInputChange: (initiative: Address, value: Dnum) => void;
   totalStaked: Dnum;
   voteAllocation?: VoteAllocation;
+  voteTotals?: { totalVotes: Dnum; totalVetos: Dnum };
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [editIntent, setEditIntent] = useState(false);
@@ -816,6 +825,74 @@ function InitiativeRow({
               })}
             />
           </div>
+          {bribe && (dn.gt(bribe.boldAmount, 0) || dn.gt(bribe.tokenAmount, 0)) && (
+            <div
+              className={css({
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 12,
+              })}
+              title="Available bribes for voting on this initiative"
+            >
+              <span>Bribing:</span>
+              <div
+                className={css({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  flexWrap: "wrap",
+                })}
+              >
+                {dn.gt(bribe.boldAmount, 0) && (
+                  <div
+                    title={`${fmtnum(bribe.boldAmount)} BOLD`}
+                    className={css({
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    })}
+                  >
+                    <Amount
+                      format="compact"
+                      title={null}
+                      value={bribe.boldAmount}
+                    />
+                    <TokenIcon
+                      symbol="BOLD"
+                      size={12}
+                      title={null}
+                    />
+                  </div>
+                )}
+                {dn.gt(bribe.tokenAmount, 0) && (
+                  <div
+                    title={`${fmtnum(bribe.tokenAmount)} ${bribe.tokenSymbol} (${bribe.tokenAddress})`}
+                    className={css({
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    })}
+                  >
+                    <Amount
+                      format="compact"
+                      title={null}
+                      value={bribe.tokenAmount}
+                    />
+                    <TokenIcon
+                      size={12}
+                      title={null}
+                      token={{
+                        icon: tokenIconUrl(CHAIN_ID, bribe.tokenAddress),
+                        name: bribe.tokenSymbol,
+                        symbol: bribe.tokenSymbol,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </td>
       <td>
@@ -859,6 +936,7 @@ function InitiativeRow({
                     totalStaked,
                   )}
                   vote={voteAllocation?.vote ?? null}
+                  voteTotals={voteTotals}
                 />
               )
             )}
@@ -873,11 +951,13 @@ function Vote({
   disabled,
   share,
   vote,
+  voteTotals,
 }: {
   onEdit?: () => void;
   disabled: boolean;
   share: Dnum;
   vote: Vote;
+  voteTotals?: { totalVotes: Dnum; totalVetos: Dnum };
 }) {
   return (
     <div
@@ -896,9 +976,6 @@ function Vote({
         })}
       >
         <div
-          title={`${fmtnum(share, "pct2")}% of your voting power has been allocated to ${
-            vote === "for" ? "upvote" : "downvote"
-          } this initiative`}
           className={css({
             display: "flex",
             alignItems: "center",
@@ -918,6 +995,15 @@ function Vote({
             </div>
           )}
           <div
+            title={`${fmtnum(share, "pct2")}% of your voting power has been allocated to ${
+              vote === "for" ? "upvote" : "downvote"
+            } this initiative${
+              voteTotals
+                ? ` (${fmtnum(vote === "for" ? voteTotals.totalVotes : voteTotals.totalVetos)} total ${
+                  vote === "for" ? "votes" : "vetos"
+                })`
+                : ""
+            }`}
             className={css({
               width: 30,
             })}
@@ -944,19 +1030,72 @@ function Vote({
   );
 }
 
-function FlowButtonNote({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function BribeMarketsInfo() {
   return (
     <div
       className={css({
-        fontSize: 14,
-        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        padding: 16,
+        color: "content",
+        background: "fieldSurface",
+        border: "1px solid token(colors.border)",
+        borderRadius: 8,
+        marginBottom: 16,
+        marginTop: -16,
+        gap: {
+          base: 16,
+          medium: 16,
+        },
       })}
     >
-      {children}
+      <header
+        className={css({
+          display: "flex",
+          flexDirection: "column",
+          fontSize: 16,
+          gap: {
+            base: 16,
+            medium: 0,
+          },
+        })}
+      >
+        <h1
+          className={css({
+            fontWeight: 600,
+          })}
+        >
+          Bribe Markets in Liquity V2
+        </h1>
+        <p
+          className={css({
+            fontSize: 15,
+            color: "contentAlt",
+          })}
+        >
+          Initiatives may offer bribes to incentivize votes, which are displayed in the table above. Claiming
+          functionality coming soon.
+        </p>
+      </header>
+      <div>
+        <LinkTextButton
+          external
+          href="https://www.liquity.org/blog/bribe-markets-in-liquity-v2-strategic-value-for-lqty-stakers"
+          label={
+            <span
+              className={css({
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                color: "accent",
+              })}
+            >
+              <span>Learn more about bribes</span>
+              <IconExternal size={16} />
+            </span>
+          }
+        />
+      </div>
     </div>
   );
 }

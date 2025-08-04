@@ -13,7 +13,7 @@ import { CHAIN_BLOCK_EXPLORER } from "@/src/env";
 import { formatRisk } from "@/src/formatting";
 import { fmtnum } from "@/src/formatting";
 import { getLoanDetails } from "@/src/liquity-math";
-import { shortenTroveId, useTroveNftUrl } from "@/src/liquity-utils";
+import { shortenTroveId, useRedemptionRisk, useTroveNftUrl } from "@/src/liquity-utils";
 import { riskLevelToStatusMode } from "@/src/uikit-utils";
 import { roundToDecimal } from "@/src/utils";
 import { css } from "@/styled-system/css";
@@ -65,6 +65,11 @@ export function LoanScreenCard({
     loadingState = "loading";
   }
 
+  const redemptionRisk = useRedemptionRisk(
+    loan?.branchId ?? 0,
+    loan?.interestRate ?? null,
+  );
+
   const loanDetails = loan && collateral && getLoanDetails(
     loan.deposit,
     loan.borrowed,
@@ -78,7 +83,6 @@ export function LoanScreenCard({
     leverageFactor,
     liquidationRisk,
     ltv,
-    redemptionRisk,
   } = loanDetails || {};
 
   const maxLtv = collateral && dn.div(
@@ -212,7 +216,7 @@ export function LoanScreenCard({
               mode={mode}
               nftUrl={nftUrl}
               onLeverageModeChange={onLeverageModeChange}
-              redemptionRisk={redemptionRisk ?? null}
+              redemptionRisk={redemptionRisk.data ?? null}
               troveId={troveId}
             />
           );
@@ -322,9 +326,7 @@ function GridItem({
   );
 }
 
-function LoanCard({
-  ...props
-}: {
+function LoanCard(props: {
   mode: LoanMode;
   loan: PositionLoan;
   loanDetails: LoanDetails;
@@ -343,8 +345,6 @@ function LoanCard({
   useBreakpoint(({ medium }) => {
     setCompactMode(!medium);
   });
-
-  const copyTransition = useFlashTransition();
 
   const cardTransition = useTransition(props, {
     keys: (props) => props.mode,
@@ -379,8 +379,8 @@ function LoanCard({
     },
   });
 
+  const copyTransition = useFlashTransition();
   const closedOrLiquidated = props.loan.status === "liquidated" || props.loan.status === "closed";
-
   const fullyRedeemed = props.loan.status === "redeemed" && dn.eq(props.loan.borrowed, 0);
 
   return (
