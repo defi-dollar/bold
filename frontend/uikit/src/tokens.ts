@@ -11,7 +11,7 @@ import tokenCRV from './token-icons/CRV.png';
 import tokenFRAX from './token-icons/FRAX icon.svg';
 import tokenSKY from './token-icons/SKY.png';
 import tokenLQTY from './token-icons/lqty.svg';
-import tokenYFI from './token-icons/YFI.png';
+import tokenYFI from './token-icons/YEARN_TOKEN_BLUE_RGB.png';
 import tokenDEFI from './token-icons/DEFI.svg';
 import tokenDusdBold from './token-icons/DUSDBOLD.png';
 import tokenDusdFraxbp from './token-icons/DUSDFRAXBP.png';
