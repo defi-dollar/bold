@@ -296,7 +296,7 @@ export function PanelUpdate({
                   ? (
                     dn.gt(boldBalance, 0) && (
                       <TextButton
-                        label={`Max ${fmtnum(boldBalance, 2)} BOLD`}
+                        label={`Max ${fmtnum(boldBalance, 2)} ${BOLD_TOKEN_SYMBOL}`}
                         onClick={() => {
                           setValue(dn.toString(boldBalance));
                         }}

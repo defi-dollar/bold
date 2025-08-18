@@ -209,7 +209,7 @@ export function SboldPositionSummary({
           ),
         },
         {
-          label: "BOLD Deposit",
+          label: `${BOLD_TOKEN_SYMBOL} Deposit`,
           content: (
             <>
               <div

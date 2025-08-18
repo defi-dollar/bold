@@ -83,7 +83,7 @@ export const sboldDeposit: FlowDeclaration<SboldDepositRequest> = {
                   suffix={` ${BOLD_TOKEN_SYMBOL} Entry Fee`}
                 />
                 <InfoTooltip heading="sBOLD Entry Fee">
-                  This fee is charged when you deposit BOLD for sBOLD shares, and has been deducted from the deposit
+                  This fee is charged when you deposit {BOLD_TOKEN_SYMBOL} for sBOLD shares, and has been deducted from the deposit
                   amount.
                 </InfoTooltip>
               </div>

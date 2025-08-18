@@ -176,14 +176,14 @@ export function PanelClaimRewards({
                   checked={compound}
                   onChange={setCompound}
                 />
-                Compound BOLD rewards
+                Compound {BOLD_TOKEN_SYMBOL} rewards
               </label>
               <InfoTooltip
                 content={{
-                  heading: "Compound BOLD rewards",
+                  heading: `Compound ${BOLD_TOKEN_SYMBOL} rewards`,
                   body: (
                     <>
-                      When enabled, your BOLD rewards will be automatically
+                      When enabled, your {BOLD_TOKEN_SYMBOL} rewards will be automatically
                       added back to your stability pool deposit, earning you
                       more rewards over time. Collateral rewards will still be
                       claimed normally.
