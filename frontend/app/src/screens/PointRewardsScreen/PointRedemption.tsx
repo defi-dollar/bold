@@ -83,7 +83,7 @@ export function PointRedemption() {
 
   return (
     <VFlex gap={24}>
-      {state === "redeemable" && <RewardPoolProgress />}
+      {(state === "redeemable" || state === "ended") && <RewardPoolProgress />}
       <RewardsCard />
       {(state === "not-started" || state === "active") && (
         <RedemptionCountdownCard />
@@ -460,7 +460,7 @@ const RedeemCard = () => {
         />
       ) : (
         <FlowButton
-          label="Redeem"
+          label={state === "ended" ? "Redemption Ended" : "Redeem"}
           request={{
             flowId: "pointsClaimRewards",
             backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
