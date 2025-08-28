@@ -455,7 +455,7 @@ export default {
   pointRewardsScreen: {
     infoTooltips: {
       rewardAPR: (redemptionPrice: N) => `calculated by on chain ${DEFI.name} price, while redemption fee ${redemptionPrice} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} is not included`,
-      redemptionCost: (redemptionPrice: N) => `Redemption cost at ${redemptionPrice} ${BOLD_TOKEN_SYMBOL} per ${DEFI.name} token to redeem`,
+      redemptionCost: 'Redemption cost to redeem',
     }
   },
   // Stake screen

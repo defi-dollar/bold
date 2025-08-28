@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useModal as useConnectKitModal } from "connectkit";
 import { match } from "ts-pattern";
 import { erc20Abi } from "viem";
-import { useAccount as useWagmiAccount, useBalance as useWagmiBalance, useEnsName, useReadContracts } from "wagmi";
+import { useAccount as useWagmiAccount, useBalance as useWagmiBalance, useEnsName, useReadContracts, useReadContract } from "wagmi";
 
 export function useBalance(
   address: Address | undefined,
@@ -137,4 +137,19 @@ export function useAccount():
     ensName: ensName.data ?? undefined,
     safeStatus: safeStatus.data ?? null,
   };
+}
+
+export const useErc20TokenBalance = (tokenAddress: Address, address: Address | undefined, decimals: number) => {
+  return useReadContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address ?? "0x"],
+    query: {
+      enabled: Boolean(address),
+      select: (result) => {
+        return [result, decimals] as Dnum;
+      }
+    }
+  })
 }

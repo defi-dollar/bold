@@ -5,8 +5,8 @@ import { Amount } from "@/src/comps/Amount/Amount";
 import { dnum18 } from "@/src/dnum-utils";
 import { css } from "@/styled-system/css";
 import {
-  BOLD_TOKEN_SYMBOL,
   DEFI,
+  Dropdown,
   HFlex,
   InfoTooltip,
   Tabs,
@@ -14,50 +14,31 @@ import {
   VFlex,
 } from "@liquity2/uikit";
 import { ReactNode, useState } from "react";
-import { FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
+import { FlowButton, FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
 import InsufficientFundsModal from "./InsufficientFundsModal";
 import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
 import { useOffsetNow } from "./useOffsetNow";
-import { pointsRedemptionPrice, useDepositsForPoints, useUserPoints } from "@/src/points-utils";
+import {
+  useDefiSale,
+  useDefiSalePersonal,
+  useDefiSaleRedemptionCost,
+  useDepositsForPoints,
+  useUserPoints,
+} from "@/src/points-utils";
 import { useLiquityStats } from "@/src/liquity-utils";
 import { formatDate } from "@/src/formatting";
-
-const campaignBeginDate = new Date("Mon, 04 Aug 2025 00:00:00 GMT");
-const campaignEndDate = new Date(
-  campaignBeginDate.getTime() + 28 * 24 * 60 * 60 * 1000
-);
-const redemptionEndDate = new Date(
-  campaignEndDate.getTime() + 14 * 24 * 60 * 60 * 1000
-);
-
-const useCampaignState = () => {
-  const now = useOffsetNow();
-
-  if (now < campaignBeginDate.getTime()) {
-    return {
-      state: "not-started",
-    };
-  }
-
-  if (now < campaignEndDate.getTime()) {
-    return {
-      state: "active",
-    };
-  }
-
-  if (now < redemptionEndDate.getTime()) {
-    return {
-      state: "redeemable",
-    };
-  }
-
-  return {
-    state: "ended",
-  };
-};
+import { campaignBeginDate, campaignEndDate, useCampaignState } from "./useCampaignState";
+import { RewardPoolProgress } from "./RewardPoolProgress";
+import { useAccount } from "wagmi";
+import {
+  DEFI_SALE_PAYMENT_TOKENS,
+  DefiSalePaymentToken,
+} from "@/src/constants";
+import { useErc20TokenBalance } from "@/src/wagmi-utils";
+import { VStack } from "@/styled-system/jsx";
 
 const useOverallMultiplier = (beginDate: Date) => {
   const now = useOffsetNow();
@@ -102,6 +83,7 @@ export function PointRedemption() {
 
   return (
     <VFlex gap={24}>
+      {state === "redeemable" && <RewardPoolProgress />}
       <RewardsCard />
       {(state === "not-started" || state === "active") && (
         <RedemptionCountdownCard />
@@ -112,18 +94,18 @@ export function PointRedemption() {
 }
 
 const RewardsCard = () => {
-  const { state } = useCampaignState();
+  const { data: defiSale } = useDefiSale();
+  const { state, endTime } = useCampaignState();
   const { data: userPoints } = useUserPoints();
   const { data: liquidityStats } = useLiquityStats();
   const lastUpdatedTimestamp =
     liquidityStats != undefined
       ? new Date(liquidityStats.lastUpdatedTimestamp)
       : undefined;
-  const pointsToDeFiRate = [50000000000000000n, 18] as dn.Dnum;
   const showDeFiAmount = state === "redeemable" || state === "ended";
   const defiAmount =
-    showDeFiAmount && userPoints !== undefined
-      ? dn.mul(userPoints.totalPoint, pointsToDeFiRate)
+    showDeFiAmount && userPoints !== undefined && defiSale !== undefined
+      ? dn.mul(userPoints.totalPoint, defiSale.pointsToDefiRate)
       : undefined;
 
   const isStarted = state !== "not-started";
@@ -212,7 +194,7 @@ const RewardsCard = () => {
                 fontWeight: 700,
               })}
             >
-              <Countdown date={campaignBeginDate} />
+              <Countdown date={endTime} />
             </span>
           </div>
         )}
@@ -220,7 +202,7 @@ const RewardsCard = () => {
       {(state === "not-started" || state === "active") && <DepositStats />}
       {state === "redeemable" && (
         <div>
-          Redemption ends in <Countdown date={redemptionEndDate} />
+          Redemption ends in <Countdown date={endTime} />
         </div>
       )}
       {state === "ended" && <div>Redemption ended</div>}
@@ -328,7 +310,12 @@ const DepositStats = () => {
 };
 
 const RedeemCard = () => {
+  const { address } = useAccount();
   const { state } = useCampaignState();
+  const [compact, setCompact] = useState(false);
+  useBreakpoint(({ medium }) => {
+    setCompact(!medium);
+  });
   const proportionOptions = [
     { label: "25%", value: dnum18(250000000000000000n) },
     { label: "50%", value: dnum18(500000000000000000n) },
@@ -336,20 +323,39 @@ const RedeemCard = () => {
     { label: "All", value: dnum18(1000000000000000000n) },
   ];
   const [proportion, setProportion] = useState(proportionOptions[3]!.value);
-  const rewardsAmount = dnum18(87000000000000000000n);
-  const redemptionPrice = dnum18(1000000000000000000n);
-  const redemptionCost = dn.mul(
-    dn.mul(rewardsAmount, proportion),
-    redemptionPrice
-  );
-
-  const [compact, setCompact] = useState(false);
-  useBreakpoint(({ medium }) => {
-    setCompact(!medium);
-  });
 
   const [insufficientFundsModalVisible, setInsufficientFundsModalVisible] =
     useState(false);
+
+  const [selectedPaymentToken, setSelectedPaymentToken] =
+    useState<DefiSalePaymentToken>(DEFI_SALE_PAYMENT_TOKENS[0]!);
+
+  const { data: defiSalePersonal, error: errorDefiSalePersonal } =
+    useDefiSalePersonal(address);
+
+  const rewardsAmount = defiSalePersonal?.proof?.amount ?? dnum18(0n);
+  const redeemedAmount = dnum18(defiSalePersonal?.redeemed ?? 0n);
+  const redeemingAmount = dn.mul(
+    dn.sub(rewardsAmount, redeemedAmount),
+    proportion
+  );
+
+  const { data: redemptionCost, error: errorRedemptionCost } =
+    useDefiSaleRedemptionCost(redeemingAmount, selectedPaymentToken.address);
+
+  const { data: paymentTokenBalance } = useErc20TokenBalance(
+    selectedPaymentToken.address,
+    address,
+    selectedPaymentToken.decimals
+  );
+
+  const insufficientFunds =
+    paymentTokenBalance &&
+    redemptionCost &&
+    dn.lt(paymentTokenBalance, redemptionCost);
+
+  const insufficientUSDFIFunds =
+    selectedPaymentToken.symbol === "USDFI" && insufficientFunds;
 
   return (
     <VFlex gap={48}>
@@ -376,6 +382,22 @@ const RedeemCard = () => {
           Redeem
         </h2>
         <VFlex gap={24}>
+          <RedeemRow label="Payment Token">
+            <Dropdown
+              items={DEFI_SALE_PAYMENT_TOKENS.map((token) => ({
+                label: token.symbol,
+              }))}
+              menuWidth={100}
+              menuPlacement="end"
+              onSelect={(index) => {
+                setSelectedPaymentToken(DEFI_SALE_PAYMENT_TOKENS[index]!);
+              }}
+              selected={DEFI_SALE_PAYMENT_TOKENS.findIndex(
+                (token) => token === selectedPaymentToken
+              )}
+              size="small"
+            />
+          </RedeemRow>
           <RedeemRow label="Redemption proportion" compact={compact}>
             <div>
               <Tabs
@@ -396,42 +418,70 @@ const RedeemCard = () => {
           </RedeemRow>
           <RedeemRow label={`Redemption ${DEFI.name} amount`}>
             <Amount
-              value={rewardsAmount}
+              value={redeemingAmount}
               suffix={` ${DEFI.symbol}`}
               fallback="-"
             />
           </RedeemRow>
           <RedeemRow
             label="Redemption cost"
-            tooltip={content.pointRewardsScreen.infoTooltips.redemptionCost(
-              dn.format(pointsRedemptionPrice)
-            )}
+            tooltip={content.pointRewardsScreen.infoTooltips.redemptionCost}
           >
-            <Amount
-              value={redemptionCost}
-              suffix={` ${BOLD_TOKEN_SYMBOL}`}
-              fallback="-"
-            />
+            <VStack alignItems="end" gap={4}>
+              <Amount
+                value={redemptionCost}
+                suffix={` ${selectedPaymentToken.symbol}`}
+                fallback="-"
+              />
+              {insufficientFunds && (
+                <span
+                  className={css({
+                    color: "red:500",
+                    fontSize: 14,
+                  })}
+                >
+                  Insufficient balance
+                </span>
+              )}
+            </VStack>
           </RedeemRow>
         </VFlex>
       </VFlex>
-      <FlowButtonView
-        label="Redeem"
-        onClick={() => setInsufficientFundsModalVisible(true)}
-        disabled={state !== "redeemable"}
-      />
-      {/* <FlowButton
-        label="Redeem"
-        request={{
-          flowId: "pointsClaimRewards",
-          backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
-          successLink: ["/", "Go to the Dashboard"],
-          successMessage: "The rewards have been claimed successfully.",
-          totalRewardsAmount: rewardsAmount,
-          redemptionProportion: proportion,
-        }}
-        disabled={state !== "redeemable"}
-      /> */}
+      {(errorRedemptionCost || errorDefiSalePersonal) && (
+        <div className={css({ color: "red:500" })}>
+          {errorRedemptionCost?.message || errorDefiSalePersonal?.message}
+        </div>
+      )}
+      {insufficientUSDFIFunds ? (
+        <FlowButtonView
+          label="Redeem"
+          onClick={() => setInsufficientFundsModalVisible(true)}
+          disabled={state !== "redeemable"}
+        />
+      ) : (
+        <FlowButton
+          label="Redeem"
+          request={{
+            flowId: "pointsClaimRewards",
+            backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
+            successLink: ["/point-rewards", "Go to the Dashboard"],
+            successMessage: "The rewards have been claimed successfully.",
+            totalRewardsAmount: rewardsAmount,
+            proof: defiSalePersonal?.proof?.proof ?? [],
+            paymentTokenAddress: selectedPaymentToken.address,
+            redeemingAmount,
+          }}
+          disabled={
+            state !== "redeemable" ||
+            !redemptionCost ||
+            !defiSalePersonal?.proof ||
+            dn.eq(redeemingAmount, 0) ||
+            !paymentTokenBalance ||
+            insufficientFunds
+          }
+        />
+      )}
+
       <InsufficientFundsModal
         visible={insufficientFundsModalVisible}
         onClose={() => setInsufficientFundsModalVisible(false)}

@@ -4,19 +4,20 @@ import * as dn from "dnum";
 import { Amount } from "@/src/comps/Amount/Amount";
 import { TransactionDetailsRow } from "@/src/screens/TransactionsScreen/TransactionsScreen";
 import { TransactionStatus } from "@/src/screens/TransactionsScreen/TransactionStatus";
-import { vDnum } from "@/src/valibot-utils";
+import { vAddress, vDnum } from "@/src/valibot-utils";
 import * as v from "valibot";
-import { BOLD_TOKEN_SYMBOL, DEFI } from "@liquity2/uikit";
+import { DEFI } from "@liquity2/uikit";
 import { createRequestSchema, verifyTransaction } from "./shared";
 import { usePrice } from "../services/Prices";
-import { dnum18 } from "@/src/dnum-utils";
-import { CONTRACT_BOLD_TOKEN } from "../env";
 import { erc20Abi } from "viem";
-import { getPointsRedemptionCost } from "../points-utils";
+import { useDefiSaleRedemptionCost } from "../points-utils";
+import { DEFI_SALE_CONTRACT, DEFI_SALE_CONTRACT_ADDRESS, DEFI_SALE_PAYMENT_TOKENS } from "../constants";
 
 const RequestSchema = createRequestSchema("pointsClaimRewards", {
   totalRewardsAmount: vDnum(),
-  redemptionProportion: vDnum(),
+  redeemingAmount: vDnum(),
+  proof: v.array(v.string()),
+  paymentTokenAddress: vAddress(),
 });
 
 export type PointsClaimRewardsRequest = v.InferOutput<typeof RequestSchema>;
@@ -28,52 +29,44 @@ export const pointsClaimRewards: FlowDeclaration<PointsClaimRewardsRequest> = {
     return null;
   },
 
-  Details({ request: { redemptionProportion, totalRewardsAmount } }) {
-    const defiToRedeem = dn.mul(redemptionProportion, totalRewardsAmount);
-    const boldCost = dn.mul(defiToRedeem, 0.1);
+  Details({ request: { redeemingAmount, paymentTokenAddress } }) {
+    const { data: redemptionCost } = useDefiSaleRedemptionCost(
+      redeemingAmount,
+      paymentTokenAddress
+    );
+    const paymentToken = DEFI_SALE_PAYMENT_TOKENS.find(
+      (token) => token.address === paymentTokenAddress
+    )!;
+
     const { data: defiPrice } = usePrice(DEFI.symbol);
-    const { data: boldPrice } = usePrice(BOLD_TOKEN_SYMBOL);
 
     return (
       <>
-        <TransactionDetailsRow
-          label="Redemption proportion"
-          value={[
-            <Amount key="start" percentage value={redemptionProportion} />,
-          ]}
-        />
         <TransactionDetailsRow
           label={`${DEFI.name} to redeem`}
           value={[
             <Amount
               key="start"
-              value={defiToRedeem}
+              value={redeemingAmount}
               suffix={` ${DEFI.name}`}
             />,
             defiPrice && (
               <Amount
                 key="end"
-                value={dn.mul(defiToRedeem, defiPrice)}
+                value={dn.mul(redeemingAmount, defiPrice)}
                 prefix="$"
               />
             ),
           ].filter(Boolean)}
         />
         <TransactionDetailsRow
-          label={`${BOLD_TOKEN_SYMBOL} required`}
+          label={`${paymentToken.symbol} required`}
           value={[
             <Amount
               key="start"
-              value={boldCost}
-              suffix={` ${BOLD_TOKEN_SYMBOL}`}
+              value={redemptionCost}
+              suffix={` ${paymentToken.symbol}`}
             />,
-            boldPrice && (
-              <Amount
-                key="end"
-                value={dn.mul(boldCost, boldPrice)}
-                prefix="$"
-              />
-            ),
           ].filter(Boolean)}
         />
       </>
@@ -81,22 +74,34 @@ export const pointsClaimRewards: FlowDeclaration<PointsClaimRewardsRequest> = {
   },
 
   steps: {
-    approveBold: {
-      name: () => `Approve ${BOLD_TOKEN_SYMBOL}`,
+    approve: {
+      name: (ctx) => {
+        const paymentToken = DEFI_SALE_PAYMENT_TOKENS.find(
+          (token) => token.address === ctx.request.paymentTokenAddress
+        )!;
+        return `Approve ${paymentToken.symbol}`;
+      },
       Status: TransactionStatus,
 
       async commit(ctx) {
-        const { totalRewardsAmount, redemptionProportion } = ctx.request;
-        const defiToRedeem = dn.mul(redemptionProportion, totalRewardsAmount);
-        const boldCost = getPointsRedemptionCost(defiToRedeem);
+        const {
+          paymentTokenAddress,
+          redeemingAmount,
+        } = ctx.request;
+
+        const cost = await ctx.readContract({
+          ...DEFI_SALE_CONTRACT,
+          functionName: 'cost',
+          args: [redeemingAmount[0], paymentTokenAddress],
+        })
 
         return ctx.writeContract({
-          address: CONTRACT_BOLD_TOKEN,
+          address: paymentTokenAddress,
           abi: erc20Abi,
           functionName: "approve",
           args: [
-            CONTRACT_BOLD_TOKEN, // TODO: get the address of the points contract
-            boldCost[0],
+            DEFI_SALE_CONTRACT_ADDRESS,
+            cost,
           ],
         });
       },
@@ -110,8 +115,24 @@ export const pointsClaimRewards: FlowDeclaration<PointsClaimRewardsRequest> = {
       name: () => "Claim rewards",
       Status: TransactionStatus,
 
-      async commit() {
-        return null;
+      async commit(ctx) {
+        const {
+          totalRewardsAmount,
+          paymentTokenAddress,
+          redeemingAmount,
+          proof,
+        } = ctx.request;
+
+        return ctx.writeContract({
+          ...DEFI_SALE_CONTRACT,
+          functionName: "buy",
+          args: [
+            redeemingAmount[0],
+            totalRewardsAmount[0],
+            proof,
+            paymentTokenAddress,
+          ],
+        });
       },
 
       async verify(ctx, hash) {
@@ -124,24 +145,25 @@ export const pointsClaimRewards: FlowDeclaration<PointsClaimRewardsRequest> = {
     const {
       readContract,
       account,
-      request: { totalRewardsAmount, redemptionProportion },
+      request: { redeemingAmount, paymentTokenAddress },
     } = ctx;
-    const defiToRedeem = dn.mul(redemptionProportion, totalRewardsAmount);
-    const boldCost = getPointsRedemptionCost(defiToRedeem);
+    const cost = await ctx.readContract({
+      ...DEFI_SALE_CONTRACT,
+      functionName: 'cost',
+      args: [redeemingAmount[0], paymentTokenAddress],
+    })
 
-    const allowance = dnum18(
-      await readContract({
-        address: CONTRACT_BOLD_TOKEN,
-        abi: erc20Abi,
-        functionName: "allowance",
-        args: [account, CONTRACT_BOLD_TOKEN],
-      })
-    );
+    const allowance = await readContract({
+      address: paymentTokenAddress,
+      abi: erc20Abi,
+      functionName: "allowance",
+      args: [account, DEFI_SALE_CONTRACT_ADDRESS],
+    })
 
     const steps: string[] = [];
 
-    if (dn.lt(allowance, boldCost)) {
-      steps.push("approveBold");
+    if (allowance < cost) {
+      steps.push("approve");
     }
 
     steps.push("claimRewards");

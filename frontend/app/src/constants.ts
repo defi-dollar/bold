@@ -14,6 +14,7 @@ import { vEnvLegacyCheck } from "@/src/valibot-utils";
 import { norm } from "@liquity2/uikit";
 import * as dn from "dnum";
 import * as v from "valibot";
+import { DefiSale } from "./abi/DefiSale";
 
 // make sure the icons in /public/fork-icons/
 // are 54x54px, especially for PNGs.
@@ -299,3 +300,39 @@ export const DEFAULT_COMMIT_URL =
   "https://github.com/defi-dollar/bold/tree/{commit}";
 export const DEFAULT_VERSION_URL =
   "https://github.com/liquity/bold/releases/tag/%40liquity2%2Fapp-v{version}";
+
+export const DEFI_SALE_CONTRACT_ADDRESS="0xE76040669c8DcD169dFdff84c35c380c401D8e7F";
+
+export const DEFI_SALE_CONTRACT = {
+  address: DEFI_SALE_CONTRACT_ADDRESS,
+  abi: DefiSale,
+} as const;
+
+export type DefiSalePaymentToken = {
+  address: Address;
+  symbol: string;
+  decimals: number;
+};
+
+export const DEFI_SALE_PAYMENT_TOKENS: DefiSalePaymentToken[] = [
+  {
+    address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+    symbol: "USDC",
+    decimals: 6,
+  },
+  {
+    address: "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29", // frxUSD
+    symbol: "frxUSD",
+    decimals: 18,
+  },
+  {
+    address: "0x6440f144b7e50D6a8439336510312d2F54beB01D", // BOLD
+    symbol: "BOLD",
+    decimals: 18,
+  },
+  {
+    address: "0xa0ED3359902EfF692e5b8167038133a73D641909", // USDFI
+    symbol: "USDFI",
+    decimals: 18,
+  },
+] as const;

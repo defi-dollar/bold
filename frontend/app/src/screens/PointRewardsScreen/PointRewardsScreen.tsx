@@ -1,11 +1,7 @@
 "use client";
 
 import { css } from "@/styled-system/css";
-import {
-  DEFI,
-  Tabs,
-  VFlex,
-} from "@liquity2/uikit";
+import { DEFI, Tabs, VFlex } from "@liquity2/uikit";
 import { PointRedemption } from "./PointRedemption";
 import { PointLeaderboard } from "./PointLeaderboard";
 import { useRouter } from "next/navigation";
@@ -24,21 +20,18 @@ export function PointRewardsScreen({
 }) {
   const router = useRouter();
 
-  const tabsTransition = useTransition(
-    tab,
-    {
-      from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
-      enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
-      leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
-      trail: 80,
-      config: {
-        mass: 1,
-        tension: 1800,
-        friction: 140,
-      },
-    }
-  );
-  
+  const tabsTransition = useTransition(tab, {
+    from: { opacity: 0, transform: "scale(1.1) translateY(64px)" },
+    enter: { opacity: 1, transform: "scale(1) translateY(0px)" },
+    leave: { opacity: 0, transform: "scale(1) translateY(0px)" },
+    trail: 80,
+    config: {
+      mass: 1,
+      tension: 1800,
+      friction: 140,
+    },
+  });
+
   return (
     <div
       className={css({
@@ -86,20 +79,20 @@ export function PointRewardsScreen({
         </div>
       </header>
       <Tabs
-          items={TABS.map(({ label, id, enabled }) => ({
-            label,
-            panelId: `p-${id}`,
-            tabId: `t-${id}`,
-            disabled: !enabled,
-          }))}
-          selected={TABS.findIndex(({ id }) => id === tab)}
-          onSelect={(index) => {
-            router.push(`/point-rewards/${TABS[index]!.id}`);
-          }}
-        />
+        items={TABS.map(({ label, id, enabled }) => ({
+          label,
+          panelId: `p-${id}`,
+          tabId: `t-${id}`,
+          disabled: !enabled,
+        }))}
+        selected={TABS.findIndex(({ id }) => id === tab)}
+        onSelect={(index) => {
+          router.push(`/point-rewards/${TABS[index]!.id}`);
+        }}
+      />
 
       <VFlex gap={24}>
-        {tabsTransition((style, tabId) => ( 
+        {tabsTransition((style, tabId) => (
           <a.div style={style}>
             {tabId === "redemption" && <PointRedemption />}
             {tabId === "leaderboard" && <PointLeaderboard />}

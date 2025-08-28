@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useAccount, useConfig, useReadContract } from "wagmi";
 import axios, { AxiosError } from "axios";
 import * as dn from "dnum";
 
@@ -13,8 +13,13 @@ import { dnum18 } from "./dnum-utils";
 import { useMemo } from "react";
 import { COLLATERALS } from "@liquity2/uikit";
 import { usePrice } from "./services/Prices";
-import { POOL1_CONFIGS } from "./constants";
+import { DEFI_SALE_CONTRACT, DEFI_SALE_CONTRACT_ADDRESS, DEFI_SALE_PAYMENT_TOKENS, POOL1_CONFIGS } from "./constants";
 import { usePool1Deposits } from "./pool1-utils";
+import { readContract, readContracts } from "wagmi/actions";
+import { DefiSale } from "./abi/DefiSale";
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import { pointsRedemptionTree } from "./points-redemption-tree";
+import { Address } from "viem";
 
 export const POINT_SYSTEM_ENABLED = true;
 
@@ -154,8 +159,105 @@ export const useDepositsForPoints = () => {
   };
 };
 
-export const pointsRedemptionPrice = dnum18(100000000000000000n)
-
-export const getPointsRedemptionCost = (amount: dn.Dnum) => {
-  return dn.mul(amount, pointsRedemptionPrice);
+const getPointsRedemptionProof = (address: Address) => {
+  const tree = StandardMerkleTree.load(pointsRedemptionTree);
+  for (const [i, v] of tree.entries()) {
+    if (v[0] === address) {
+      return {
+        leaf: v,
+        proof: tree.getProof(i),
+        amount: dnum18(v[1])!,
+      };
+    }
+  }
+  return null;
 };
+
+export const useDefiSale = () => {
+  const wagmiConfig = useConfig();
+
+  const defiSaleContract = {
+    address: DEFI_SALE_CONTRACT_ADDRESS,
+    abi: DefiSale,
+  } as const;
+
+  return useQuery({
+    queryKey: ["useDefiSale"],
+    queryFn: async () => {
+      const [price, endTime, _totalSold] = await readContracts(wagmiConfig, {
+        allowFailure: false,
+        contracts: [
+          {
+            ...defiSaleContract,
+            functionName: "price",
+          },
+          {
+            ...defiSaleContract,
+            functionName: "endTime",
+          },
+          {
+            ...defiSaleContract,
+            functionName: "totalSold",
+          },
+        ],
+      });
+
+      return {
+        price,
+        endTime: new Date(Number(endTime) * 1000),
+        totalSold: dnum18(_totalSold),
+        totalPool: dnum18(40000000000000000000000000n),
+        pointsToDefiRate: dnum18(9618476676333518000n),
+      };
+    },
+  });
+};
+
+export const useDefiSalePersonal = (address: Address | undefined) => {
+  const wagmiConfig = useConfig();
+
+  return useQuery({
+    queryKey: ["useDefiSalePersonal", address],
+    queryFn: async () => {
+      if (!address) {
+        return {
+          redeemed: undefined,
+          proof: undefined,
+        };
+      }
+
+      const redeemed = await readContract(wagmiConfig, {
+        ...DEFI_SALE_CONTRACT,
+        functionName: "bought",
+        args: [address],
+      });
+
+      const proof = getPointsRedemptionProof(address);
+
+      return {
+        redeemed,
+        proof,
+      }
+    },
+  });
+};
+
+export const useDefiSaleRedemptionCost = (amount: dn.Dnum, paymentTokenAddress: Address) => {
+  const paymentToken = getDefiSalePaymentToken(paymentTokenAddress);
+  return useReadContract({
+    ...DEFI_SALE_CONTRACT,
+    functionName: 'cost',
+    args: [amount[0], paymentTokenAddress],
+    query: {
+      select: (result) => {
+        return [result, paymentToken.decimals] as dn.Dnum;
+      }
+    }
+  })
+}
+
+export const getDefiSalePaymentToken = (address: Address) => {
+  return DEFI_SALE_PAYMENT_TOKENS.find(
+    (token) => token.address === address
+  )!;
+}
