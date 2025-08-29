@@ -1,4 +1,4 @@
-import { useDefiSale } from "@/src/points-utils";
+// import { useDefiSale } from "@/src/points-utils";
 import { useOffsetNow } from "./useOffsetNow";
 
 type CampaignState = "not-started" | "active" | "redeemable" | "ended";
@@ -16,7 +16,7 @@ export const useCampaignState = ():
       endTime: undefined;
     } => {
   const now = useOffsetNow();
-  const { data: defiSale } = useDefiSale();
+  // const { data: defiSale } = useDefiSale();
 
   if (now < campaignBeginDate.getTime()) {
     return {
@@ -25,29 +25,35 @@ export const useCampaignState = ():
     };
   }
 
-  if (now < campaignEndDate.getTime()) {
-    return {
-      state: "active",
-      endTime: campaignEndDate,
-    };
-  }
-
-  if (!defiSale) {
-    return {
-      state: undefined,
-      endTime: undefined,
-    };
-  }
-
-  if (now < defiSale.endTime.getTime()) {
-    return {
-      state: "redeemable",
-      endTime: defiSale.endTime,
-    };
-  }
-
   return {
-    state: "ended",
-    endTime: defiSale.endTime,
+    state: "active",
+    endTime: campaignEndDate,
   };
+  // TODO: recover conditions below after campaign deployed
+
+  // if (now < campaignEndDate.getTime()) {
+  //   return {
+  //     state: "active",
+  //     endTime: campaignEndDate,
+  //   };
+  // }
+
+  // if (!defiSale) {
+  //   return {
+  //     state: undefined,
+  //     endTime: undefined,
+  //   };
+  // }
+
+  // if (now < defiSale.endTime.getTime()) {
+  //   return {
+  //     state: "redeemable",
+  //     endTime: defiSale.endTime,
+  //   };
+  // }
+
+  // return {
+  //   state: "ended",
+  //   endTime: defiSale.endTime,
+  // };
 };

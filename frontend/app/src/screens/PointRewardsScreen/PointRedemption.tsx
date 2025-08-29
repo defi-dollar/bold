@@ -16,7 +16,6 @@ import {
 import { ReactNode, useState } from "react";
 import { FlowButton, FlowButtonView } from "@/src/comps/FlowButton/FlowButton";
 import content from "@/src/content";
-import InsufficientFundsModal from "./InsufficientFundsModal";
 import { useBreakpoint } from "@/src/breakpoints";
 import Link from "next/link";
 import { Countdown } from "./Countdown";
@@ -29,7 +28,7 @@ import {
   useUserPoints,
 } from "@/src/points-utils";
 import { useLiquityStats } from "@/src/liquity-utils";
-import { formatDate } from "@/src/formatting";
+import { fmtnum, formatDate } from "@/src/formatting";
 import { campaignBeginDate, campaignEndDate, useCampaignState } from "./useCampaignState";
 import { RewardPoolProgress } from "./RewardPoolProgress";
 import { useAccount } from "wagmi";
@@ -354,9 +353,6 @@ const RedeemCard = () => {
     redemptionCost &&
     dn.lt(paymentTokenBalance, redemptionCost);
 
-  const insufficientUSDFIFunds =
-    selectedPaymentToken.symbol === "USDFI" && insufficientFunds;
-
   return (
     <VFlex gap={48}>
       <VFlex
@@ -440,7 +436,7 @@ const RedeemCard = () => {
                     fontSize: 14,
                   })}
                 >
-                  Insufficient balance
+                  {`Insufficient balance, $${fmtnum(paymentTokenBalance, '2z')} ${selectedPaymentToken.symbol} left`} 
                 </span>
               )}
             </VStack>
@@ -452,14 +448,7 @@ const RedeemCard = () => {
           {errorRedemptionCost?.message || errorDefiSalePersonal?.message}
         </div>
       )}
-      {insufficientUSDFIFunds ? (
-        <FlowButtonView
-          label="Redeem"
-          onClick={() => setInsufficientFundsModalVisible(true)}
-          disabled={state !== "redeemable"}
-        />
-      ) : (
-        <FlowButton
+      <FlowButton
           label={state === "ended" ? "Redemption Ended" : "Redeem"}
           request={{
             flowId: "pointsClaimRewards",
@@ -480,12 +469,6 @@ const RedeemCard = () => {
             insufficientFunds
           }
         />
-      )}
-
-      <InsufficientFundsModal
-        visible={insufficientFundsModalVisible}
-        onClose={() => setInsufficientFundsModalVisible(false)}
-      />
     </VFlex>
   );
 };
