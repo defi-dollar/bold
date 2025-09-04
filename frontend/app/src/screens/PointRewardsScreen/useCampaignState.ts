@@ -5,9 +5,7 @@ type CampaignState = "not-started" | "active" | "redeemable" | "ended";
 
 export const campaignBeginDate = new Date("Mon, 04 Aug 2025 00:00:00 GMT");
 
-export const campaignEndDate = new Date(
-  campaignBeginDate.getTime() + (28 + 30 * 6) * 24 * 60 * 60 * 1000
-);
+export const campaignEndDate = new Date('Mon Mar 02 2026 00:00:00 GMT+0800 (Taipei Standard Time)');
 
 export const useCampaignState = ():
   | { state: CampaignState; endTime: Date }

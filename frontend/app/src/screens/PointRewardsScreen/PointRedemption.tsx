@@ -29,7 +29,11 @@ import {
 } from "@/src/points-utils";
 import { useLiquityStats } from "@/src/liquity-utils";
 import { fmtnum, formatDate } from "@/src/formatting";
-import { campaignBeginDate, campaignEndDate, useCampaignState } from "./useCampaignState";
+import {
+  campaignBeginDate,
+  campaignEndDate,
+  useCampaignState,
+} from "./useCampaignState";
 import { RewardPoolProgress } from "./RewardPoolProgress";
 import { useAccount } from "wagmi";
 import {
@@ -433,7 +437,7 @@ const RedeemCard = () => {
                     fontSize: 14,
                   })}
                 >
-                  {`Insufficient balance, $${fmtnum(paymentTokenBalance, '2z')} ${selectedPaymentToken.symbol} left`} 
+                  {`Insufficient balance, $${fmtnum(paymentTokenBalance, "2z")} ${selectedPaymentToken.symbol} left`}
                 </span>
               )}
             </VStack>
@@ -446,26 +450,26 @@ const RedeemCard = () => {
         </div>
       )}
       <FlowButton
-          label={state === "ended" ? "Redemption Ended" : "Redeem"}
-          request={{
-            flowId: "pointsClaimRewards",
-            backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
-            successLink: ["/point-rewards", "Go to the Dashboard"],
-            successMessage: "The rewards have been claimed successfully.",
-            totalRewardsAmount: rewardsAmount,
-            proof: defiSalePersonal?.proof?.proof ?? [],
-            paymentTokenAddress: selectedPaymentToken.address,
-            redeemingAmount,
-          }}
-          disabled={
-            state !== "redeemable" ||
-            !redemptionCost ||
-            !defiSalePersonal?.proof ||
-            dn.eq(redeemingAmount, 0) ||
-            !paymentTokenBalance ||
-            insufficientFunds
-          }
-        />
+        label={state === "ended" ? "Redemption Ended" : "Redeem"}
+        request={{
+          flowId: "pointsClaimRewards",
+          backLink: [`/point-rewards`, `Back to ${DEFI.name} Rewards`],
+          successLink: ["/point-rewards", "Go to the Dashboard"],
+          successMessage: "The rewards have been claimed successfully.",
+          totalRewardsAmount: rewardsAmount,
+          proof: defiSalePersonal?.proof?.proof ?? [],
+          paymentTokenAddress: selectedPaymentToken.address,
+          redeemingAmount,
+        }}
+        disabled={
+          state !== "redeemable" ||
+          !redemptionCost ||
+          !defiSalePersonal?.proof ||
+          dn.eq(redeemingAmount, 0) ||
+          !paymentTokenBalance ||
+          insufficientFunds
+        }
+      />
     </VFlex>
   );
 };
@@ -494,6 +498,7 @@ const RedemptionCountdownCard = () => {
         >
           Redemption
         </h2>
+
         <HFlex
           justifyContent="start"
           alignItems="center"
@@ -506,6 +511,24 @@ const RedemptionCountdownCard = () => {
           <TokenIcon symbol={DEFI.symbol} size={16} /> {DEFI.name} rewards
           redemption starts in <Countdown date={campaignEndDate} />
         </HFlex>
+        <p
+          className={css({
+            color: "contentAlt",
+            fontSize: 14,
+            fontWeight: 500,
+          })}
+        >
+          {`The points program has been extended until ${campaignEndDate.toLocaleDateString(
+            "en-US",
+            {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              // hour: "numeric",
+              // minute: "numeric",
+            }
+          )}. DEFI rewards redemption details will be announced before the program ends.`}
+        </p>
       </VFlex>
       <FlowButtonView label="Redeem" disabled />
     </VFlex>
