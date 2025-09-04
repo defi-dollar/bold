@@ -323,9 +323,6 @@ const RedeemCard = () => {
   ];
   const [proportion, setProportion] = useState(proportionOptions[3]!.value);
 
-  const [insufficientFundsModalVisible, setInsufficientFundsModalVisible] =
-    useState(false);
-
   const [selectedPaymentToken, setSelectedPaymentToken] =
     useState<DefiSalePaymentToken>(DEFI_SALE_PAYMENT_TOKENS[0]!);
 
